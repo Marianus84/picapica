@@ -125,7 +125,6 @@
 
         function renderMatches() {
             const container = document.getElementById('active-matches-container');
-            // Diseño forzado con estilo inline para garantizar alineación en la captura
             container.innerHTML = gameState.activeMatches.map(m => `
                 <div class="truco-table p-4 rounded-xl shadow-lg text-white">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
@@ -154,21 +153,21 @@
             const sorted = Object.keys(totals).sort((a, b) => totals[b] - totals[a] || a.localeCompare(b));
             
             list.innerHTML = sorted.map((name, index) => `
-                <div class="flex items-center justify-between bg-emerald-950 rounded-lg border border-emerald-700/30 px-2.5" style="height: 26px; box-sizing: border-box; overflow: hidden;">
-                    <div class="flex items-center space-x-2 flex-1 min-w-0 mr-2" style="height: 100%;">
-                        <span class="font-mono text-xs text-amber-500 font-bold w-5 text-left flex-shrink-0" style="line-height: 26px;">${index + 1}.</span>
-                        <span class="font-bold text-xs text-white truncate text-left" style="line-height: 26px;">${name}</span>
+                <div class="flex items-center justify-between bg-emerald-950 rounded-lg border border-emerald-700/30 px-2.5" style="height: 32px; align-items: center; display: flex;">
+                    <div class="flex items-center flex-1 min-w-0" style="align-items: center; display: flex;">
+                        <span class="font-mono text-xs text-amber-500 font-bold w-6 text-left">${index + 1}.</span>
+                        <span class="font-bold text-xs text-white truncate text-left">${name}</span>
                     </div>
-                    <span class="text-[10px] text-amber-400 flex-shrink-0 font-semibold" style="line-height: 26px;">${totals[name]} pts</span>
+                    <span class="text-[10px] text-amber-400 font-semibold text-right">${totals[name]} pts</span>
                 </div>
             `).join('');
 
             const history = document.getElementById('history-list');
             history.innerHTML = gameState.activeMatches.map(m => `
-                <div class="flex justify-between items-center bg-emerald-950 rounded-lg text-[12px] text-emerald-200 border border-emerald-800 px-2" style="height: 26px; box-sizing: border-box; overflow: hidden;">
-                    <span class="font-bold text-amber-400 flex-[3_3_0%] text-left px-1 truncate" style="line-height: 26px;">${m.p1}</span>
-                    <span class="text-center w-16 font-mono text-emerald-100 flex-shrink-0" style="line-height: 26px;">${m.score1}-${m.score2}</span>
-                    <span class="font-bold text-amber-400 flex-[3_3_0%] text-right px-1 truncate" style="line-height: 26px;">${m.p2}</span>
+                <div class="flex justify-between items-center bg-emerald-950 rounded-lg text-[12px] text-emerald-200 border border-emerald-800 px-2" style="height: 32px; align-items: center; display: flex;">
+                    <span class="font-bold text-amber-400 flex-1 text-left truncate">${m.p1}</span>
+                    <span class="text-center w-16 font-mono text-emerald-100">${m.score1}-${m.score2}</span>
+                    <span class="font-bold text-amber-400 flex-1 text-right truncate">${m.p2}</span>
                 </div>
             `).join('');
         }
