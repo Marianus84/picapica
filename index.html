@@ -23,8 +23,8 @@
         </header>
 
         <div class="flex space-x-2 mb-6 bg-emerald-950 p-1 rounded-xl shadow-inner border border-emerald-800">
-            <button onclick="switchTab('play')" id="tab-play" class="flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all">Partidas</button>
-            <button onclick="switchTab('stats')" id="tab-stats" class="flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all">Ranking</button>
+            <button onclick="switchTab('play'); vibrar();" id="tab-play" class="flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all">Partidas</button>
+            <button onclick="switchTab('stats'); vibrar();" id="tab-stats" class="flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all">Ranking</button>
         </div>
 
         <div id="section-play" class="space-y-6">
@@ -34,12 +34,12 @@
                     <input type="text" id="p1" placeholder="Jugador 1" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none">
                     <input type="text" id="p2" placeholder="Jugador 2" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none">
                 </div>
-                <button onclick="startMatch()" class="w-full mt-4 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50">Empezar Duelo</button>
+                <button onclick="startMatch(); vibrar();" class="w-full mt-4 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50">Empezar Duelo</button>
             </div>
             
             <div id="active-matches-container" class="space-y-4"></div>
             
-            <button onclick="resetEverything()" class="w-full bg-emerald-950 text-emerald-500 py-2 rounded-xl font-bold border border-emerald-900 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest mt-4">Empezar nueva noche de truco</button>
+            <button onclick="resetEverything(); vibrar();" class="w-full bg-emerald-950 text-emerald-500 py-2 rounded-xl font-bold border border-emerald-900 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest mt-4">Empezar nueva noche de truco</button>
         </div>
 
         <div id="section-stats" class="hidden">
@@ -55,12 +55,19 @@
                     <div id="stats-list" class="grid grid-cols-1 gap-2"></div>
                 </div>
             </div>
-            <button onclick="shareStats()" class="w-full mt-6 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">📸 Compartir</button>
+            <button onclick="shareStats(); vibrar();" class="w-full mt-6 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">📸 Compartir</button>
         </div>
     </div>
 
     <script>
         let gameState = { activeMatches: [] };
+
+        // Función de vibración añadida aquí
+        function vibrar() {
+            if (navigator.vibrate) {
+                navigator.vibrate(50);
+            }
+        }
 
         function saveToLocalStorage() { localStorage.setItem('truco_pica_pica_state', JSON.stringify(gameState)); }
         function loadFromLocalStorage() {
@@ -139,10 +146,10 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3 mb-3">
-                        <div class="flex bg-emerald-900 rounded-lg p-1"><button onclick="updateScore(${m.id}, 1, -1)" class="flex-1">-</button><button onclick="updateScore(${m.id}, 1, 1)" class="flex-1 bg-amber-600 rounded-md">+</button></div>
-                        <div class="flex bg-emerald-900 rounded-lg p-1"><button onclick="updateScore(${m.id}, 2, -1)" class="flex-1">-</button><button onclick="updateScore(${m.id}, 2, 1)" class="flex-1 bg-amber-600 rounded-md">+</button></div>
+                        <div class="flex bg-emerald-900 rounded-lg p-1"><button onclick="updateScore(${m.id}, 1, -1); vibrar();" class="flex-1">-</button><button onclick="updateScore(${m.id}, 1, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md">+</button></div>
+                        <div class="flex bg-emerald-900 rounded-lg p-1"><button onclick="updateScore(${m.id}, 2, -1); vibrar();" class="flex-1">-</button><button onclick="updateScore(${m.id}, 2, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md">+</button></div>
                     </div>
-                    <button onclick="deleteMatch(${m.id})" class="block mx-auto mt-3 bg-red-950/60 hover:bg-red-900/50 text-red-400 text-[9px] uppercase font-bold px-3 py-1 rounded-md border border-red-900/30 transition-all">Borrar partida</button>
+                    <button onclick="deleteMatch(${m.id}); vibrar();" class="block mx-auto mt-3 bg-red-950/60 hover:bg-red-900/50 text-red-400 text-[9px] uppercase font-bold px-3 py-1 rounded-md border border-red-900/30 transition-all">Borrar partida</button>
                 </div>
             `).join('');
         }
