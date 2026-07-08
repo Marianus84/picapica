@@ -61,7 +61,6 @@
 
     <script>
         let gameState = { activeMatches: [] };
-
         function vibrar() { if (navigator.vibrate) navigator.vibrate(70); }
         function saveToLocalStorage() { localStorage.setItem('truco_pica_pica_state', JSON.stringify(gameState)); }
         function loadFromLocalStorage() {
@@ -153,21 +152,21 @@
             const list = document.getElementById('stats-list');
             const sorted = Object.keys(totals).sort((a, b) => totals[b] - totals[a] || a.localeCompare(b));
             
-            // Corrección: Padding superior ligeramente mayor para "empujar" el texto al centro visual en html2canvas
+            // Renderizado con "flex" y padding extra para compensar el error de renderizado
             list.innerHTML = sorted.map((name, index) => `
-                <div style="display: flex; align-items: center; background-color: #064e3b; border: 1px solid #047857; border-radius: 6px; margin-bottom: 4px; padding: 7px 10px 5px 10px;">
-                    <span style="color: #fbbf24; font-weight: bold; font-size: 13px; width: 25px; flex-shrink: 0;">${index + 1}.</span>
-                    <span style="color: white; font-weight: bold; font-size: 13px; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${name}</span>
-                    <span style="color: #fbbf24; font-weight: bold; font-size: 13px; text-align: right; flex-shrink: 0; margin-left: 8px;">${totals[name]} pts</span>
+                <div style="display: flex; align-items: center; background-color: #064e3b; border: 1px solid #047857; border-radius: 6px; margin-bottom: 4px; padding: 10px 10px;">
+                    <span style="color: #fbbf24; font-weight: bold; font-size: 14px; width: 30px; flex-shrink: 0;">${index + 1}.</span>
+                    <span style="color: white; font-weight: bold; font-size: 14px; flex-grow: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-top: 2px;">${name}</span>
+                    <span style="color: #fbbf24; font-weight: bold; font-size: 14px; text-align: right; flex-shrink: 0; margin-left: 8px;">${totals[name]} pts</span>
                 </div>
             `).join('');
 
             const history = document.getElementById('history-list');
             history.innerHTML = gameState.activeMatches.map(m => `
-                <div style="display: flex; align-items: center; background-color: #064e3b; border: 1px solid #047857; border-radius: 6px; margin-bottom: 4px; padding: 7px 10px 5px 10px;">
-                    <span style="color: #fcd34d; font-weight: bold; font-size: 13px; width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left;">${m.p1}</span>
-                    <span style="color: #d1fae5; font-family: monospace; font-size: 13px; width: 20%; text-align: center;">${m.score1}-${m.score2}</span>
-                    <span style="color: #fcd34d; font-weight: bold; font-size: 13px; width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: right;">${m.p2}</span>
+                <div style="display: flex; align-items: center; background-color: #064e3b; border: 1px solid #047857; border-radius: 6px; margin-bottom: 4px; padding: 10px 10px;">
+                    <span style="color: #fcd34d; font-weight: bold; font-size: 14px; width: 40%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-top: 2px;">${m.p1}</span>
+                    <span style="color: #d1fae5; font-family: monospace; font-size: 14px; width: 20%; text-align: center;">${m.score1}-${m.score2}</span>
+                    <span style="color: #fcd34d; font-weight: bold; font-size: 14px; width: 40%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: right; padding-top: 2px;">${m.p2}</span>
                 </div>
             `).join('');
         }
