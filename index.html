@@ -151,10 +151,25 @@
         function shareStats() {
             renderStats(); 
             html2canvas(document.getElementById("capture-area"), {backgroundColor: "#064e3b", scale: 2}).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'resultados_truco.png';
-                link.href = canvas.toDataURL("image/png");
-                link.click();
+                canvas.toBlob(blob => {
+                    const file = new File([blob], 'estadisticas_pica_pica.png', { type: 'image/png' });
+                    const shareData = {
+                        title: 'Estadísticas Pica Pica de la Noche',
+                        text: '¡Acá están las estadísticas de la noche de Truco!',
+                        files: [file]
+                    };
+
+                    // Intenta abrir el menú nativo (ideal para celulares)
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        navigator.share(shareData).catch(console.error);
+                    } else {
+                        // Si estás en PC o un navegador viejo, descarga la imagen como antes
+                        const link = document.createElement('a');
+                        link.download = 'estadisticas_pica_pica.png';
+                        link.href = canvas.toDataURL("image/png");
+                        link.click();
+                    }
+                }, 'image/png');
             });
         }
     </script>
