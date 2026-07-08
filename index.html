@@ -62,12 +62,10 @@
     <script>
         let gameState = { activeMatches: [] };
 
-        // Función para guardar los datos en la memoria del navegador
         function saveToLocalStorage() {
             localStorage.setItem('truco_pica_pica_state', JSON.stringify(gameState));
         }
 
-        // Función para cargar los datos guardados al abrir o refrescar la página
         function loadFromLocalStorage() {
             const savedState = localStorage.getItem('truco_pica_pica_state');
             if (savedState) {
@@ -76,6 +74,7 @@
             renderMatches();
         }
 
+        // Cambiar pestañas
         function switchTab(tab) {
             document.getElementById('section-play').classList.toggle('hidden', tab !== 'play');
             document.getElementById('section-stats').classList.toggle('hidden', tab !== 'stats');
@@ -90,7 +89,7 @@
             gameState.activeMatches.push({ id: Date.now(), p1, p2, score1: 0, score2: 0 });
             document.getElementById('p1').value = '';
             document.getElementById('p2').value = '';
-            saveToLocalStorage(); // Guardar cambios
+            saveToLocalStorage();
             renderMatches();
         }
 
@@ -98,14 +97,14 @@
             const match = gameState.activeMatches.find(m => m.id === matchId);
             if (playerIdx === 1) match.score1 = Math.max(0, match.score1 + delta);
             else match.score2 = Math.max(0, match.score2 + delta);
-            saveToLocalStorage(); // Guardar cambios
+            saveToLocalStorage();
             renderMatches();
         }
 
         function deleteMatch(matchId) {
             if (confirm("¿Seguro que quieres borrar esta partida?")) {
                 gameState.activeMatches = gameState.activeMatches.filter(m => m.id !== matchId);
-                saveToLocalStorage(); // Guardar cambios
+                saveToLocalStorage();
                 renderMatches();
             }
         }
@@ -113,7 +112,7 @@
         function resetEverything() {
             if(confirm("¿Seguro que quieres borrar todo para empezar una nueva noche?")) {
                 gameState = { activeMatches: [] };
-                saveToLocalStorage(); // Limpiar el almacenamiento guardando el estado vacío
+                saveToLocalStorage();
                 renderMatches();
                 renderStats();
             }
@@ -150,14 +149,26 @@
             `).join('');
         }
 
+        // Función modificada con ordenamiento por puntos + orden alfabético y numeración de puestos
         function renderStats() {
             const totals = getTotals();
             const list = document.getElementById('stats-list');
-            const sorted = Object.keys(totals).sort((a,b) => totals[b] - totals[a]);
             
-            list.innerHTML = sorted.map(name => `
+            // Ordenar primero por puntos (descendente) y si empatan, por orden alfabético (ascendente)
+            const sorted = Object.keys(totals).sort((a, b) => {
+                if (totals[b] !== totals[a]) {
+                    return totals[b] - totals[a]; // Más puntos primero
+                }
+                return a.localeCompare(b); // Orden alfabético si hay empate
+            });
+            
+            // Renderizar la lista agregando el índice del puesto (index + 1)
+            list.innerHTML = sorted.map((name, index) => `
                 <div class="flex justify-between items-center p-2 bg-emerald-950 rounded-lg border border-emerald-700/30">
-                    <span class="font-bold text-xs text-white flex-1">${name}</span>
+                    <div class="flex items-center space-x-3 flex-1">
+                        <span class="font-mono text-xs text-amber-500 font-bold w-4 text-center">${index + 1}.</span>
+                        <span class="font-bold text-xs text-white truncate">${name}</span>
+                    </div>
                     <span class="text-[10px] text-amber-400 ml-4">${totals[name]} pts</span>
                 </div>
             `).join('');
@@ -194,7 +205,6 @@
             });
         }
 
-        // Ejecutar la carga automática al iniciar la app
         loadFromLocalStorage();
     </script>
 </body>
