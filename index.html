@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Truco Night Tracker - Estilo Argentino</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #064e3b; }
+        .truco-table { background: #065f46; border: 8px solid #451a03; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); }
+        .score-font { font-family: 'Playfair Display', serif; }
+    </style>
+</head>
+<body class="min-h-screen p-4 md:p-8">
+
+    <div class="max-w-md mx-auto" id="app">
+        <header class="text-center mb-6">
+            <h1 class="text-4xl font-bold text-amber-500 score-font drop-shadow-md">Truco de la Noche</h1>
+            <p class="text-emerald-100 opacity-80">Pica Pica Profesional</p>
+        </header>
+
+        <div class="flex space-x-2 mb-6 bg-emerald-950 p-1 rounded-xl shadow-inner border border-emerald-800">
+            <button onclick="switchTab('play')" id="tab-play" class="flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all">Partidas</button>
+            <button onclick="switchTab('stats')" id="tab-stats" class="flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all">Ranking</button>
+        </div>
+
+        <div id="section-play" class="space-y-6">
+            <div class="bg-emerald-800 p-6 rounded-2xl shadow-xl border border-emerald-700">
+                <h2 class="text-lg font-bold text-white mb-4">Nueva partida</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="p1" placeholder="Jugador 1" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none">
+                    <input type="text" id="p2" placeholder="Jugador 2" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none">
+                </div>
+                <button onclick="startMatch()" class="w-full mt-4 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50">Empezar Duelo</button>
+            </div>
+            
+            <div id="active-matches-container" class="space-y-4"></div>
+            
+            <button onclick="resetEverything()" class="w-full bg-emerald-950 text-emerald-500 py-2 rounded-xl font-bold border border-emerald-900 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest mt-4">Empezar nueva noche de truco</button>
+        </div>
+
+        <div id="section-stats" class="hidden">
+            <div id="capture-area" class="bg-emerald-800 p-6 rounded-2xl shadow-xl border border-emerald-700 space-y-6">
+                <div>
+                    <h2 class="text-lg font-bold text-emerald-300 mb-3 border-b border-emerald-700 pb-2 text-center uppercase tracking-widest text-sm">ENFRENTAMIENTOS</h2>
+                    <div id="history-list" class="space-y-1"></div>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-emerald-300 mb-3 border-b border-emerald-700 pb-2 text-center uppercase tracking-widest text-sm">PUNTOS TOTALES</h2>
+                    <div id="stats-list" class="grid grid-cols-1 gap-2"></div>
+                </div>
+            </div>
+            <button onclick="shareStats()" class="w-full mt-6 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">📸 Compartir por WhatsApp</button>
+        </div>
+    </div>
+
+    <script>
+        let gameState = { activeMatches: [] };
+
+        function switchTab(tab) {
+            document.getElementById('section-play').classList.toggle('hidden', tab !== 'play');
+            document.getElementById('section-stats').classList.toggle('hidden', tab !== 'stats');
+            document.getElementById('tab-play').className = tab === 'play' ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg' : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200';
+            document.getElementById('tab-stats').className = tab === 'stats' ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg' : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200';
+            if (tab === 'stats') renderStats();
+        }
+
+        function startMatch() {
+            const p1 = document.getElementById('p1').value.trim() || 'J1';
+            const p2 = document.getElementById('p2').value.trim() || 'J2';
+            gameState.activeMatches.push({ id: Date.now(), p1, p2, score1: 0, score2: 0 });
+            document.getElementById('p1').value = '';
+            document.getElementById('p2').value = '';
+            renderMatches();
+        }
+
+        function updateScore(matchId, playerIdx, delta) {
+            const match = gameState.activeMatches.find(m => m.id === matchId);
+            if (playerIdx === 1) match.score1 = Math.max(0, match.score1 + delta);
+            else match.score2 = Math.max(0, match.score2 + delta);
+            renderMatches();
+        }
+
+        function deleteMatch(matchId) {
+            gameState.activeMatches = gameState.activeMatches.filter(m => m.id !== matchId);
+            renderMatches();
+        }
+
+        function resetEverything() {
+            if(confirm("¿Seguro que quieres borrar todo para empezar una nueva noche?")) {
+                gameState = { activeMatches: [] };
+                renderMatches();
+                renderStats();
+            }
+        }
+
+        function getTotals() {
+            const totals = {};
+            gameState.activeMatches.forEach(m => {
+                if (!totals[m.p1]) totals[m.p1] = 0;
+                if (!totals[m.p2]) totals[m.p2] = 0;
+                totals[m.p1] += m.score1;
+                totals[m.p2] += m.score2;
+            });
+            return totals;
+        }
+
+        function renderMatches() {
+            const container = document.getElementById('active-matches-container');
+            container.innerHTML = gameState.activeMatches.map(m => `
+                <div class="truco-table p-4 rounded-xl shadow-lg text-white">
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="text-center w-1/3"><div class="text-3xl font-bold score-font text-amber-400">${m.score1}</div><div class="text-[10px] uppercase truncate">${m.p1}</div></div>
+                        <div class="text-emerald-500 font-bold text-xs">VS</div>
+                        <div class="text-center w-1/3"><div class="text-3xl font-bold score-font text-amber-400">${m.score2}</div><div class="text-[10px] uppercase truncate">${m.p2}</div></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 mb-2">
+                        <div class="flex bg-emerald-900 rounded-lg p-1"><button onclick="updateScore(${m.id}, 1, -1)" class="flex-1">-</button><button onclick="updateScore(${m.id}, 1, 1)" class="flex-1 bg-amber-600 rounded-md">+</button></div>
+                        <div class="flex bg-emerald-900 rounded-lg p-1"><button onclick="updateScore(${m.id}, 2, -1)" class="flex-1">-</button><button onclick="updateScore(${m.id}, 2, 1)" class="flex-1 bg-amber-600 rounded-md">+</button></div>
+                    </div>
+                    <button onclick="deleteMatch(${m.id})" class="w-full bg-red-900/50 text-red-300 text-[10px] uppercase font-bold py-1 rounded">Borrar partida</button>
+                </div>
+            `).join('');
+        }
+
+        function renderStats() {
+            const totals = getTotals();
+            const list = document.getElementById('stats-list');
+            const sorted = Object.keys(totals).sort((a,b) => totals[b] - totals[a]);
+            
+            list.innerHTML = sorted.map(name => `
+                <div class="flex justify-between items-center p-2 bg-emerald-950 rounded-lg border border-emerald-700/30">
+                    <span class="font-bold text-xs text-white flex-1">${name}</span>
+                    <span class="text-[10px] text-amber-400 ml-4">${totals[name]} pts</span>
+                </div>
+            `).join('');
+
+            const history = document.getElementById('history-list');
+            history.innerHTML = gameState.activeMatches.map(m => `
+                <div class="flex justify-between items-center p-2 bg-emerald-950 rounded-lg text-[12px] text-emerald-200 border border-emerald-800">
+                    <span class="font-bold text-amber-400 flex-[3_3_0%] text-left px-1 whitespace-normal">${m.p1}</span>
+                    <span class="text-center w-16 font-mono text-emerald-100 flex-shrink-0">${m.score1}-${m.score2}</span>
+                    <span class="font-bold text-amber-400 flex-[3_3_0%] text-right px-1 whitespace-normal">${m.p2}</span>
+                </div>
+            `).join('');
+        }
+
+        function shareStats() {
+            renderStats(); 
+            html2canvas(document.getElementById("capture-area"), {backgroundColor: "#064e3b", scale: 2}).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'resultados_truco.png';
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>
