@@ -74,6 +74,7 @@
             renderMatches();
         }
 
+        // Navegación entre pestañas
         function switchTab(tab) {
             document.getElementById('section-play').classList.toggle('hidden', tab !== 'play');
             document.getElementById('section-stats').classList.toggle('hidden', tab !== 'stats');
@@ -92,6 +93,7 @@
             renderMatches();
         }
 
+        // Actualizar puntajes individuales
         function updateScore(matchId, playerIdx, delta) {
             const match = gameState.activeMatches.find(m => m.id === matchId);
             if (playerIdx === 1) match.score1 = Math.max(0, match.score1 + delta);
@@ -159,24 +161,24 @@
                 return a.localeCompare(b);
             });
             
-            // PUNTOS TOTALES: Se cambió el padding a 'py-1 px-2.5' para reducir la altura de la fila
+            // Corregido con Inline-Styles de altura y alineación estricta para forzar a html2canvas
             list.innerHTML = sorted.map((name, index) => `
-                <div class="flex items-center justify-between py-1 px-2.5 bg-emerald-950 rounded-lg border border-emerald-700/30">
-                    <div class="flex items-center space-x-2 flex-1 min-w-0 mr-2">
-                        <span class="font-mono text-xs text-amber-500 font-bold w-5 text-left flex-shrink-0">${index + 1}.</span>
-                        <span class="font-bold text-xs text-white whitespace-normal break-words text-left leading-tight">${name}</span>
+                <div class="flex items-center justify-between bg-emerald-950 rounded-lg border border-emerald-700/30 px-2.5" style="height: 26px; box-sizing: border-box; overflow: hidden;">
+                    <div class="flex items-center space-x-2 flex-1 min-w-0 mr-2" style="height: 100%;">
+                        <span class="font-mono text-xs text-amber-500 font-bold w-5 text-left flex-shrink-0" style="line-height: 26px;">${index + 1}.</span>
+                        <span class="font-bold text-xs text-white truncate text-left" style="line-height: 26px;">${name}</span>
                     </div>
-                    <span class="text-[10px] text-amber-400 flex-shrink-0 font-semibold">${totals[name]} pts</span>
+                    <span class="text-[10px] text-amber-400 flex-shrink-0 font-semibold" style="line-height: 26px;">${totals[name]} pts</span>
                 </div>
             `).join('');
 
             const history = document.getElementById('history-list');
-            // ENFRENTAMIENTOS: Se cambió el padding a 'py-1 px-2' para reducir la altura de la fila
+            // Corregido con Inline-Styles de altura y alineación estricta para el historial de enfrentamientos
             history.innerHTML = gameState.activeMatches.map(m => `
-                <div class="flex justify-between items-center py-1 px-2 bg-emerald-950 rounded-lg text-[12px] text-emerald-200 border border-emerald-800">
-                    <span class="font-bold text-amber-400 flex-[3_3_0%] text-left px-1 whitespace-normal leading-tight">${m.p1}</span>
-                    <span class="text-center w-16 font-mono text-emerald-100 flex-shrink-0">${m.score1}-${m.score2}</span>
-                    <span class="font-bold text-amber-400 flex-[3_3_0%] text-right px-1 whitespace-normal leading-tight">${m.p2}</span>
+                <div class="flex justify-between items-center bg-emerald-950 rounded-lg text-[12px] text-emerald-200 border border-emerald-800 px-2" style="height: 26px; box-sizing: border-box; overflow: hidden;">
+                    <span class="font-bold text-amber-400 flex-[3_3_0%] text-left px-1 truncate" style="line-height: 26px;">${m.p1}</span>
+                    <span class="text-center w-16 font-mono text-emerald-100 flex-shrink-0" style="line-height: 26px;">${m.score1}-${m.score2}</span>
+                    <span class="font-bold text-amber-400 flex-[3_3_0%] text-right px-1 truncate" style="line-height: 26px;">${m.p2}</span>
                 </div>
             `).join('');
         }
