@@ -62,7 +62,20 @@
     <script>
         let gameState = { activeMatches: [] };
 
-        // Cargar estado inicial si existiera
+        // Función para guardar los datos en la memoria del navegador
+        function saveToLocalStorage() {
+            localStorage.setItem('truco_pica_pica_state', JSON.stringify(gameState));
+        }
+
+        // Función para cargar los datos guardados al abrir o refrescar la página
+        function loadFromLocalStorage() {
+            const savedState = localStorage.getItem('truco_pica_pica_state');
+            if (savedState) {
+                gameState = JSON.parse(savedState);
+            }
+            renderMatches();
+        }
+
         function switchTab(tab) {
             document.getElementById('section-play').classList.toggle('hidden', tab !== 'play');
             document.getElementById('section-stats').classList.toggle('hidden', tab !== 'stats');
@@ -77,6 +90,7 @@
             gameState.activeMatches.push({ id: Date.now(), p1, p2, score1: 0, score2: 0 });
             document.getElementById('p1').value = '';
             document.getElementById('p2').value = '';
+            saveToLocalStorage(); // Guardar cambios
             renderMatches();
         }
 
@@ -84,13 +98,14 @@
             const match = gameState.activeMatches.find(m => m.id === matchId);
             if (playerIdx === 1) match.score1 = Math.max(0, match.score1 + delta);
             else match.score2 = Math.max(0, match.score2 + delta);
+            saveToLocalStorage(); // Guardar cambios
             renderMatches();
         }
 
-        // Modificado para pedir confirmación antes de eliminar
         function deleteMatch(matchId) {
             if (confirm("¿Seguro que quieres borrar esta partida?")) {
                 gameState.activeMatches = gameState.activeMatches.filter(m => m.id !== matchId);
+                saveToLocalStorage(); // Guardar cambios
                 renderMatches();
             }
         }
@@ -98,6 +113,7 @@
         function resetEverything() {
             if(confirm("¿Seguro que quieres borrar todo para empezar una nueva noche?")) {
                 gameState = { activeMatches: [] };
+                saveToLocalStorage(); // Limpiar el almacenamiento guardando el estado vacío
                 renderMatches();
                 renderStats();
             }
@@ -177,6 +193,9 @@
                 }, 'image/png');
             });
         }
+
+        // Ejecutar la carga automática al iniciar la app
+        loadFromLocalStorage();
     </script>
 </body>
 </html>
