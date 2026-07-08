@@ -159,12 +159,14 @@
                 return a.localeCompare(b);
             });
             
-            // Se cambió el contenedor a CSS Grid para centrar perfectamente el nombre en el medio
+            // Filas corregidas con flex items-center y alineación izquierda para el texto
             list.innerHTML = sorted.map((name, index) => `
-                <div class="grid grid-cols-[28px_1fr_55px] items-center p-2 bg-emerald-950 rounded-lg border border-emerald-700/30">
-                    <span class="font-mono text-xs text-amber-500 font-bold text-left flex-shrink-0">${index + 1}.</span>
-                    <span class="font-bold text-xs text-white text-center whitespace-normal break-words px-2">${name}</span>
-                    <span class="text-[10px] text-amber-400 text-right flex-shrink-0">${totals[name]} pts</span>
+                <div class="flex items-center justify-between p-2.5 bg-emerald-950 rounded-lg border border-emerald-700/30">
+                    <div class="flex items-center space-x-2 flex-1 min-w-0 mr-2">
+                        <span class="font-mono text-xs text-amber-500 font-bold w-5 text-left flex-shrink-0">${index + 1}.</span>
+                        <span class="font-bold text-xs text-white whitespace-normal break-words text-left leading-tight">${name}</span>
+                    </div>
+                    <span class="text-[10px] text-amber-400 flex-shrink-0 font-semibold">${totals[name]} pts</span>
                 </div>
             `).join('');
 
