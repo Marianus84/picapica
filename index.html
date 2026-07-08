@@ -74,7 +74,6 @@
             renderMatches();
         }
 
-        // Navegación entre pestañas
         function switchTab(tab) {
             document.getElementById('section-play').classList.toggle('hidden', tab !== 'play');
             document.getElementById('section-stats').classList.toggle('hidden', tab !== 'stats');
@@ -93,7 +92,6 @@
             renderMatches();
         }
 
-        // Actualizar puntajes individuales
         function updateScore(matchId, playerIdx, delta) {
             const match = gameState.activeMatches.find(m => m.id === matchId);
             if (playerIdx === 1) match.score1 = Math.max(0, match.score1 + delta);
@@ -132,18 +130,25 @@
 
         function renderMatches() {
             const container = document.getElementById('active-matches-container');
+            // Cambié la estructura: Nombre arriba (Grande), Puntaje abajo (Pequeño)
             container.innerHTML = gameState.activeMatches.map(m => `
                 <div class="truco-table p-4 rounded-xl shadow-lg text-white">
-                    <div class="flex justify-between items-center mb-3">
-                        <div class="text-center w-1/3"><div class="text-3xl font-bold score-font text-amber-400">${m.score1}</div><div class="text-[10px] uppercase truncate">${m.p1}</div></div>
-                        <div class="text-emerald-500 font-bold text-xs">VS</div>
-                        <div class="text-center w-1/3"><div class="text-3xl font-bold score-font text-amber-400">${m.score2}</div><div class="text-[10px] uppercase truncate">${m.p2}</div></div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="text-center w-1/2 px-1">
+                            <div class="font-bold text-lg truncate text-amber-100">${m.p1}</div>
+                            <div class="text-2xl font-bold score-font text-amber-500">${m.score1}</div>
+                        </div>
+                        <div class="text-emerald-500 font-bold text-sm mt-2">VS</div>
+                        <div class="text-center w-1/2 px-1">
+                            <div class="font-bold text-lg truncate text-amber-100">${m.p2}</div>
+                            <div class="text-2xl font-bold score-font text-amber-500">${m.score2}</div>
+                        </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-2 mb-2">
+                    <div class="grid grid-cols-2 gap-3 mb-3">
                         <div class="flex bg-emerald-900 rounded-lg p-1"><button onclick="updateScore(${m.id}, 1, -1)" class="flex-1">-</button><button onclick="updateScore(${m.id}, 1, 1)" class="flex-1 bg-amber-600 rounded-md">+</button></div>
                         <div class="flex bg-emerald-900 rounded-lg p-1"><button onclick="updateScore(${m.id}, 2, -1)" class="flex-1">-</button><button onclick="updateScore(${m.id}, 2, 1)" class="flex-1 bg-amber-600 rounded-md">+</button></div>
                     </div>
-                    <button onclick="deleteMatch(${m.id})" class="block mx-auto mt-3 bg-red-950/60 hover:bg-red-900/50 text-red-400 text-[9px] uppercase font-bold px-3 py-1 rounded-md border border-red-900/30 transition-all">
+                    <button onclick="deleteMatch(${m.id})" class="block mx-auto bg-red-950/60 hover:bg-red-900/50 text-red-400 text-[9px] uppercase font-bold px-3 py-1 rounded-md border border-red-900/30 transition-all">
                         Borrar partida
                     </button>
                 </div>
@@ -161,7 +166,6 @@
                 return a.localeCompare(b);
             });
             
-            // Corregido con Inline-Styles de altura y alineación estricta para forzar a html2canvas
             list.innerHTML = sorted.map((name, index) => `
                 <div class="flex items-center justify-between bg-emerald-950 rounded-lg border border-emerald-700/30 px-2.5" style="height: 26px; box-sizing: border-box; overflow: hidden;">
                     <div class="flex items-center space-x-2 flex-1 min-w-0 mr-2" style="height: 100%;">
@@ -173,7 +177,6 @@
             `).join('');
 
             const history = document.getElementById('history-list');
-            // Corregido con Inline-Styles de altura y alineación estricta para el historial de enfrentamientos
             history.innerHTML = gameState.activeMatches.map(m => `
                 <div class="flex justify-between items-center bg-emerald-950 rounded-lg text-[12px] text-emerald-200 border border-emerald-800 px-2" style="height: 26px; box-sizing: border-box; overflow: hidden;">
                     <span class="font-bold text-amber-400 flex-[3_3_0%] text-left px-1 truncate" style="line-height: 26px;">${m.p1}</span>
