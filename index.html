@@ -152,23 +152,21 @@
             const list = document.getElementById('stats-list');
             const sorted = Object.keys(totals).sort((a, b) => totals[b] - totals[a] || a.localeCompare(b));
             
-            // Renderizado con estilos en línea forzados para garantizar consistencia en la captura
+            // Usamos formato de tabla para garantizar la alineación en la captura
             list.innerHTML = sorted.map((name, index) => `
-                <div style="display: flex; align-items: center; justify-content: space-between; background-color: #064e3b; border: 1px solid #047857; border-radius: 8px; height: 32px; padding: 0 10px; margin-bottom: 4px;">
-                    <div style="display: flex; align-items: center; flex: 1; overflow: hidden;">
-                        <span style="color: #fbbf24; font-weight: bold; font-size: 12px; margin-right: 10px; width: 20px;">${index + 1}.</span>
-                        <span style="color: white; font-weight: bold; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</span>
-                    </div>
-                    <span style="color: #fbbf24; font-weight: bold; font-size: 12px; text-align: right; margin-left: 10px;">${totals[name]} pts</span>
+                <div style="display: table; width: 100%; background-color: #064e3b; border: 1px solid #047857; border-radius: 8px; height: 32px; padding: 0 10px; margin-bottom: 4px; box-sizing: border-box;">
+                    <div style="display: table-cell; vertical-align: middle; width: 25px; color: #fbbf24; font-weight: bold; font-size: 12px;">${index + 1}.</div>
+                    <div style="display: table-cell; vertical-align: middle; color: white; font-weight: bold; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${name}</div>
+                    <div style="display: table-cell; vertical-align: middle; color: #fbbf24; font-weight: bold; font-size: 12px; text-align: right;">${totals[name]} pts</div>
                 </div>
             `).join('');
 
             const history = document.getElementById('history-list');
             history.innerHTML = gameState.activeMatches.map(m => `
-                <div style="display: flex; justify-content: space-between; align-items: center; background-color: #064e3b; border: 1px solid #047857; border-radius: 8px; height: 32px; padding: 0 10px; margin-bottom: 4px;">
-                    <span style="color: #fcd34d; font-weight: bold; font-size: 12px; width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${m.p1}</span>
-                    <span style="color: #d1fae5; font-family: monospace; font-size: 12px; width: 20%; text-align: center;">${m.score1}-${m.score2}</span>
-                    <span style="color: #fcd34d; font-weight: bold; font-size: 12px; width: 40%; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${m.p2}</span>
+                <div style="display: table; width: 100%; background-color: #064e3b; border: 1px solid #047857; border-radius: 8px; height: 32px; padding: 0 10px; margin-bottom: 4px; box-sizing: border-box;">
+                    <div style="display: table-cell; vertical-align: middle; color: #fcd34d; font-weight: bold; font-size: 12px; width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${m.p1}</div>
+                    <div style="display: table-cell; vertical-align: middle; color: #d1fae5; font-family: monospace; font-size: 12px; width: 20%; text-align: center;">${m.score1}-${m.score2}</div>
+                    <div style="display: table-cell; vertical-align: middle; color: #fcd34d; font-weight: bold; font-size: 12px; width: 40%; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${m.p2}</div>
                 </div>
             `).join('');
         }
