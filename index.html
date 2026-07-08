@@ -62,15 +62,10 @@
     <script>
         let gameState = { activeMatches: [] };
 
-        function saveToLocalStorage() {
-            localStorage.setItem('truco_pica_pica_state', JSON.stringify(gameState));
-        }
-
+        function saveToLocalStorage() { localStorage.setItem('truco_pica_pica_state', JSON.stringify(gameState)); }
         function loadFromLocalStorage() {
             const savedState = localStorage.getItem('truco_pica_pica_state');
-            if (savedState) {
-                gameState = JSON.parse(savedState);
-            }
+            if (savedState) gameState = JSON.parse(savedState);
             renderMatches();
         }
 
@@ -130,27 +125,25 @@
 
         function renderMatches() {
             const container = document.getElementById('active-matches-container');
-            // Cambié la estructura: Nombre arriba (Grande), Puntaje abajo (Pequeño)
+            // Diseño forzado con estilo inline para garantizar alineación en la captura
             container.innerHTML = gameState.activeMatches.map(m => `
                 <div class="truco-table p-4 rounded-xl shadow-lg text-white">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="text-center w-1/2 px-1">
-                            <div class="font-bold text-lg truncate text-amber-100">${m.p1}</div>
-                            <div class="text-2xl font-bold score-font text-amber-500">${m.score1}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                        <div style="width: 45%; text-align: center;">
+                            <div style="font-weight: bold; font-size: 1.125rem; color: #fcd34d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${m.p1}</div>
+                            <div class="score-font" style="font-size: 1.5rem; font-weight: bold; color: #fbbf24;">${m.score1}</div>
                         </div>
-                        <div class="text-emerald-500 font-bold text-sm mt-2">VS</div>
-                        <div class="text-center w-1/2 px-1">
-                            <div class="font-bold text-lg truncate text-amber-100">${m.p2}</div>
-                            <div class="text-2xl font-bold score-font text-amber-500">${m.score2}</div>
+                        <div style="color: #10b981; font-weight: bold; font-size: 0.875rem; margin-top: 8px;">VS</div>
+                        <div style="width: 45%; text-align: center;">
+                            <div style="font-weight: bold; font-size: 1.125rem; color: #fcd34d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${m.p2}</div>
+                            <div class="score-font" style="font-size: 1.5rem; font-weight: bold; color: #fbbf24;">${m.score2}</div>
                         </div>
                     </div>
                     <div class="grid grid-cols-2 gap-3 mb-3">
                         <div class="flex bg-emerald-900 rounded-lg p-1"><button onclick="updateScore(${m.id}, 1, -1)" class="flex-1">-</button><button onclick="updateScore(${m.id}, 1, 1)" class="flex-1 bg-amber-600 rounded-md">+</button></div>
                         <div class="flex bg-emerald-900 rounded-lg p-1"><button onclick="updateScore(${m.id}, 2, -1)" class="flex-1">-</button><button onclick="updateScore(${m.id}, 2, 1)" class="flex-1 bg-amber-600 rounded-md">+</button></div>
                     </div>
-                    <button onclick="deleteMatch(${m.id})" class="block mx-auto bg-red-950/60 hover:bg-red-900/50 text-red-400 text-[9px] uppercase font-bold px-3 py-1 rounded-md border border-red-900/30 transition-all">
-                        Borrar partida
-                    </button>
+                    <button onclick="deleteMatch(${m.id})" class="block mx-auto mt-3 bg-red-950/60 hover:bg-red-900/50 text-red-400 text-[9px] uppercase font-bold px-3 py-1 rounded-md border border-red-900/30 transition-all">Borrar partida</button>
                 </div>
             `).join('');
         }
@@ -158,13 +151,7 @@
         function renderStats() {
             const totals = getTotals();
             const list = document.getElementById('stats-list');
-            
-            const sorted = Object.keys(totals).sort((a, b) => {
-                if (totals[b] !== totals[a]) {
-                    return totals[b] - totals[a];
-                }
-                return a.localeCompare(b);
-            });
+            const sorted = Object.keys(totals).sort((a, b) => totals[b] - totals[a] || a.localeCompare(b));
             
             list.innerHTML = sorted.map((name, index) => `
                 <div class="flex items-center justify-between bg-emerald-950 rounded-lg border border-emerald-700/30 px-2.5" style="height: 26px; box-sizing: border-box; overflow: hidden;">
@@ -191,14 +178,9 @@
             html2canvas(document.getElementById("capture-area"), {backgroundColor: "#064e3b", scale: 2}).then(canvas => {
                 canvas.toBlob(blob => {
                     const file = new File([blob], 'resultados_pica_pica.png', { type: 'image/png' });
-                    const shareData = {
-                        title: 'Resultados Pica Pica',
-                        files: [file]
-                    };
-
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                        navigator.share(shareData).catch(console.error);
-                    } else {
+                    const shareData = { title: 'Resultados Pica Pica', files: [file] };
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) navigator.share(shareData).catch(console.error);
+                    else {
                         const link = document.createElement('a');
                         link.download = 'resultados_pica_pica.png';
                         link.href = canvas.toDataURL("image/png");
@@ -207,7 +189,6 @@
                 }, 'image/png');
             });
         }
-
         loadFromLocalStorage();
     </script>
 </body>
