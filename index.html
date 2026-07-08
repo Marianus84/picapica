@@ -152,21 +152,22 @@
             const list = document.getElementById('stats-list');
             const sorted = Object.keys(totals).sort((a, b) => totals[b] - totals[a] || a.localeCompare(b));
             
-            // Renderizado con line-height forzado para centrado vertical matemático
+            // Renderizado forzado: Usamos flexbox con alineación central absoluta.
+            // Eliminamos "line-height" para que no interfiera y dejamos que el "align-items: center" dicte la posición.
             list.innerHTML = sorted.map((name, index) => `
-                <div style="display: flex; align-items: center; background-color: #064e3b; border: 1px solid #047857; border-radius: 6px; margin-bottom: 4px; height: 32px; line-height: 32px; overflow: hidden;">
-                    <span style="color: #fbbf24; font-weight: bold; font-size: 14px; width: 30px; text-align: center; flex-shrink: 0;">${index + 1}.</span>
-                    <span style="color: white; font-weight: bold; font-size: 14px; flex-grow: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 5px;">${name}</span>
-                    <span style="color: #fbbf24; font-weight: bold; font-size: 14px; text-align: right; flex-shrink: 0; padding-right: 10px;">${totals[name]} pts</span>
+                <div style="display: flex; align-items: center; justify-content: center; background-color: #064e3b; border: 1px solid #047857; border-radius: 6px; margin-bottom: 4px; padding: 12px 10px;">
+                    <span style="color: #fbbf24; font-weight: bold; font-size: 14px; width: 30px; text-align: left; flex-shrink: 0; align-self: center;">${index + 1}.</span>
+                    <span style="color: white; font-weight: bold; font-size: 14px; flex-grow: 1; align-self: center;">${name}</span>
+                    <span style="color: #fbbf24; font-weight: bold; font-size: 14px; text-align: right; flex-shrink: 0; align-self: center;">${totals[name]} pts</span>
                 </div>
             `).join('');
 
             const history = document.getElementById('history-list');
             history.innerHTML = gameState.activeMatches.map(m => `
-                <div style="display: flex; align-items: center; background-color: #064e3b; border: 1px solid #047857; border-radius: 6px; margin-bottom: 4px; height: 32px; line-height: 32px; overflow: hidden;">
-                    <span style="color: #fcd34d; font-weight: bold; font-size: 14px; width: 40%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 10px; text-align: left;">${m.p1}</span>
-                    <span style="color: #d1fae5; font-family: monospace; font-size: 14px; width: 20%; text-align: center;">${m.score1}-${m.score2}</span>
-                    <span style="color: #fcd34d; font-weight: bold; font-size: 14px; width: 40%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 10px; text-align: right;">${m.p2}</span>
+                <div style="display: flex; align-items: center; justify-content: center; background-color: #064e3b; border: 1px solid #047857; border-radius: 6px; margin-bottom: 4px; padding: 12px 10px;">
+                    <span style="color: #fcd34d; font-weight: bold; font-size: 14px; width: 40%; text-align: left; align-self: center;">${m.p1}</span>
+                    <span style="color: #d1fae5; font-family: monospace; font-size: 14px; width: 20%; text-align: center; align-self: center;">${m.score1}-${m.score2}</span>
+                    <span style="color: #fcd34d; font-weight: bold; font-size: 14px; width: 40%; text-align: right; align-self: center;">${m.p2}</span>
                 </div>
             `).join('');
         }
