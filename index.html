@@ -18,7 +18,7 @@
 
     <div class="max-w-md mx-auto" id="app">
         <header class="text-center mb-6">
-            <h1 class="text-4xl font-bold text-amber-500 score-font drop-shadow-md">Noche de Truco</h1>
+            <h1 class="text-4xl font-bold text-amber-500 score-font drop-shadow-md">Truco de la Noche</h1>
             <p class="text-emerald-100 opacity-80">Pica Pica Profesional</p>
         </header>
 
@@ -74,7 +74,6 @@
             renderMatches();
         }
 
-        // Cambiar pestañas
         function switchTab(tab) {
             document.getElementById('section-play').classList.toggle('hidden', tab !== 'play');
             document.getElementById('section-stats').classList.toggle('hidden', tab !== 'stats');
@@ -149,27 +148,25 @@
             `).join('');
         }
 
-        // Función modificada con ordenamiento por puntos + orden alfabético y numeración de puestos
         function renderStats() {
             const totals = getTotals();
             const list = document.getElementById('stats-list');
             
-            // Ordenar primero por puntos (descendente) y si empatan, por orden alfabético (ascendente)
             const sorted = Object.keys(totals).sort((a, b) => {
                 if (totals[b] !== totals[a]) {
-                    return totals[b] - totals[a]; // Más puntos primero
+                    return totals[b] - totals[a];
                 }
-                return a.localeCompare(b); // Orden alfabético si hay empate
+                return a.localeCompare(b);
             });
             
-            // Renderizar la lista agregando el índice del puesto (index + 1)
+            // Se modificó esta sección eliminando 'truncate' y forzando saltos de línea limpios
             list.innerHTML = sorted.map((name, index) => `
                 <div class="flex justify-between items-center p-2 bg-emerald-950 rounded-lg border border-emerald-700/30">
-                    <div class="flex items-center space-x-3 flex-1">
-                        <span class="font-mono text-xs text-amber-500 font-bold w-4 text-center">${index + 1}.</span>
-                        <span class="font-bold text-xs text-white truncate">${name}</span>
+                    <div class="flex items-center space-x-3 flex-1 min-w-0 mr-2">
+                        <span class="font-mono text-xs text-amber-500 font-bold w-4 text-center flex-shrink-0">${index + 1}.</span>
+                        <span class="font-bold text-xs text-white whitespace-normal break-words">${name}</span>
                     </div>
-                    <span class="text-[10px] text-amber-400 ml-4">${totals[name]} pts</span>
+                    <span class="text-[10px] text-amber-400 flex-shrink-0">${totals[name]} pts</span>
                 </div>
             `).join('');
 
