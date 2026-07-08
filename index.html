@@ -44,7 +44,6 @@
 
         <div id="section-stats" class="hidden">
             <div id="capture-area" class="bg-emerald-800 p-6 rounded-2xl shadow-xl border border-emerald-700 space-y-6">
-                <!-- Título que ahora saldrá impreso en la imagen -->
                 <h2 class="text-2xl font-bold text-amber-400 score-font text-center drop-shadow-md pb-2 border-b border-emerald-700/50">Resultados Pica Pica</h2>
                 
                 <div>
@@ -63,6 +62,7 @@
     <script>
         let gameState = { activeMatches: [] };
 
+        // Cargar estado inicial si existiera
         function switchTab(tab) {
             document.getElementById('section-play').classList.toggle('hidden', tab !== 'play');
             document.getElementById('section-stats').classList.toggle('hidden', tab !== 'stats');
@@ -87,9 +87,12 @@
             renderMatches();
         }
 
+        // Modificado para pedir confirmación antes de eliminar
         function deleteMatch(matchId) {
-            gameState.activeMatches = gameState.activeMatches.filter(m => m.id !== matchId);
-            renderMatches();
+            if (confirm("¿Seguro que quieres borrar esta partida?")) {
+                gameState.activeMatches = gameState.activeMatches.filter(m => m.id !== matchId);
+                renderMatches();
+            }
         }
 
         function resetEverything() {
@@ -124,7 +127,9 @@
                         <div class="flex bg-emerald-900 rounded-lg p-1"><button onclick="updateScore(${m.id}, 1, -1)" class="flex-1">-</button><button onclick="updateScore(${m.id}, 1, 1)" class="flex-1 bg-amber-600 rounded-md">+</button></div>
                         <div class="flex bg-emerald-900 rounded-lg p-1"><button onclick="updateScore(${m.id}, 2, -1)" class="flex-1">-</button><button onclick="updateScore(${m.id}, 2, 1)" class="flex-1 bg-amber-600 rounded-md">+</button></div>
                     </div>
-                    <button onclick="deleteMatch(${m.id})" class="w-full bg-red-900/50 text-red-300 text-[10px] uppercase font-bold py-1 rounded">Borrar partida</button>
+                    <button onclick="deleteMatch(${m.id})" class="block mx-auto mt-3 bg-red-950/60 hover:bg-red-900/50 text-red-400 text-[9px] uppercase font-bold px-3 py-1 rounded-md border border-red-900/30 transition-all">
+                        Borrar partida
+                    </button>
                 </div>
             `).join('');
         }
@@ -156,7 +161,6 @@
             html2canvas(document.getElementById("capture-area"), {backgroundColor: "#064e3b", scale: 2}).then(canvas => {
                 canvas.toBlob(blob => {
                     const file = new File([blob], 'resultados_pica_pica.png', { type: 'image/png' });
-                    // Solo enviamos el título y el archivo, eliminamos el texto
                     const shareData = {
                         title: 'Resultados Pica Pica',
                         files: [file]
