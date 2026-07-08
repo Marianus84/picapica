@@ -159,9 +159,9 @@
                 return a.localeCompare(b);
             });
             
-            // Filas corregidas con flex items-center y alineación izquierda para el texto
+            // PUNTOS TOTALES: Se cambió el padding a 'py-1 px-2.5' para reducir la altura de la fila
             list.innerHTML = sorted.map((name, index) => `
-                <div class="flex items-center justify-between p-2.5 bg-emerald-950 rounded-lg border border-emerald-700/30">
+                <div class="flex items-center justify-between py-1 px-2.5 bg-emerald-950 rounded-lg border border-emerald-700/30">
                     <div class="flex items-center space-x-2 flex-1 min-w-0 mr-2">
                         <span class="font-mono text-xs text-amber-500 font-bold w-5 text-left flex-shrink-0">${index + 1}.</span>
                         <span class="font-bold text-xs text-white whitespace-normal break-words text-left leading-tight">${name}</span>
@@ -171,11 +171,12 @@
             `).join('');
 
             const history = document.getElementById('history-list');
+            // ENFRENTAMIENTOS: Se cambió el padding a 'py-1 px-2' para reducir la altura de la fila
             history.innerHTML = gameState.activeMatches.map(m => `
-                <div class="flex justify-between items-center p-2 bg-emerald-950 rounded-lg text-[12px] text-emerald-200 border border-emerald-800">
-                    <span class="font-bold text-amber-400 flex-[3_3_0%] text-left px-1 whitespace-normal">${m.p1}</span>
+                <div class="flex justify-between items-center py-1 px-2 bg-emerald-950 rounded-lg text-[12px] text-emerald-200 border border-emerald-800">
+                    <span class="font-bold text-amber-400 flex-[3_3_0%] text-left px-1 whitespace-normal leading-tight">${m.p1}</span>
                     <span class="text-center w-16 font-mono text-emerald-100 flex-shrink-0">${m.score1}-${m.score2}</span>
-                    <span class="font-bold text-amber-400 flex-[3_3_0%] text-right px-1 whitespace-normal">${m.p2}</span>
+                    <span class="font-bold text-amber-400 flex-[3_3_0%] text-right px-1 whitespace-normal leading-tight">${m.p2}</span>
                 </div>
             `).join('');
         }
