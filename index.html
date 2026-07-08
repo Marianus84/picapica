@@ -152,22 +152,23 @@
             const list = document.getElementById('stats-list');
             const sorted = Object.keys(totals).sort((a, b) => totals[b] - totals[a] || a.localeCompare(b));
             
+            // Renderizado con estilos en línea forzados para garantizar consistencia en la captura
             list.innerHTML = sorted.map((name, index) => `
-                <div class="flex items-center justify-between bg-emerald-950 rounded-lg border border-emerald-700/30 px-2.5" style="height: 32px; align-items: center; display: flex;">
-                    <div class="flex items-center flex-1 min-w-0" style="align-items: center; display: flex;">
-                        <span class="font-mono text-xs text-amber-500 font-bold w-6 text-left">${index + 1}.</span>
-                        <span class="font-bold text-xs text-white truncate text-left">${name}</span>
+                <div style="display: flex; align-items: center; justify-content: space-between; background-color: #064e3b; border: 1px solid #047857; border-radius: 8px; height: 32px; padding: 0 10px; margin-bottom: 4px;">
+                    <div style="display: flex; align-items: center; flex: 1; overflow: hidden;">
+                        <span style="color: #fbbf24; font-weight: bold; font-size: 12px; margin-right: 10px; width: 20px;">${index + 1}.</span>
+                        <span style="color: white; font-weight: bold; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</span>
                     </div>
-                    <span class="text-[10px] text-amber-400 font-semibold text-right">${totals[name]} pts</span>
+                    <span style="color: #fbbf24; font-weight: bold; font-size: 12px; text-align: right; margin-left: 10px;">${totals[name]} pts</span>
                 </div>
             `).join('');
 
             const history = document.getElementById('history-list');
             history.innerHTML = gameState.activeMatches.map(m => `
-                <div class="flex justify-between items-center bg-emerald-950 rounded-lg text-[12px] text-emerald-200 border border-emerald-800 px-2" style="height: 32px; align-items: center; display: flex;">
-                    <span class="font-bold text-amber-400 flex-1 text-left truncate">${m.p1}</span>
-                    <span class="text-center w-16 font-mono text-emerald-100">${m.score1}-${m.score2}</span>
-                    <span class="font-bold text-amber-400 flex-1 text-right truncate">${m.p2}</span>
+                <div style="display: flex; justify-content: space-between; align-items: center; background-color: #064e3b; border: 1px solid #047857; border-radius: 8px; height: 32px; padding: 0 10px; margin-bottom: 4px;">
+                    <span style="color: #fcd34d; font-weight: bold; font-size: 12px; width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${m.p1}</span>
+                    <span style="color: #d1fae5; font-family: monospace; font-size: 12px; width: 20%; text-align: center;">${m.score1}-${m.score2}</span>
+                    <span style="color: #fcd34d; font-weight: bold; font-size: 12px; width: 40%; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${m.p2}</span>
                 </div>
             `).join('');
         }
