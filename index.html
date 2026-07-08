@@ -44,6 +44,9 @@
 
         <div id="section-stats" class="hidden">
             <div id="capture-area" class="bg-emerald-800 p-6 rounded-2xl shadow-xl border border-emerald-700 space-y-6">
+                <!-- Título que ahora saldrá impreso en la imagen -->
+                <h2 class="text-2xl font-bold text-amber-400 score-font text-center drop-shadow-md pb-2 border-b border-emerald-700/50">Resultados Pica Pica</h2>
+                
                 <div>
                     <h2 class="text-lg font-bold text-emerald-300 mb-3 border-b border-emerald-700 pb-2 text-center uppercase tracking-widest text-sm">ENFRENTAMIENTOS</h2>
                     <div id="history-list" class="space-y-1"></div>
@@ -152,20 +155,18 @@
             renderStats(); 
             html2canvas(document.getElementById("capture-area"), {backgroundColor: "#064e3b", scale: 2}).then(canvas => {
                 canvas.toBlob(blob => {
-                    const file = new File([blob], 'estadisticas_pica_pica.png', { type: 'image/png' });
+                    const file = new File([blob], 'resultados_pica_pica.png', { type: 'image/png' });
+                    // Solo enviamos el título y el archivo, eliminamos el texto
                     const shareData = {
-                        title: 'Estadísticas Pica Pica de la Noche',
-                        text: '¡Acá están las estadísticas de la noche de Truco!',
+                        title: 'Resultados Pica Pica',
                         files: [file]
                     };
 
-                    // Intenta abrir el menú nativo (ideal para celulares)
                     if (navigator.canShare && navigator.canShare({ files: [file] })) {
                         navigator.share(shareData).catch(console.error);
                     } else {
-                        // Si estás en PC o un navegador viejo, descarga la imagen como antes
                         const link = document.createElement('a');
-                        link.download = 'estadisticas_pica_pica.png';
+                        link.download = 'resultados_pica_pica.png';
                         link.href = canvas.toDataURL("image/png");
                         link.click();
                     }
