@@ -44,7 +44,6 @@
         </div>
 
         <div id="section-stats" class="hidden">
-            <!-- Se hizo el contenedor de captura más compacto: p-4 y space-y-4 en lugar de 6 -->
             <div id="capture-area" class="bg-emerald-800 p-4 rounded-2xl shadow-xl border border-emerald-700 space-y-4">
                 <h2 class="text-2xl font-bold text-amber-400 score-font text-center drop-shadow-md pb-2 border-b border-emerald-700/50">Resultados Pica Pica</h2>
                 
@@ -152,10 +151,11 @@
             const container = document.getElementById('active-matches-container');
             container.innerHTML = gameState.activeMatches.map(m => {
                 
+                // Mismos ajustes de padding para la vista principal
                 const picasHtml = (m.picas || []).map((pica, i) => `
-                    <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-200 font-mono text-center">
-                        <div class="text-amber-500 font-bold mb-0.5">Pica ${i + 1}</div>
-                        ${pica.s1} - ${pica.s2}
+                    <div class="pica-badge px-2 pt-1 pb-1.5 rounded text-[10px] text-emerald-200 font-mono text-center flex flex-col justify-center">
+                        <div class="text-amber-500 font-bold leading-none mb-1">Pica ${i + 1}</div>
+                        <div class="leading-none pb-0.5">${pica.s1} - ${pica.s2}</div>
                     </div>
                 `).join('');
 
@@ -204,7 +204,6 @@
             const list = document.getElementById('stats-list');
             const sorted = Object.keys(totals).sort((a, b) => totals[b] - totals[a] || a.localeCompare(b));
             
-            // Fila de totales: Sin overflow-hidden, padding ajustado, y pb-1 agregado al texto para evitar recortes en html2canvas
             list.innerHTML = sorted.map((name, index) => `
                 <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-3 py-1.5">
                     <div class="flex items-center flex-1">
@@ -218,15 +217,16 @@
             const history = document.getElementById('history-list');
             history.innerHTML = gameState.activeMatches.map(m => {
                 
-                // Badges ultra-compactos para que no sumen altura innecesaria
+                // SOLUCIÓN AL RECORTADO:
+                // Se reemplaza 'py-0.5' por 'pt-1 pb-1.5' para dar más espacio inferior.
+                // Se usa 'leading-none' con 'pb-0.5' extra en los textos.
                 const picasHtml = (m.picas || []).map((pica, i) => `
-                    <div class="pica-badge px-1.5 py-0.5 rounded text-[9px] text-emerald-200 font-mono text-center">
-                        <div class="text-amber-500 font-bold leading-tight pb-0.5">Pica ${i + 1}</div>
-                        <div class="leading-tight">${pica.s1} - ${pica.s2}</div>
+                    <div class="pica-badge px-2 pt-1 pb-1.5 rounded text-[10px] text-emerald-200 font-mono text-center flex flex-col justify-center">
+                        <div class="text-amber-500 font-bold leading-none mb-1">Pica ${i + 1}</div>
+                        <div class="leading-none pb-0.5">${pica.s1} - ${pica.s2}</div>
                     </div>
                 `).join('');
 
-                // Diseño compacto: Reducido border a 4px (inline), p-2. Sin overflows que recorten el texto.
                 return `
                 <div class="truco-table p-2 rounded-xl shadow-lg text-white" style="border-width: 4px;">
                     <div class="flex justify-between items-center">
