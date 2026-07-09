@@ -12,6 +12,7 @@
         body { font-family: 'Inter', sans-serif; background-color: #064e3b; }
         .truco-table { background: #065f46; border: 8px solid #451a03; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); }
         .score-font { font-family: 'Playfair Display', serif; }
+        .pica-badge { background-color: #064e3b; border: 1px solid #10b981; }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
@@ -61,8 +62,11 @@
 
     <script>
         let gameState = { activeMatches: [] };
+        
         function vibrar() { if (navigator.vibrate) navigator.vibrate(70); }
+        
         function saveToLocalStorage() { localStorage.setItem('truco_pica_pica_state', JSON.stringify(gameState)); }
+        
         function loadFromLocalStorage() {
             const savedState = localStorage.getItem('truco_pica_pica_state');
             if (savedState) gameState = JSON.parse(savedState);
@@ -80,7 +84,13 @@
         function startMatch() {
             const p1 = document.getElementById('p1').value.trim() || 'J1';
             const p2 = document.getElementById('p2').value.trim() || 'J2';
-            gameState.activeMatches.push({ id: Date.now(), p1, p2, score1: 0, score2: 0 });
+            // Se añade el array "picas" y contadores temporales para el pica actual
+            gameState.activeMatches.push({ 
+                id: Date.now(), p1, p2, 
+                score1: 0, score2: 0, 
+                currentPica1: 0, currentPica2: 0,
+                picas: [] 
+            });
             document.getElementById('p1').value = '';
             document.getElementById('p2').value = '';
             saveToLocalStorage();
@@ -89,8 +99,26 @@
 
         function updateScore(matchId, playerIdx, delta) {
             const match = gameState.activeMatches.find(m => m.id === matchId);
-            if (playerIdx === 1) match.score1 = Math.max(0, match.score1 + delta);
-            else match.score2 = Math.max(0, match.score2 + delta);
+            
+            // Actualizamos el score global (nunca baja de 0)
+            if (playerIdx === 1) {
+                match.score1 = Math.max(0, match.score1 + delta);
+                match.currentPica1 = Math.max(0, match.currentPica1 + delta);
+            } else {
+                match.score2 = Math.max(0, match.score2 + delta);
+                match.currentPica2 = Math.max(0, match.currentPica2 + delta);
+            }
+            saveToLocalStorage();
+            renderMatches();
+        }
+
+        function registrarPica(matchId) {
+            const match = gameState.activeMatches.find(m => m.id === matchId);
+            // Registramos la puntuación conseguida desde el último pica
+            match.picas.push({ s1: match.currentPica1, s2: match.currentPica2 });
+            // Reseteamos los contadores temporales para el siguiente pica
+            match.currentPica1 = 0;
+            match.currentPica2 = 0;
             saveToLocalStorage();
             renderMatches();
         }
@@ -125,26 +153,57 @@
 
         function renderMatches() {
             const container = document.getElementById('active-matches-container');
-            container.innerHTML = gameState.activeMatches.map(m => `
+            container.innerHTML = gameState.activeMatches.map(m => {
+                
+                // Generar los recuadros de picas registrados
+                const picasHtml = (m.picas || []).map((pica, i) => `
+                    <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-200 font-mono text-center">
+                        <div class="text-amber-500 font-bold mb-0.5">Pica ${i + 1}</div>
+                        ${pica.s1} - ${pica.s2}
+                    </div>
+                `).join('');
+
+                return `
                 <div class="truco-table p-4 rounded-xl shadow-lg text-white">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
-                        <div style="width: 45%; text-align: center;">
-                            <div style="font-weight: bold; font-size: 1.125rem; color: #fcd34d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${m.p1}</div>
-                            <div class="score-font" style="font-size: 1.5rem; font-weight: bold; color: #fbbf24;">${m.score1}</div>
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-[45%] text-center">
+                            <div class="font-bold text-lg text-amber-300 truncate">${m.p1}</div>
+                            <div class="score-font text-3xl font-bold text-amber-500">${m.score1}</div>
                         </div>
-                        <div style="color: #10b981; font-weight: bold; font-size: 0.875rem; margin-top: 8px;">VS</div>
-                        <div style="width: 45%; text-align: center;">
-                            <div style="font-weight: bold; font-size: 1.125rem; color: #fcd34d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${m.p2}</div>
-                            <div class="score-font" style="font-size: 1.5rem; font-weight: bold; color: #fbbf24;">${m.score2}</div>
+                        <div class="text-emerald-500 font-bold text-sm mt-2">VS</div>
+                        <div class="w-[45%] text-center">
+                            <div class="font-bold text-lg text-amber-300 truncate">${m.p2}</div>
+                            <div class="score-font text-3xl font-bold text-amber-500">${m.score2}</div>
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-3 mb-3">
-                        <div class="flex bg-emerald-900 rounded-lg p-1"><button onclick="updateScore(${m.id}, 1, -1); vibrar();" class="flex-1">-</button><button onclick="updateScore(${m.id}, 1, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md">+</button></div>
-                        <div class="flex bg-emerald-900 rounded-lg p-1"><button onclick="updateScore(${m.id}, 2, -1); vibrar();" class="flex-1">-</button><button onclick="updateScore(${m.id}, 2, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md">+</button></div>
+                    
+                    <!-- Botones de Puntuación -->
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="flex bg-emerald-900 rounded-lg p-1">
+                            <button onclick="updateScore(${m.id}, 1, -1); vibrar();" class="flex-1">-</button>
+                            <button onclick="updateScore(${m.id}, 1, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md">+</button>
+                        </div>
+                        <div class="flex bg-emerald-900 rounded-lg p-1">
+                            <button onclick="updateScore(${m.id}, 2, -1); vibrar();" class="flex-1">-</button>
+                            <button onclick="updateScore(${m.id}, 2, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md">+</button>
+                        </div>
                     </div>
-                    <button onclick="deleteMatch(${m.id}); vibrar();" class="block mx-auto mt-3 bg-red-950/60 hover:bg-red-900/50 text-red-400 text-[9px] uppercase font-bold px-3 py-1 rounded-md border border-red-900/30 transition-all">Borrar partida</button>
+
+                    <!-- Botón Registrar Pica -->
+                    <button onclick="registrarPica(${m.id}); vibrar();" class="w-full mb-3 bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 py-2 rounded-lg text-xs font-bold transition-colors">
+                        Registrar Pica Actual (${m.currentPica1} - ${m.currentPica2})
+                    </button>
+
+                    <!-- Historial de Picas -->
+                    ${m.picas && m.picas.length > 0 ? `
+                        <div class="flex flex-wrap gap-2 mb-3 justify-center border-t border-emerald-800 pt-3">
+                            ${picasHtml}
+                        </div>
+                    ` : ''}
+
+                    <button onclick="deleteMatch(${m.id}); vibrar();" class="block mx-auto mt-2 bg-red-950/60 hover:bg-red-900/50 text-red-400 text-[9px] uppercase font-bold px-3 py-1 rounded-md border border-red-900/30 transition-all">Borrar partida</button>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         function renderStats() {
@@ -152,22 +211,23 @@
             const list = document.getElementById('stats-list');
             const sorted = Object.keys(totals).sort((a, b) => totals[b] - totals[a] || a.localeCompare(b));
             
-            // Renderizado forzado: Usamos flexbox con alineación central absoluta.
-            // Eliminamos "line-height" para que no interfiera y dejamos que el "align-items: center" dicte la posición.
+            // Renderizado usando flex clásico de tailwind para evitar los bugs visuales de html2canvas
             list.innerHTML = sorted.map((name, index) => `
-                <div style="display: flex; align-items: center; justify-content: center; background-color: #064e3b; border: 1px solid #047857; border-radius: 6px; margin-bottom: 4px; padding: 12px 10px;">
-                    <span style="color: #fbbf24; font-weight: bold; font-size: 14px; width: 30px; text-align: left; flex-shrink: 0; align-self: center;">${index + 1}.</span>
-                    <span style="color: white; font-weight: bold; font-size: 14px; flex-grow: 1; align-self: center;">${name}</span>
-                    <span style="color: #fbbf24; font-weight: bold; font-size: 14px; text-align: right; flex-shrink: 0; align-self: center;">${totals[name]} pts</span>
+                <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-lg p-2.5 mb-1.5">
+                    <div class="flex items-center flex-1 overflow-hidden">
+                        <span class="text-amber-500 font-bold text-sm w-6 shrink-0">${index + 1}.</span>
+                        <span class="text-white font-bold text-sm truncate">${name}</span>
+                    </div>
+                    <span class="text-amber-500 font-bold text-sm shrink-0 ml-2">${totals[name]} pts</span>
                 </div>
             `).join('');
 
             const history = document.getElementById('history-list');
             history.innerHTML = gameState.activeMatches.map(m => `
-                <div style="display: flex; align-items: center; justify-content: center; background-color: #064e3b; border: 1px solid #047857; border-radius: 6px; margin-bottom: 4px; padding: 12px 10px;">
-                    <span style="color: #fcd34d; font-weight: bold; font-size: 14px; width: 40%; text-align: left; align-self: center;">${m.p1}</span>
-                    <span style="color: #d1fae5; font-family: monospace; font-size: 14px; width: 20%; text-align: center; align-self: center;">${m.score1}-${m.score2}</span>
-                    <span style="color: #fcd34d; font-weight: bold; font-size: 14px; width: 40%; text-align: right; align-self: center;">${m.p2}</span>
+                <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-lg p-2.5 mb-1.5">
+                    <span class="text-amber-300 font-bold text-sm w-[40%] truncate">${m.p1}</span>
+                    <span class="text-emerald-200 font-mono text-sm w-[20%] text-center">${m.score1}-${m.score2}</span>
+                    <span class="text-amber-300 font-bold text-sm w-[40%] text-right truncate">${m.p2}</span>
                 </div>
             `).join('');
         }
@@ -188,6 +248,7 @@
                 }, 'image/png');
             });
         }
+        
         loadFromLocalStorage();
     </script>
 </body>
