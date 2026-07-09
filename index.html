@@ -40,8 +40,11 @@
             <div class="bg-emerald-800 p-6 rounded-2xl shadow-xl border border-emerald-700">
                 <h2 class="text-lg font-bold text-white mb-4">Nueva partida</h2>
                 <div class="grid grid-cols-2 gap-4">
-                    <input type="text" id="p1" placeholder="Jugador 1" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none">
-                    <input type="text" id="p2" placeholder="Jugador 2" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none">
+                    <input list="players-1" type="text" id="p1" placeholder="Jugador 1" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none" oninput="updateDatalists()">
+                    <datalist id="players-1"></datalist>
+                    
+                    <input list="players-2" type="text" id="p2" placeholder="Jugador 2" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none" oninput="updateDatalists()">
+                    <datalist id="players-2"></datalist>
                 </div>
                 <button onclick="startMatch(); vibrar();" class="w-full mt-4 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50">Empezar Duelo</button>
             </div>
@@ -69,12 +72,12 @@
     </div>
 
     <script>
-        let gameState = { activeMatches: [] };
+        // Añadido array para guardar a los jugadores conocidos
+        let gameState = { activeMatches: [], knownPlayers: [] };
         let historyStack = [];
         
         function vibrar() { if (navigator.vibrate) navigator.vibrate(70); }
         
-        // Guardar ambos: el estado actual y el historial, para que no se pierda al recargar la página
         function saveToLocalStorage() { 
             localStorage.setItem('truco_pica_pica_state', JSON.stringify(gameState)); 
             localStorage.setItem('truco_pica_pica_history', JSON.stringify(historyStack)); 
@@ -82,13 +85,31 @@
         
         function loadFromLocalStorage() {
             const savedState = localStorage.getItem('truco_pica_pica_state');
-            if (savedState) gameState = JSON.parse(savedState);
+            if (savedState) {
+                gameState = JSON.parse(savedState);
+                if (!gameState.knownPlayers) gameState.knownPlayers = []; // Migración para datos guardados antiguos
+            }
             
             const savedHistory = localStorage.getItem('truco_pica_pica_history');
             if (savedHistory) historyStack = JSON.parse(savedHistory);
 
             renderMatches();
             updateUndoButton();
+        }
+
+        // Actualiza las listas desplegables filtrando a los jugadores que ya están jugando o seleccionados
+        function updateDatalists() {
+            const p1Val = document.getElementById('p1').value.trim();
+            const p2Val = document.getElementById('p2').value.trim();
+            
+            const activePlayers = gameState.activeMatches.flatMap(m => [m.p1, m.p2]);
+            const available = gameState.knownPlayers.filter(p => !activePlayers.includes(p));
+            
+            const dl1 = document.getElementById('players-1');
+            const dl2 = document.getElementById('players-2');
+            
+            dl1.innerHTML = available.filter(p => p !== p2Val).map(p => `<option value="${p}">`).join('');
+            dl2.innerHTML = available.filter(p => p !== p1Val).map(p => `<option value="${p}">`).join('');
         }
 
         function updateUndoButton() {
@@ -102,19 +123,16 @@
             }
         }
 
-        // Nueva lógica central de deshacer: solo guarda el estado si hubo una mutación real.
         function executeWithUndo(actionFn) {
             const previousState = JSON.stringify(gameState);
             
-            actionFn(); // Ejecuta la acción que modifica el juego
+            actionFn();
             
             const newState = JSON.stringify(gameState);
             
-            // Solo apilamos al historial si el estado REALMENTE cambió 
-            // (evita bug de dar a "-" estando en cero puntos).
             if (previousState !== newState) {
                 historyStack.push(previousState);
-                if (historyStack.length > 30) historyStack.shift(); // Límite de acciones para memoria
+                if (historyStack.length > 30) historyStack.shift();
                 updateUndoButton();
             }
             
@@ -149,7 +167,22 @@
             const p1 = document.getElementById('p1').value.trim() || 'J1';
             const p2 = document.getElementById('p2').value.trim() || 'J2';
             
+            if (p1 === p2) {
+                alert("Los jugadores deben ser distintos.");
+                return;
+            }
+
+            const activePlayers = gameState.activeMatches.flatMap(m => [m.p1, m.p2]);
+            if (activePlayers.includes(p1) || activePlayers.includes(p2)) {
+                alert("Uno o ambos jugadores ya están jugando en una partida activa.");
+                return;
+            }
+            
             executeWithUndo(() => {
+                // Registrar a los jugadores si son nuevos
+                if (!gameState.knownPlayers.includes(p1)) gameState.knownPlayers.push(p1);
+                if (!gameState.knownPlayers.includes(p2)) gameState.knownPlayers.push(p2);
+
                 gameState.activeMatches.push({ 
                     id: Date.now(), p1, p2, 
                     score1: 0, score2: 0, 
@@ -160,6 +193,7 @@
 
             document.getElementById('p1').value = '';
             document.getElementById('p2').value = '';
+            updateDatalists();
         }
 
         function updateScore(matchId, playerIdx, delta) {
@@ -193,9 +227,9 @@
         }
 
         function resetEverything() {
-            if(confirm("¿Seguro que quieres borrar todo para empezar una nueva noche?")) {
+            if(confirm("¿Seguro que quieres borrar los resultados para empezar una nueva noche? (Los nombres de los jugadores se guardarán)")) {
                 executeWithUndo(() => {
-                    gameState = { activeMatches: [] };
+                    gameState.activeMatches = []; // Solo borramos las partidas, conservando knownPlayers
                 });
             }
         }
@@ -260,6 +294,8 @@
                     <button onclick="deleteMatch(${m.id}); vibrar();" class="block mx-auto mt-2 bg-red-950/60 hover:bg-red-900/50 text-red-400 text-[9px] uppercase font-bold px-3 py-1 rounded-md border border-red-900/30 transition-all">Borrar partida</button>
                 </div>
             `}).join('');
+            
+            updateDatalists(); // Actualizar las listas cada vez que el estado cambie
         }
 
         function renderStats() {
