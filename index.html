@@ -11,6 +11,8 @@
         body { font-family: 'Inter', sans-serif; background-color: #064e3b; }
         .truco-card { background: #065f46; border: 2px solid #34d399; }
         .score-font { font-family: 'Playfair Display', serif; }
+        /* padding extra para evitar recortes en la captura */
+        .capture-safe { padding-bottom: 8px; line-height: 1.2; }
     </style>
 </head>
 <body class="min-h-screen p-4">
@@ -35,11 +37,10 @@
         </div>
 
         <div id="section-stats" class="hidden">
-            <!-- Contenedor optimizado para captura -->
             <div id="capture-wrapper" class="bg-[#064e3b] p-2">
-                <div id="capture-area" class="bg-emerald-900 p-6 rounded-lg border-2 border-emerald-500 text-white space-y-6">
+                <div id="capture-area" class="bg-emerald-900 p-6 rounded-lg border-2 border-emerald-500 text-white space-y-4">
                     <h2 class="text-2xl font-bold text-amber-400 text-center border-b border-emerald-700 pb-2">Resumen de la Noche</h2>
-                    <div id="stats-list" class="space-y-3"></div>
+                    <div id="stats-list" class="space-y-2"></div>
                 </div>
             </div>
             <button onclick="shareStats()" class="w-full mt-6 bg-blue-600 text-white py-3 rounded-xl font-bold">📸 Compartir Resultados</button>
@@ -87,19 +88,26 @@
 
         function renderStats() {
             const list = document.getElementById('stats-list');
+            // Formato pedido: "Nombre Puntos vs Nombre Puntos"
             list.innerHTML = gameState.activeMatches.map(m => `
-                <div class="flex justify-between items-center border-b border-emerald-700 pb-2">
-                    <span class="text-white font-bold text-lg">${m.p1} vs ${m.p2}</span>
-                    <span class="text-amber-400 font-bold text-xl">${m.score1} - ${m.score2}</span>
+                <div class="flex justify-between items-center border-b border-emerald-700 py-1 capture-safe">
+                    <span class="text-white font-bold text-base flex-1">
+                        <span class="text-white">${m.p1}</span> 
+                        <span class="text-amber-400 font-bold ml-1">${m.score1}</span>
+                    </span>
+                    <span class="text-emerald-500 font-bold mx-2">vs</span>
+                    <span class="text-white font-bold text-base flex-1 text-right">
+                        <span class="text-amber-400 font-bold mr-1">${m.score2}</span>
+                        <span class="text-white">${m.p2}</span>
+                    </span>
                 </div>
             `).join('');
         }
 
         function shareStats() {
-            // El truco es usar un scale mayor y asegurar que los elementos no tengan overflow hidden
             html2canvas(document.getElementById("capture-area"), {
                 backgroundColor: "#064e3b",
-                scale: 3,
+                scale: 4, 
                 logging: false,
                 useCORS: true
             }).then(canvas => {
