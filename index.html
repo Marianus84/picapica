@@ -4,128 +4,267 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Truco Night Tracker - Estilo Argentino</title>
+    <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #064e3b; }
-        .truco-card { background: #065f46; border: 2px solid #34d399; }
+        .truco-table { background: #065f46; border: 8px solid #451a03; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); }
         .score-font { font-family: 'Playfair Display', serif; }
-        /* padding extra para evitar recortes en la captura */
-        .capture-safe { padding-bottom: 8px; line-height: 1.2; }
+        .pica-badge { background-color: #064e3b; border: 1px solid #10b981; }
     </style>
 </head>
-<body class="min-h-screen p-4">
+<body class="min-h-screen p-4 md:p-8">
 
     <div class="max-w-md mx-auto" id="app">
         <header class="text-center mb-6">
-            <h1 class="text-4xl font-bold text-amber-500 score-font">Noche de Truco</h1>
+            <h1 class="text-4xl font-bold text-amber-500 score-font drop-shadow-md">Noche de Truco</h1>
+            <p class="text-emerald-100 opacity-80">Pica Pica Profesional</p>
         </header>
 
-        <div class="flex space-x-2 mb-6 bg-emerald-950 p-1 rounded-xl border border-emerald-800">
-            <button onclick="switchTab('play')" id="tab-play" class="flex-1 py-2 font-bold rounded-lg bg-emerald-700 text-white">Partidas</button>
-            <button onclick="switchTab('stats')" id="tab-stats" class="flex-1 py-2 font-bold rounded-lg text-emerald-200">Ranking</button>
+        <div class="flex space-x-2 mb-6 bg-emerald-950 p-1 rounded-xl shadow-inner border border-emerald-800">
+            <button onclick="switchTab('play'); vibrar();" id="tab-play" class="flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all">Partidas</button>
+            <button onclick="switchTab('stats'); vibrar();" id="tab-stats" class="flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all">Ranking</button>
         </div>
 
-        <div id="section-play" class="space-y-4">
-            <div class="bg-emerald-800 p-4 rounded-xl border border-emerald-700">
-                <input type="text" id="p1" placeholder="Jugador 1" class="w-full p-2 mb-2 bg-emerald-900 text-white rounded">
-                <input type="text" id="p2" placeholder="Jugador 2" class="w-full p-2 mb-2 bg-emerald-900 text-white rounded">
-                <button onclick="startMatch()" class="w-full bg-amber-600 text-white py-2 rounded font-bold">Empezar Duelo</button>
+        <div id="section-play" class="space-y-6">
+            <div class="bg-emerald-800 p-6 rounded-2xl shadow-xl border border-emerald-700">
+                <h2 class="text-lg font-bold text-white mb-4">Nueva partida</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="p1" placeholder="Jugador 1" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none">
+                    <input type="text" id="p2" placeholder="Jugador 2" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none">
+                </div>
+                <button onclick="startMatch(); vibrar();" class="w-full mt-4 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50">Empezar Duelo</button>
             </div>
+            
             <div id="active-matches-container" class="space-y-4"></div>
+            
+            <button onclick="resetEverything(); vibrar();" class="w-full bg-emerald-950 text-emerald-500 py-2 rounded-xl font-bold border border-emerald-900 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest mt-4">Empezar nueva noche de truco</button>
         </div>
 
         <div id="section-stats" class="hidden">
-            <div id="capture-wrapper" class="bg-[#064e3b] p-2">
-                <div id="capture-area" class="bg-emerald-900 p-6 rounded-lg border-2 border-emerald-500 text-white space-y-4">
-                    <h2 class="text-2xl font-bold text-amber-400 text-center border-b border-emerald-700 pb-2">Resumen de la Noche</h2>
-                    <div id="stats-list" class="space-y-2"></div>
+            <div id="capture-area" class="bg-emerald-800 p-6 rounded-2xl shadow-xl border border-emerald-700 space-y-6">
+                <h2 class="text-2xl font-bold text-amber-400 score-font text-center drop-shadow-md pb-2 border-b border-emerald-700/50">Resultados Pica Pica</h2>
+                
+                <div>
+                    <h2 class="text-lg font-bold text-emerald-300 mb-3 border-b border-emerald-700 pb-2 text-center uppercase tracking-widest text-sm">ENFRENTAMIENTOS</h2>
+                    <div id="history-list" class="space-y-1"></div>
+                </div>
+                <div>
+                    <h2 class="text-lg font-bold text-emerald-300 mb-3 border-b border-emerald-700 pb-2 text-center uppercase tracking-widest text-sm">PUNTOS TOTALES</h2>
+                    <div id="stats-list" class="grid grid-cols-1 gap-2"></div>
                 </div>
             </div>
-            <button onclick="shareStats()" class="w-full mt-6 bg-blue-600 text-white py-3 rounded-xl font-bold">📸 Compartir Resultados</button>
+            <button onclick="shareStats(); vibrar();" class="w-full mt-6 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">📸 Compartir</button>
         </div>
     </div>
 
     <script>
         let gameState = { activeMatches: [] };
         
-        function save() { localStorage.setItem('truco_data', JSON.stringify(gameState)); }
+        function vibrar() { if (navigator.vibrate) navigator.vibrate(70); }
         
+        function saveToLocalStorage() { localStorage.setItem('truco_pica_pica_state', JSON.stringify(gameState)); }
+        
+        function loadFromLocalStorage() {
+            const savedState = localStorage.getItem('truco_pica_pica_state');
+            if (savedState) gameState = JSON.parse(savedState);
+            renderMatches();
+        }
+
         function switchTab(tab) {
             document.getElementById('section-play').classList.toggle('hidden', tab !== 'play');
             document.getElementById('section-stats').classList.toggle('hidden', tab !== 'stats');
-            if(tab === 'stats') renderStats();
+            document.getElementById('tab-play').className = tab === 'play' ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg' : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200';
+            document.getElementById('tab-stats').className = tab === 'stats' ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg' : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200';
+            if (tab === 'stats') renderStats();
         }
 
         function startMatch() {
-            const p1 = document.getElementById('p1').value || 'J1';
-            const p2 = document.getElementById('p2').value || 'J2';
-            gameState.activeMatches.push({ id: Date.now(), p1, p2, score1: 0, score2: 0 });
-            save(); renderMatches();
+            const p1 = document.getElementById('p1').value.trim() || 'J1';
+            const p2 = document.getElementById('p2').value.trim() || 'J2';
+            gameState.activeMatches.push({ 
+                id: Date.now(), p1, p2, 
+                score1: 0, score2: 0, 
+                currentPica1: 0, currentPica2: 0,
+                picas: [] 
+            });
+            document.getElementById('p1').value = '';
+            document.getElementById('p2').value = '';
+            saveToLocalStorage();
+            renderMatches();
         }
 
-        function updateScore(id, p, delta) {
-            const m = gameState.activeMatches.find(x => x.id === id);
-            if(p===1) m.score1 = Math.max(0, m.score1 + delta);
-            else m.score2 = Math.max(0, m.score2 + delta);
-            save(); renderMatches();
+        function updateScore(matchId, playerIdx, delta) {
+            const match = gameState.activeMatches.find(m => m.id === matchId);
+            
+            if (playerIdx === 1) {
+                match.score1 = Math.max(0, match.score1 + delta);
+                match.currentPica1 = Math.max(0, match.currentPica1 + delta);
+            } else {
+                match.score2 = Math.max(0, match.score2 + delta);
+                match.currentPica2 = Math.max(0, match.currentPica2 + delta);
+            }
+            saveToLocalStorage();
+            renderMatches();
+        }
+
+        function registrarPica(matchId) {
+            const match = gameState.activeMatches.find(m => m.id === matchId);
+            match.picas.push({ s1: match.currentPica1, s2: match.currentPica2 });
+            match.currentPica1 = 0;
+            match.currentPica2 = 0;
+            saveToLocalStorage();
+            renderMatches();
+        }
+
+        function deleteMatch(matchId) {
+            if (confirm("¿Seguro que quieres borrar esta partida?")) {
+                gameState.activeMatches = gameState.activeMatches.filter(m => m.id !== matchId);
+                saveToLocalStorage();
+                renderMatches();
+            }
+        }
+
+        function resetEverything() {
+            if(confirm("¿Seguro que quieres borrar todo para empezar una nueva noche?")) {
+                gameState = { activeMatches: [] };
+                saveToLocalStorage();
+                renderMatches();
+                renderStats();
+            }
+        }
+
+        function getTotals() {
+            const totals = {};
+            gameState.activeMatches.forEach(m => {
+                if (!totals[m.p1]) totals[m.p1] = 0;
+                if (!totals[m.p2]) totals[m.p2] = 0;
+                totals[m.p1] += m.score1;
+                totals[m.p2] += m.score2;
+            });
+            return totals;
         }
 
         function renderMatches() {
-            const cont = document.getElementById('active-matches-container');
-            cont.innerHTML = gameState.activeMatches.map(m => `
-                <div class="truco-card p-4 rounded-lg flex justify-between items-center text-white">
-                    <div class="text-center w-1/3"><div class="text-xs text-emerald-300 truncate">${m.p1}</div><div class="text-3xl font-bold text-amber-400">${m.score1}</div></div>
-                    <div class="flex gap-2">
-                        <button onclick="updateScore(${m.id},1,1)" class="bg-amber-600 px-3 py-1 rounded font-bold">+</button>
-                        <button onclick="updateScore(${m.id},2,1)" class="bg-amber-600 px-3 py-1 rounded font-bold">+</button>
+            const container = document.getElementById('active-matches-container');
+            container.innerHTML = gameState.activeMatches.map(m => {
+                
+                const picasHtml = (m.picas || []).map((pica, i) => `
+                    <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-200 font-mono text-center">
+                        <div class="text-amber-500 font-bold mb-0.5">Pica ${i + 1}</div>
+                        ${pica.s1} - ${pica.s2}
                     </div>
-                    <div class="text-center w-1/3"><div class="text-xs text-emerald-300 truncate">${m.p2}</div><div class="text-3xl font-bold text-amber-400">${m.score2}</div></div>
+                `).join('');
+
+                return `
+                <div class="truco-table p-4 rounded-xl shadow-lg text-white">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="w-[45%] text-center">
+                            <div class="font-bold text-lg text-amber-300 truncate">${m.p1}</div>
+                            <div class="score-font text-3xl font-bold text-amber-500">${m.score1}</div>
+                        </div>
+                        <div class="text-emerald-500 font-bold text-sm mt-2">VS</div>
+                        <div class="w-[45%] text-center">
+                            <div class="font-bold text-lg text-amber-300 truncate">${m.p2}</div>
+                            <div class="score-font text-3xl font-bold text-amber-500">${m.score2}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="flex bg-emerald-900 rounded-lg p-1">
+                            <button onclick="updateScore(${m.id}, 1, -1); vibrar();" class="flex-1">-</button>
+                            <button onclick="updateScore(${m.id}, 1, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md">+</button>
+                        </div>
+                        <div class="flex bg-emerald-900 rounded-lg p-1">
+                            <button onclick="updateScore(${m.id}, 2, -1); vibrar();" class="flex-1">-</button>
+                            <button onclick="updateScore(${m.id}, 2, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md">+</button>
+                        </div>
+                    </div>
+
+                    <button onclick="registrarPica(${m.id}); vibrar();" class="w-full mb-3 bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 py-2 rounded-lg text-xs font-bold transition-colors">
+                        Registrar Pica Actual (${m.currentPica1} - ${m.currentPica2})
+                    </button>
+
+                    ${m.picas && m.picas.length > 0 ? `
+                        <div class="flex flex-wrap gap-2 mb-3 justify-center border-t border-emerald-800 pt-3">
+                            ${picasHtml}
+                        </div>
+                    ` : ''}
+
+                    <button onclick="deleteMatch(${m.id}); vibrar();" class="block mx-auto mt-2 bg-red-950/60 hover:bg-red-900/50 text-red-400 text-[9px] uppercase font-bold px-3 py-1 rounded-md border border-red-900/30 transition-all">Borrar partida</button>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         function renderStats() {
+            const totals = getTotals();
             const list = document.getElementById('stats-list');
-            // Formato pedido: "Nombre Puntos vs Nombre Puntos"
-            list.innerHTML = gameState.activeMatches.map(m => `
-                <div class="flex justify-between items-center border-b border-emerald-700 py-1 capture-safe">
-                    <span class="text-white font-bold text-base flex-1">
-                        <span class="text-white">${m.p1}</span> 
-                        <span class="text-amber-400 font-bold ml-1">${m.score1}</span>
-                    </span>
-                    <span class="text-emerald-500 font-bold mx-2">vs</span>
-                    <span class="text-white font-bold text-base flex-1 text-right">
-                        <span class="text-amber-400 font-bold mr-1">${m.score2}</span>
-                        <span class="text-white">${m.p2}</span>
-                    </span>
+            const sorted = Object.keys(totals).sort((a, b) => totals[b] - totals[a] || a.localeCompare(b));
+            
+            list.innerHTML = sorted.map((name, index) => `
+                <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-lg p-2.5 mb-1.5">
+                    <div class="flex items-center flex-1 overflow-hidden">
+                        <span class="text-amber-500 font-bold text-sm w-6 shrink-0">${index + 1}.</span>
+                        <span class="text-white font-bold text-sm truncate">${name}</span>
+                    </div>
+                    <span class="text-amber-500 font-bold text-sm shrink-0 ml-2">${totals[name]} pts</span>
                 </div>
             `).join('');
+
+            const history = document.getElementById('history-list');
+            history.innerHTML = gameState.activeMatches.map(m => {
+                
+                // Mismos badges de picas que en la vista principal
+                const picasHtml = (m.picas || []).map((pica, i) => `
+                    <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-200 font-mono text-center">
+                        <div class="text-amber-500 font-bold mb-0.5">Pica ${i + 1}</div>
+                        ${pica.s1} - ${pica.s2}
+                    </div>
+                `).join('');
+
+                // Renderizamos usando la estructura truco-table pero adaptada para el historial
+                return `
+                <div class="truco-table p-4 rounded-xl shadow-lg text-white mb-4">
+                    <div class="flex justify-between items-start">
+                        <div class="w-[45%] text-center">
+                            <div class="font-bold text-base text-amber-300 truncate">${m.p1}</div>
+                            <div class="score-font text-2xl font-bold text-amber-500">${m.score1}</div>
+                        </div>
+                        <div class="text-emerald-500 font-bold text-xs mt-2">VS</div>
+                        <div class="w-[45%] text-center">
+                            <div class="font-bold text-base text-amber-300 truncate">${m.p2}</div>
+                            <div class="score-font text-2xl font-bold text-amber-500">${m.score2}</div>
+                        </div>
+                    </div>
+                    ${m.picas && m.picas.length > 0 ? `
+                        <div class="flex flex-wrap gap-2 mt-3 justify-center border-t border-emerald-800 pt-3">
+                            ${picasHtml}
+                        </div>
+                    ` : ''}
+                </div>
+            `}).join('');
         }
 
         function shareStats() {
-            html2canvas(document.getElementById("capture-area"), {
-                backgroundColor: "#064e3b",
-                scale: 4, 
-                logging: false,
-                useCORS: true
-            }).then(canvas => {
+            renderStats(); 
+            html2canvas(document.getElementById("capture-area"), {backgroundColor: "#064e3b", scale: 2}).then(canvas => {
                 canvas.toBlob(blob => {
-                    const file = new File([blob], 'truco.png', { type: 'image/png' });
-                    if (navigator.share) navigator.share({ files: [file] });
+                    const file = new File([blob], 'resultados_pica_pica.png', { type: 'image/png' });
+                    const shareData = { title: 'Resultados Pica Pica', files: [file] };
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) navigator.share(shareData).catch(console.error);
                     else {
                         const link = document.createElement('a');
-                        link.download = 'truco.png';
-                        link.href = canvas.toDataURL();
+                        link.download = 'resultados_pica_pica.png';
+                        link.href = canvas.toDataURL("image/png");
                         link.click();
                     }
-                });
+                }, 'image/png');
             });
         }
         
-        const saved = localStorage.getItem('truco_data');
-        if(saved) { gameState = JSON.parse(saved); renderMatches(); }
+        loadFromLocalStorage();
     </script>
 </body>
 </html>
