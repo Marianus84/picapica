@@ -44,16 +44,16 @@
         </div>
 
         <div id="section-stats" class="hidden">
-            <!-- Diseño compacto: p-4 en lugar de p-6, space-y-4 en lugar de space-y-6 -->
+            <!-- Se hizo el contenedor de captura más compacto: p-4 y space-y-4 en lugar de 6 -->
             <div id="capture-area" class="bg-emerald-800 p-4 rounded-2xl shadow-xl border border-emerald-700 space-y-4">
-                <h2 class="text-xl font-bold text-amber-400 score-font text-center drop-shadow-md pb-2 border-b border-emerald-700/50">Resultados Pica Pica</h2>
+                <h2 class="text-2xl font-bold text-amber-400 score-font text-center drop-shadow-md pb-2 border-b border-emerald-700/50">Resultados Pica Pica</h2>
                 
                 <div>
-                    <h2 class="text-sm font-bold text-emerald-300 mb-2 border-b border-emerald-700 pb-1 text-center uppercase tracking-widest">ENFRENTAMIENTOS</h2>
+                    <h2 class="text-base font-bold text-emerald-300 mb-2 border-b border-emerald-700 pb-1.5 text-center uppercase tracking-widest text-sm">ENFRENTAMIENTOS</h2>
                     <div id="history-list" class="space-y-2"></div>
                 </div>
                 <div>
-                    <h2 class="text-sm font-bold text-emerald-300 mb-2 border-b border-emerald-700 pb-1 text-center uppercase tracking-widest">PUNTOS TOTALES</h2>
+                    <h2 class="text-base font-bold text-emerald-300 mb-2 border-b border-emerald-700 pb-1.5 text-center uppercase tracking-widest text-sm">PUNTOS TOTALES</h2>
                     <div id="stats-list" class="grid grid-cols-1 gap-1.5"></div>
                 </div>
             </div>
@@ -204,46 +204,44 @@
             const list = document.getElementById('stats-list');
             const sorted = Object.keys(totals).sort((a, b) => totals[b] - totals[a] || a.localeCompare(b));
             
-            // Fix text cut-off: added leading-normal and pb-1 so descenders don't get chopped.
-            // Also removed 'truncate' which forces overflow hidden and messes up html2canvas.
+            // Fila de totales: Sin overflow-hidden, padding ajustado, y pb-1 agregado al texto para evitar recortes en html2canvas
             list.innerHTML = sorted.map((name, index) => `
-                <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md p-2">
-                    <div class="flex items-center flex-1 min-w-0">
-                        <span class="text-amber-500 font-bold text-xs w-5 shrink-0 pt-0.5 pb-1 leading-normal">${index + 1}.</span>
-                        <span class="text-white font-bold text-xs overflow-hidden whitespace-nowrap pt-0.5 pb-1 leading-normal">${name}</span>
+                <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-3 py-1.5">
+                    <div class="flex items-center flex-1">
+                        <span class="text-amber-500 font-bold text-sm w-6 shrink-0 leading-normal pb-0.5">${index + 1}.</span>
+                        <span class="text-white font-bold text-sm break-words leading-normal pb-0.5">${name}</span>
                     </div>
-                    <span class="text-amber-500 font-bold text-xs shrink-0 ml-2 pt-0.5 pb-1 leading-normal">${totals[name]} pts</span>
+                    <span class="text-amber-500 font-bold text-sm shrink-0 ml-2 leading-normal pb-0.5">${totals[name]} pts</span>
                 </div>
             `).join('');
 
             const history = document.getElementById('history-list');
             history.innerHTML = gameState.activeMatches.map(m => {
                 
-                // Badges mucho más compactos
+                // Badges ultra-compactos para que no sumen altura innecesaria
                 const picasHtml = (m.picas || []).map((pica, i) => `
                     <div class="pica-badge px-1.5 py-0.5 rounded text-[9px] text-emerald-200 font-mono text-center">
-                        <div class="text-amber-500 font-bold leading-none mb-0.5 pt-0.5">Pica ${i + 1}</div>
-                        <div class="leading-none pb-0.5">${pica.s1} - ${pica.s2}</div>
+                        <div class="text-amber-500 font-bold leading-tight pb-0.5">Pica ${i + 1}</div>
+                        <div class="leading-tight">${pica.s1} - ${pica.s2}</div>
                     </div>
                 `).join('');
 
-                // Diseño ultra compacto para historia. Borde 4px en lugar de 8px, paddings reducidos.
+                // Diseño compacto: Reducido border a 4px (inline), p-2. Sin overflows que recorten el texto.
                 return `
-                <div class="truco-table p-2 rounded-lg shadow-md text-white mb-2" style="border-width: 4px;">
+                <div class="truco-table p-2 rounded-xl shadow-lg text-white" style="border-width: 4px;">
                     <div class="flex justify-between items-center">
-                        <div class="w-[45%] text-center overflow-hidden">
-                            <!-- Agregado pb-1 y leading-normal para evitar que se corten los nombres en html2canvas -->
-                            <div class="font-bold text-xs text-amber-300 whitespace-nowrap overflow-hidden pb-1 leading-normal pt-0.5">${m.p1}</div>
-                            <div class="score-font text-lg font-bold text-amber-500 leading-none pb-0.5">${m.score1}</div>
+                        <div class="w-[42%] text-center">
+                            <div class="font-bold text-sm text-amber-300 break-words leading-normal pb-1">${m.p1}</div>
+                            <div class="score-font text-xl font-bold text-amber-500 leading-none pb-0.5">${m.score1}</div>
                         </div>
-                        <div class="text-emerald-500 font-bold text-[9px] px-1 pt-0.5">VS</div>
-                        <div class="w-[45%] text-center overflow-hidden">
-                            <div class="font-bold text-xs text-amber-300 whitespace-nowrap overflow-hidden pb-1 leading-normal pt-0.5">${m.p2}</div>
-                            <div class="score-font text-lg font-bold text-amber-500 leading-none pb-0.5">${m.score2}</div>
+                        <div class="text-emerald-500 font-bold text-[10px]">VS</div>
+                        <div class="w-[42%] text-center">
+                            <div class="font-bold text-sm text-amber-300 break-words leading-normal pb-1">${m.p2}</div>
+                            <div class="score-font text-xl font-bold text-amber-500 leading-none pb-0.5">${m.score2}</div>
                         </div>
                     </div>
                     ${m.picas && m.picas.length > 0 ? `
-                        <div class="flex flex-wrap gap-1 mt-1.5 justify-center border-t border-emerald-800 pt-1.5">
+                        <div class="flex flex-wrap gap-1 mt-1.5 justify-center border-t border-emerald-800/60 pt-1.5">
                             ${picasHtml}
                         </div>
                     ` : ''}
