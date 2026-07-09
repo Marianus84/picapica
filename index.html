@@ -17,8 +17,13 @@
 </head>
 <body class="min-h-screen p-4 md:p-8">
 
-    <div class="max-w-md mx-auto" id="app">
-        <header class="text-center mb-6">
+    <div class="max-w-md mx-auto relative" id="app">
+        <header class="text-center mb-6 relative">
+            <button id="undo-btn" onclick="undo(); vibrar();" class="absolute top-0 right-0 p-2 text-emerald-600/60 hover:text-emerald-300 transition-all opacity-0 pointer-events-none" title="Deshacer última acción">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
+                </svg>
+            </button>
             <h1 class="text-4xl font-bold text-amber-500 score-font drop-shadow-md">Noche de Truco</h1>
             <p class="text-emerald-100 opacity-80">Pica Pica Profesional</p>
         </header>
@@ -62,6 +67,7 @@
 
     <script>
         let gameState = { activeMatches: [] };
+        let historyStack = [];
         
         function vibrar() { if (navigator.vibrate) navigator.vibrate(70); }
         
@@ -71,6 +77,36 @@
             const savedState = localStorage.getItem('truco_pica_pica_state');
             if (savedState) gameState = JSON.parse(savedState);
             renderMatches();
+            updateUndoButton();
+        }
+
+        function updateUndoButton() {
+            const btn = document.getElementById('undo-btn');
+            if (historyStack.length > 0) {
+                btn.classList.remove('opacity-0', 'pointer-events-none');
+                btn.classList.add('opacity-100', 'cursor-pointer');
+            } else {
+                btn.classList.add('opacity-0', 'pointer-events-none');
+                btn.classList.remove('opacity-100', 'cursor-pointer');
+            }
+        }
+
+        function saveStateToHistory() {
+            historyStack.push(JSON.stringify(gameState));
+            if (historyStack.length > 30) historyStack.shift(); // Límite de acciones para memoria
+            updateUndoButton();
+        }
+
+        function undo() {
+            if (historyStack.length === 0) return;
+            const previousState = historyStack.pop();
+            gameState = JSON.parse(previousState);
+            saveToLocalStorage();
+            renderMatches();
+            if (!document.getElementById('section-stats').classList.contains('hidden')) {
+                renderStats();
+            }
+            updateUndoButton();
         }
 
         function switchTab(tab) {
@@ -82,6 +118,7 @@
         }
 
         function startMatch() {
+            saveStateToHistory();
             const p1 = document.getElementById('p1').value.trim() || 'J1';
             const p2 = document.getElementById('p2').value.trim() || 'J2';
             gameState.activeMatches.push({ 
@@ -97,6 +134,7 @@
         }
 
         function updateScore(matchId, playerIdx, delta) {
+            saveStateToHistory();
             const match = gameState.activeMatches.find(m => m.id === matchId);
             
             if (playerIdx === 1) {
@@ -111,6 +149,7 @@
         }
 
         function registrarPica(matchId) {
+            saveStateToHistory();
             const match = gameState.activeMatches.find(m => m.id === matchId);
             match.picas.push({ s1: match.currentPica1, s2: match.currentPica2 });
             match.currentPica1 = 0;
@@ -121,6 +160,7 @@
 
         function deleteMatch(matchId) {
             if (confirm("¿Seguro que quieres borrar esta partida?")) {
+                saveStateToHistory();
                 gameState.activeMatches = gameState.activeMatches.filter(m => m.id !== matchId);
                 saveToLocalStorage();
                 renderMatches();
@@ -129,6 +169,7 @@
 
         function resetEverything() {
             if(confirm("¿Seguro que quieres borrar todo para empezar una nueva noche?")) {
+                saveStateToHistory();
                 gameState = { activeMatches: [] };
                 saveToLocalStorage();
                 renderMatches();
@@ -151,7 +192,6 @@
             const container = document.getElementById('active-matches-container');
             container.innerHTML = gameState.activeMatches.map(m => {
                 
-                // Mismos ajustes de padding para la vista principal
                 const picasHtml = (m.picas || []).map((pica, i) => `
                     <div class="pica-badge px-2 pt-1 pb-1.5 rounded text-[10px] text-emerald-200 font-mono text-center flex flex-col justify-center">
                         <div class="text-amber-500 font-bold leading-none mb-1">Pica ${i + 1}</div>
@@ -217,9 +257,6 @@
             const history = document.getElementById('history-list');
             history.innerHTML = gameState.activeMatches.map(m => {
                 
-                // SOLUCIÓN AL RECORTADO:
-                // Se reemplaza 'py-0.5' por 'pt-1 pb-1.5' para dar más espacio inferior.
-                // Se usa 'leading-none' con 'pb-0.5' extra en los textos.
                 const picasHtml = (m.picas || []).map((pica, i) => `
                     <div class="pica-badge px-2 pt-1 pb-1.5 rounded text-[10px] text-emerald-200 font-mono text-center flex flex-col justify-center">
                         <div class="text-amber-500 font-bold leading-none mb-1">Pica ${i + 1}</div>
