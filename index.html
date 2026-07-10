@@ -64,7 +64,16 @@
                 </div>
                 <div>
                     <h2 class="text-base font-bold text-emerald-300 mb-2 border-b border-emerald-700 pb-1.5 text-center uppercase tracking-widest text-sm">PUNTOS TOTALES</h2>
-                    <div id="stats-list" class="grid grid-cols-1 gap-1.5"></div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <h3 class="text-xs font-bold text-emerald-400 mb-1 text-center">GANADOS</h3>
+                            <div id="stats-list-won" class="grid grid-cols-1 gap-1.5"></div>
+                        </div>
+                        <div>
+                            <h3 class="text-xs font-bold text-red-400 mb-1 text-center">PERDIDOS</h3>
+                            <div id="stats-list-lost" class="grid grid-cols-1 gap-1.5"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <button onclick="shareStats(); vibrar();" class="w-full mt-6 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">📸 Compartir</button>
@@ -237,10 +246,12 @@
         function getTotals() {
             const totals = {};
             gameState.activeMatches.forEach(m => {
-                if (!totals[m.p1]) totals[m.p1] = 0;
-                if (!totals[m.p2]) totals[m.p2] = 0;
-                totals[m.p1] += m.score1;
-                totals[m.p2] += m.score2;
+                if (!totals[m.p1]) totals[m.p1] = { won: 0, lost: 0 };
+                if (!totals[m.p2]) totals[m.p2] = { won: 0, lost: 0 };
+                totals[m.p1].won += m.score1;
+                totals[m.p1].lost += m.score2;
+                totals[m.p2].won += m.score2;
+                totals[m.p2].lost += m.score1;
             });
             return totals;
         }
@@ -300,16 +311,29 @@
 
         function renderStats() {
             const totals = getTotals();
-            const list = document.getElementById('stats-list');
-            const sorted = Object.keys(totals).sort((a, b) => totals[b] - totals[a] || a.localeCompare(b));
+            const listWon = document.getElementById('stats-list-won');
+            const listLost = document.getElementById('stats-list-lost');
             
-            list.innerHTML = sorted.map((name, index) => `
-                <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-3 py-1.5">
-                    <div class="flex items-center flex-1">
-                        <span class="text-amber-500 font-bold text-sm w-6 shrink-0 leading-normal pb-0.5">${index + 1}.</span>
-                        <span class="text-white font-bold text-sm break-words leading-normal pb-0.5">${name}</span>
+            const sortedWon = Object.keys(totals).sort((a, b) => totals[b].won - totals[a].won || a.localeCompare(b));
+            const sortedLost = Object.keys(totals).sort((a, b) => totals[b].lost - totals[a].lost || a.localeCompare(b));
+            
+            listWon.innerHTML = sortedWon.map((name, index) => `
+                <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-2 py-1.5">
+                    <div class="flex items-center flex-1 min-w-0">
+                        <span class="text-amber-500 font-bold text-xs w-5 shrink-0 leading-normal pb-0.5">${index + 1}.</span>
+                        <span class="text-white font-bold text-xs truncate leading-normal pb-0.5 pr-1">${name}</span>
                     </div>
-                    <span class="text-amber-500 font-bold text-sm shrink-0 ml-2 leading-normal pb-0.5">${totals[name]} pts</span>
+                    <span class="text-amber-500 font-bold text-xs shrink-0 ml-1 leading-normal pb-0.5">${totals[name].won} pts</span>
+                </div>
+            `).join('');
+
+            listLost.innerHTML = sortedLost.map((name, index) => `
+                <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-2 py-1.5">
+                    <div class="flex items-center flex-1 min-w-0">
+                        <span class="text-amber-500 font-bold text-xs w-5 shrink-0 leading-normal pb-0.5">${index + 1}.</span>
+                        <span class="text-white font-bold text-xs truncate leading-normal pb-0.5 pr-1">${name}</span>
+                    </div>
+                    <span class="text-red-400 font-bold text-xs shrink-0 ml-1 leading-normal pb-0.5">${totals[name].lost} pts</span>
                 </div>
             `).join('');
 
