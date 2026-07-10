@@ -1,392 +1,48 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Truco Night Tracker - Estilo Argentino</title>
-    <link rel="manifest" href="manifest.json">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #064e3b; }
-        .truco-table { background: #065f46; border: 8px solid #451a03; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); }
-        .score-font { font-family: 'Playfair Display', serif; }
-        .pica-badge { background-color: #064e3b; border: 1px solid #10b981; }
-    </style>
-</head>
-<body class="min-h-screen p-4 md:p-8">
-
-    <div class="max-w-md mx-auto relative pt-2" id="app">
-        <!-- Botón de deshacer rediseñado para asegurar que es interactivo y visible cuando existe historial -->
-        <button id="undo-btn" onclick="undo(); vibrar();" class="absolute top-0 right-0 z-50 flex items-center space-x-1 px-3 py-1.5 text-emerald-100 bg-emerald-800 border border-emerald-600 rounded-full hover:bg-emerald-700 transition-all duration-300 opacity-0 pointer-events-none -translate-y-2 shadow-lg" title="Deshacer última acción">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
-            </svg>
-            <span class="text-[10px] font-bold uppercase tracking-wider">Deshacer</span>
-        </button>
-
-        <header class="text-center mb-6 mt-4 relative">
-            <h1 class="text-4xl font-bold text-amber-500 score-font drop-shadow-md">Noche de Truco</h1>
-            <p class="text-emerald-100 opacity-80">Pica Pica Profesional</p>
-        </header>
-
-        <div class="flex space-x-2 mb-6 bg-emerald-950 p-1 rounded-xl shadow-inner border border-emerald-800">
-            <button onclick="switchTab('play'); vibrar();" id="tab-play" class="flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all">Partidas</button>
-            <button onclick="switchTab('stats'); vibrar();" id="tab-stats" class="flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all">Ranking</button>
-        </div>
-
-        <div id="section-play" class="space-y-6">
-            <div class="bg-emerald-800 p-6 rounded-2xl shadow-xl border border-emerald-700">
-                <h2 class="text-lg font-bold text-white mb-4">Nueva partida</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <input list="players-1" type="text" id="p1" placeholder="Jugador 1" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none" oninput="updateDatalists()">
-                    <datalist id="players-1"></datalist>
-                    
-                    <input list="players-2" type="text" id="p2" placeholder="Jugador 2" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none" oninput="updateDatalists()">
-                    <datalist id="players-2"></datalist>
-                </div>
-                <button onclick="startMatch(); vibrar();" class="w-full mt-4 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50">Empezar Duelo</button>
-            </div>
-            
-            <div id="active-matches-container" class="space-y-4"></div>
-            
-            <button onclick="resetEverything(); vibrar();" class="w-full bg-emerald-950 text-emerald-500 py-2 rounded-xl font-bold border border-emerald-900 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest mt-4">Empezar nueva noche de truco</button>
-        </div>
-
-        <div id="section-stats" class="hidden">
-            <div id="capture-area" class="bg-emerald-800 p-4 rounded-2xl shadow-xl border border-emerald-700 space-y-4">
-                <h2 class="text-2xl font-bold text-amber-400 score-font text-center drop-shadow-md pb-2 border-b border-emerald-700/50">Resultados Pica Pica</h2>
-                
-                <div>
-                    <h2 class="text-base font-bold text-emerald-300 mb-2 border-b border-emerald-700 pb-1.5 text-center uppercase tracking-widest text-sm">ENFRENTAMIENTOS</h2>
-                    <div id="history-list" class="space-y-2"></div>
-                </div>
-                <div class="pt-2">
-                    <h2 class="text-base font-bold text-emerald-300 mb-3 border-b border-emerald-700 pb-1.5 text-center uppercase tracking-widest text-sm">PUNTOS TOTALES</h2>
-                    <div class="grid grid-cols-2 gap-2 mt-3">
-                        <div>
-                            <h3 class="text-xs font-bold text-emerald-400 mb-2 text-center">GANADOS</h3>
-                            <div id="stats-list-won" class="grid grid-cols-1 gap-1.5"></div>
-                        </div>
-                        <div>
-                            <h3 class="text-xs font-bold text-red-400 mb-2 text-center">PERDIDOS</h3>
-                            <div id="stats-list-lost" class="grid grid-cols-1 gap-1.5"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <button onclick="shareStats(); vibrar();" class="w-full mt-6 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">📸 Compartir</button>
-        </div>
-    </div>
-
-    <script>
-        // Añadido array para guardar a los jugadores conocidos
-        let gameState = { activeMatches: [], knownPlayers: [] };
-        let historyStack = [];
-        
-        function vibrar() { if (navigator.vibrate) navigator.vibrate(70); }
-        
-        function saveToLocalStorage() { 
-            localStorage.setItem('truco_pica_pica_state', JSON.stringify(gameState)); 
-            localStorage.setItem('truco_pica_pica_history', JSON.stringify(historyStack)); 
-        }
-        
-        function loadFromLocalStorage() {
-            const savedState = localStorage.getItem('truco_pica_pica_state');
-            if (savedState) {
-                gameState = JSON.parse(savedState);
-                if (!gameState.knownPlayers) gameState.knownPlayers = []; // Migración para datos guardados antiguos
-            }
-            
-            const savedHistory = localStorage.getItem('truco_pica_pica_history');
-            if (savedHistory) historyStack = JSON.parse(savedHistory);
-
-            renderMatches();
-            updateUndoButton();
-        }
-
-        // Actualiza las listas desplegables filtrando a los jugadores que ya están jugando o seleccionados
-        function updateDatalists() {
-            const p1Val = document.getElementById('p1').value.trim();
-            const p2Val = document.getElementById('p2').value.trim();
-            
-            const activePlayers = gameState.activeMatches.flatMap(m => [m.p1, m.p2]);
-            const available = gameState.knownPlayers.filter(p => !activePlayers.includes(p));
-            
-            const dl1 = document.getElementById('players-1');
-            const dl2 = document.getElementById('players-2');
-            
-            dl1.innerHTML = available.filter(p => p !== p2Val).map(p => `<option value="${p}">`).join('');
-            dl2.innerHTML = available.filter(p => p !== p1Val).map(p => `<option value="${p}">`).join('');
-        }
-
-        function updateUndoButton() {
-            const btn = document.getElementById('undo-btn');
-            if (historyStack.length > 0) {
-                btn.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-2');
-                btn.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
-            } else {
-                btn.classList.add('opacity-0', 'pointer-events-none', '-translate-y-2');
-                btn.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
-            }
-        }
-
-        function executeWithUndo(actionFn) {
-            const previousState = JSON.stringify(gameState);
-            
-            actionFn();
-            
-            const newState = JSON.stringify(gameState);
-            
-            if (previousState !== newState) {
-                historyStack.push(previousState);
-                if (historyStack.length > 30) historyStack.shift();
-                updateUndoButton();
-            }
-            
-            saveToLocalStorage();
-            renderMatches();
-            if (!document.getElementById('section-stats').classList.contains('hidden')) {
-                renderStats();
-            }
-        }
-
-        function undo() {
-            if (historyStack.length === 0) return;
-            const previousState = historyStack.pop();
-            gameState = JSON.parse(previousState);
-            saveToLocalStorage();
-            renderMatches();
-            if (!document.getElementById('section-stats').classList.contains('hidden')) {
-                renderStats();
-            }
-            updateUndoButton();
-        }
-
-        function switchTab(tab) {
-            document.getElementById('section-play').classList.toggle('hidden', tab !== 'play');
-            document.getElementById('section-stats').classList.toggle('hidden', tab !== 'stats');
-            document.getElementById('tab-play').className = tab === 'play' ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg' : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200';
-            document.getElementById('tab-stats').className = tab === 'stats' ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg' : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200';
-            if (tab === 'stats') renderStats();
-        }
-
-        function startMatch() {
-            const p1 = document.getElementById('p1').value.trim() || 'J1';
-            const p2 = document.getElementById('p2').value.trim() || 'J2';
-            
-            if (p1 === p2) {
-                alert("Los jugadores deben ser distintos.");
-                return;
-            }
-
-            const activePlayers = gameState.activeMatches.flatMap(m => [m.p1, m.p2]);
-            if (activePlayers.includes(p1) || activePlayers.includes(p2)) {
-                alert("Uno o ambos jugadores ya están jugando en una partida activa.");
-                return;
-            }
-            
-            executeWithUndo(() => {
-                // Registrar a los jugadores si son nuevos
-                if (!gameState.knownPlayers.includes(p1)) gameState.knownPlayers.push(p1);
-                if (!gameState.knownPlayers.includes(p2)) gameState.knownPlayers.push(p2);
-
-                gameState.activeMatches.push({ 
-                    id: Date.now(), p1, p2, 
-                    score1: 0, score2: 0, 
-                    currentPica1: 0, currentPica2: 0,
-                    picas: [] 
-                });
-            });
-
-            document.getElementById('p1').value = '';
-            document.getElementById('p2').value = '';
-            updateDatalists();
-        }
-
-        function updateScore(matchId, playerIdx, delta) {
-            executeWithUndo(() => {
-                const match = gameState.activeMatches.find(m => m.id === matchId);
-                if (playerIdx === 1) {
-                    match.score1 = Math.max(0, match.score1 + delta);
-                    match.currentPica1 = Math.max(0, match.currentPica1 + delta);
-                } else {
-                    match.score2 = Math.max(0, match.score2 + delta);
-                    match.currentPica2 = Math.max(0, match.currentPica2 + delta);
-                }
-            });
-        }
-
-        function registrarPica(matchId) {
-            executeWithUndo(() => {
-                const match = gameState.activeMatches.find(m => m.id === matchId);
-                match.picas.push({ s1: match.currentPica1, s2: match.currentPica2 });
-                match.currentPica1 = 0;
-                match.currentPica2 = 0;
-            });
-        }
-
-        function deleteMatch(matchId) {
-            if (confirm("¿Seguro que quieres borrar esta partida?")) {
-                executeWithUndo(() => {
-                    gameState.activeMatches = gameState.activeMatches.filter(m => m.id !== matchId);
-                });
-            }
-        }
-
-        function resetEverything() {
-            if(confirm("¿Seguro que quieres borrar los resultados para empezar una nueva noche? (Los nombres de los jugadores se guardarán)")) {
-                executeWithUndo(() => {
-                    gameState.activeMatches = []; // Solo borramos las partidas, conservando knownPlayers
-                });
-            }
-        }
-
-        function getTotals() {
-            const totals = {};
-            gameState.activeMatches.forEach(m => {
-                if (!totals[m.p1]) totals[m.p1] = { won: 0, lost: 0 };
-                if (!totals[m.p2]) totals[m.p2] = { won: 0, lost: 0 };
-                totals[m.p1].won += m.score1;
-                totals[m.p1].lost += m.score2;
-                totals[m.p2].won += m.score2;
-                totals[m.p2].lost += m.score1;
-            });
-            return totals;
-        }
-
-        function renderMatches() {
-            const container = document.getElementById('active-matches-container');
-            container.innerHTML = gameState.activeMatches.map(m => {
-                
-                const picasHtml = (m.picas || []).map((pica, i) => `
-                    <div class="pica-badge px-2 pt-1 pb-1.5 rounded text-[10px] text-emerald-200 font-mono text-center flex flex-col justify-center">
-                        <div class="text-amber-500 font-bold leading-none mb-1">Pica ${i + 1}</div>
-                        <div class="leading-none pb-0.5">${pica.s1} - ${pica.s2}</div>
-                    </div>
-                `).join('');
-
-                return `
-                <div class="truco-table p-4 rounded-xl shadow-lg text-white">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-[45%] text-center">
-                            <div class="font-bold text-lg text-amber-300 truncate">${m.p1}</div>
-                            <div class="score-font text-3xl font-bold text-amber-500">${m.score1}</div>
-                        </div>
-                        <div class="text-emerald-500 font-bold text-sm mt-2">VS</div>
-                        <div class="w-[45%] text-center">
-                            <div class="font-bold text-lg text-amber-300 truncate">${m.p2}</div>
-                            <div class="score-font text-3xl font-bold text-amber-500">${m.score2}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-                        <div class="flex bg-emerald-900 rounded-lg p-1">
-                            <button onclick="updateScore(${m.id}, 1, -1); vibrar();" class="flex-1">-</button>
-                            <button onclick="updateScore(${m.id}, 1, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md">+</button>
-                        </div>
-                        <div class="flex bg-emerald-900 rounded-lg p-1">
-                            <button onclick="updateScore(${m.id}, 2, -1); vibrar();" class="flex-1">-</button>
-                            <button onclick="updateScore(${m.id}, 2, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md">+</button>
-                        </div>
-                    </div>
-
-                    <button onclick="registrarPica(${m.id}); vibrar();" class="w-full mb-3 bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 py-2 rounded-lg text-xs font-bold transition-colors">
-                        Registrar Pica Actual (${m.currentPica1} - ${m.currentPica2})
-                    </button>
-
-                    ${m.picas && m.picas.length > 0 ? `
-                        <div class="flex flex-wrap gap-2 mb-3 justify-center border-t border-emerald-800 pt-3">
-                            ${picasHtml}
-                        </div>
-                    ` : ''}
-
-                    <button onclick="deleteMatch(${m.id}); vibrar();" class="block mx-auto mt-2 bg-red-950/60 hover:bg-red-900/50 text-red-400 text-[9px] uppercase font-bold px-3 py-1 rounded-md border border-red-900/30 transition-all">Borrar partida</button>
-                </div>
-            `}).join('');
-            
-            updateDatalists(); // Actualizar las listas cada vez que el estado cambie
-        }
-
+// ... existing code ...
         function renderStats() {
             const totals = getTotals();
             const listWon = document.getElementById('stats-list-won');
             const listLost = document.getElementById('stats-list-lost');
+            const listDiff = document.getElementById('stats-list-diff');
             
             const sortedWon = Object.keys(totals).sort((a, b) => totals[b].won - totals[a].won || a.localeCompare(b));
             const sortedLost = Object.keys(totals).sort((a, b) => totals[b].lost - totals[a].lost || a.localeCompare(b));
+            const sortedDiff = Object.keys(totals).sort((a, b) => (totals[b].won - totals[b].lost) - (totals[a].won - totals[a].lost) || a.localeCompare(b));
             
             listWon.innerHTML = sortedWon.map((name, index) => `
-                <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-2 py-1.5">
+                <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-1.5 py-1.5">
                     <div class="flex items-center flex-1 min-w-0">
-                        <span class="text-amber-500 font-bold text-xs w-5 shrink-0 leading-normal pb-0.5">${index + 1}.</span>
-                        <span class="text-white font-bold text-xs truncate leading-normal pb-0.5 pr-1">${name}</span>
+                        <span class="text-amber-500 font-bold text-[10px] w-4 shrink-0 leading-normal pb-0.5">${index + 1}.</span>
+                        <span class="text-white font-bold text-[10px] truncate leading-normal pb-0.5 pr-1">${name}</span>
                     </div>
-                    <span class="text-amber-500 font-bold text-xs shrink-0 ml-1 leading-normal pb-0.5">${totals[name].won} pts</span>
+                    <span class="text-amber-500 font-bold text-[10px] shrink-0 ml-0.5 leading-normal pb-0.5">${totals[name].won}</span>
                 </div>
             `).join('');
 
             listLost.innerHTML = sortedLost.map((name, index) => `
-                <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-2 py-1.5">
+                <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-1.5 py-1.5">
                     <div class="flex items-center flex-1 min-w-0">
-                        <span class="text-amber-500 font-bold text-xs w-5 shrink-0 leading-normal pb-0.5">${index + 1}.</span>
-                        <span class="text-white font-bold text-xs truncate leading-normal pb-0.5 pr-1">${name}</span>
+                        <span class="text-amber-500 font-bold text-[10px] w-4 shrink-0 leading-normal pb-0.5">${index + 1}.</span>
+                        <span class="text-white font-bold text-[10px] truncate leading-normal pb-0.5 pr-1">${name}</span>
                     </div>
-                    <span class="text-red-400 font-bold text-xs shrink-0 ml-1 leading-normal pb-0.5">${totals[name].lost} pts</span>
+                    <span class="text-red-400 font-bold text-[10px] shrink-0 ml-0.5 leading-normal pb-0.5">${totals[name].lost}</span>
                 </div>
             `).join('');
 
-            const history = document.getElementById('history-list');
-            history.innerHTML = gameState.activeMatches.map(m => {
-                
-                const picasHtml = (m.picas || []).map((pica, i) => `
-                    <div class="pica-badge px-2 pt-1 pb-1.5 rounded text-[10px] text-emerald-200 font-mono text-center flex flex-col justify-center">
-                        <div class="text-amber-500 font-bold leading-none mb-1">Pica ${i + 1}</div>
-                        <div class="leading-none pb-0.5">${pica.s1} - ${pica.s2}</div>
-                    </div>
-                `).join('');
-
+            listDiff.innerHTML = sortedDiff.map((name, index) => {
+                const diff = totals[name].won - totals[name].lost;
+                const color = diff > 0 ? 'text-emerald-400' : (diff < 0 ? 'text-red-400' : 'text-gray-400');
+                const sign = diff > 0 ? '+' : '';
                 return `
-                <div class="truco-table p-2 rounded-xl shadow-lg text-white" style="border-width: 4px;">
-                    <div class="flex justify-between items-center">
-                        <div class="w-[42%] text-center">
-                            <div class="font-bold text-sm text-amber-300 break-words leading-normal pb-1">${m.p1}</div>
-                            <div class="score-font text-xl font-bold text-amber-500 leading-none pb-0.5">${m.score1}</div>
-                        </div>
-                        <div class="text-emerald-500 font-bold text-[10px]">VS</div>
-                        <div class="w-[42%] text-center">
-                            <div class="font-bold text-sm text-amber-300 break-words leading-normal pb-1">${m.p2}</div>
-                            <div class="score-font text-xl font-bold text-amber-500 leading-none pb-0.5">${m.score2}</div>
-                        </div>
+                <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-1.5 py-1.5">
+                    <div class="flex items-center flex-1 min-w-0">
+                        <span class="text-amber-500 font-bold text-[10px] w-4 shrink-0 leading-normal pb-0.5">${index + 1}.</span>
+                        <span class="text-white font-bold text-[10px] truncate leading-normal pb-0.5 pr-1">${name}</span>
                     </div>
-                    ${m.picas && m.picas.length > 0 ? `
-                        <div class="flex flex-wrap gap-1 mt-1.5 justify-center border-t border-emerald-800/60 pt-1.5">
-                            ${picasHtml}
-                        </div>
-                    ` : ''}
+                    <span class="${color} font-bold text-[10px] shrink-0 ml-0.5 leading-normal pb-0.5">${sign}${diff}</span>
                 </div>
             `}).join('');
-        }
 
-        function shareStats() {
-            renderStats(); 
-            html2canvas(document.getElementById("capture-area"), {backgroundColor: "#064e3b", scale: 2}).then(canvas => {
-                canvas.toBlob(blob => {
-                    const file = new File([blob], 'resultados_pica_pica.png', { type: 'image/png' });
-                    const shareData = { title: 'Resultados Pica Pica', files: [file] };
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) navigator.share(shareData).catch(console.error);
-                    else {
-                        const link = document.createElement('a');
-                        link.download = 'resultados_pica_pica.png';
-                        link.href = canvas.toDataURL("image/png");
-                        link.click();
-                    }
-                }, 'image/png');
-            });
-        }
-        
-        loadFromLocalStorage();
-    </script>
-</body>
-</html>
+            const history = document.getElementById('history-list');
+            history.innerHTML = gameState.activeMatches.map(m => {
+// ... existing code ...
