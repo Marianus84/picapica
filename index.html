@@ -63,17 +63,16 @@
                     <div id="history-list" class="space-y-2"></div>
                 </div>
                 <div class="pt-2">
-                    <h2 class="text-base font-bold text-emerald-300 mb-3 border-b border-emerald-700 pb-1.5 text-center uppercase tracking-widest text-sm">PUNTOS TOTALES</h2>
-                    <div class="grid grid-cols-2 gap-2 mt-3">
-                        <div>
-                            <h3 class="text-xs font-bold text-emerald-400 mb-2 text-center">GANADOS</h3>
-                            <div id="stats-list-won" class="grid grid-cols-1 gap-1.5"></div>
-                        </div>
-                        <div>
-                            <h3 class="text-xs font-bold text-red-400 mb-2 text-center">PERDIDOS</h3>
-                            <div id="stats-list-lost" class="grid grid-cols-1 gap-1.5"></div>
+                    <h2 class="text-base font-bold text-emerald-300 mb-2 border-b border-emerald-700 pb-1.5 text-center uppercase tracking-widest text-sm">PUNTOS TOTALES</h2>
+                    <div class="flex justify-between px-2 mb-1 mt-3 text-[10px] font-bold text-emerald-500 uppercase tracking-wider">
+                        <div class="flex-1 ml-6">Jugador</div>
+                        <div class="flex w-24 justify-between text-center">
+                            <span class="w-6 text-emerald-400" title="Ganados">G</span>
+                            <span class="w-6 text-red-400" title="Perdidos">P</span>
+                            <span class="w-8 text-blue-400" title="Diferencia">DIF</span>
                         </div>
                     </div>
+                    <div id="stats-list-combined" class="grid grid-cols-1 gap-1.5"></div>
                 </div>
             </div>
             <button onclick="shareStats(); vibrar();" class="w-full mt-6 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">📸 Compartir</button>
@@ -311,31 +310,36 @@
 
         function renderStats() {
             const totals = getTotals();
-            const listWon = document.getElementById('stats-list-won');
-            const listLost = document.getElementById('stats-list-lost');
+            const listCombined = document.getElementById('stats-list-combined');
             
-            const sortedWon = Object.keys(totals).sort((a, b) => totals[b].won - totals[a].won || a.localeCompare(b));
-            const sortedLost = Object.keys(totals).sort((a, b) => totals[b].lost - totals[a].lost || a.localeCompare(b));
+            // Ordenamos por diferencia (ganados - perdidos) de mayor a menor. En caso de empate, por más ganados.
+            const sortedPlayers = Object.keys(totals).sort((a, b) => {
+                const diffA = totals[a].won - totals[a].lost;
+                const diffB = totals[b].won - totals[b].lost;
+                return diffB - diffA || totals[b].won - totals[a].won || a.localeCompare(b);
+            });
             
-            listWon.innerHTML = sortedWon.map((name, index) => `
-                <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-2 py-1.5">
-                    <div class="flex items-center flex-1 min-w-0">
-                        <span class="text-amber-500 font-bold text-xs w-5 shrink-0 leading-normal pb-0.5">${index + 1}.</span>
-                        <span class="text-white font-bold text-xs truncate leading-normal pb-0.5 pr-1">${name}</span>
-                    </div>
-                    <span class="text-amber-500 font-bold text-xs shrink-0 ml-1 leading-normal pb-0.5">${totals[name].won} pts</span>
-                </div>
-            `).join('');
+            listCombined.innerHTML = sortedPlayers.map((name, index) => {
+                const won = totals[name].won;
+                const lost = totals[name].lost;
+                const diff = won - lost;
+                const diffColor = diff > 0 ? 'text-emerald-400' : (diff < 0 ? 'text-red-400' : 'text-gray-400');
+                const diffSign = diff > 0 ? '+' : '';
 
-            listLost.innerHTML = sortedLost.map((name, index) => `
+                return `
                 <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-2 py-1.5">
                     <div class="flex items-center flex-1 min-w-0">
                         <span class="text-amber-500 font-bold text-xs w-5 shrink-0 leading-normal pb-0.5">${index + 1}.</span>
                         <span class="text-white font-bold text-xs truncate leading-normal pb-0.5 pr-1">${name}</span>
                     </div>
-                    <span class="text-red-400 font-bold text-xs shrink-0 ml-1 leading-normal pb-0.5">${totals[name].lost} pts</span>
+                    <div class="flex w-24 justify-between items-center text-center shrink-0">
+                        <span class="text-amber-500 font-bold text-xs w-6 leading-normal pb-0.5">${won}</span>
+                        <span class="text-red-400 font-bold text-xs w-6 leading-normal pb-0.5">${lost}</span>
+                        <span class="${diffColor} font-bold text-xs w-8 leading-normal pb-0.5">${diffSign}${diff}</span>
+                    </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
 
             const history = document.getElementById('history-list');
             history.innerHTML = gameState.activeMatches.map(m => {
