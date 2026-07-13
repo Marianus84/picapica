@@ -1,295 +1,17 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Truco Night Tracker - Estilo Argentino</title>
-    <link rel="manifest" href="manifest.json">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #064e3b; }
-        .truco-table { background: #065f46; border: 8px solid #451a03; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); }
-        .score-font { font-family: 'Playfair Display', serif; }
-        .pica-badge { background-color: #064e3b; border: 1px solid #10b981; }
-        
-        /* Asegurar que modales y botones táctiles se vean bien en móviles */
-        button { touch-action: manipulation; }
-    </style>
-</head>
-<body class="min-h-screen p-4 md:p-8">
-
-    <div class="max-w-md mx-auto relative pt-2" id="app">
-        <!-- Botón de deshacer rediseñado como botón flotante (FAB) -->
-        <button id="undo-btn" onclick="undo(); vibrar();" class="fixed bottom-6 right-4 sm:right-8 z-[90] flex items-center space-x-1.5 px-4 py-2.5 text-emerald-100 bg-emerald-800/95 backdrop-blur-sm border border-emerald-600 rounded-full hover:bg-emerald-700 transition-all duration-300 opacity-0 pointer-events-none translate-y-4 shadow-2xl" title="Deshacer última acción">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
-            </svg>
-            <span class="text-[11px] font-bold uppercase tracking-wider">Deshacer</span>
-        </button>
-
-        <header class="text-center mb-6 mt-4 relative">
-            <h1 class="text-4xl font-bold text-amber-500 score-font drop-shadow-md">Noche de Truco</h1>
-            <p class="text-emerald-100 opacity-80">Pica Pica Profesional</p>
-        </header>
-
-        <div class="flex space-x-2 mb-6 bg-emerald-950 p-1 rounded-xl shadow-inner border border-emerald-800">
-            <button onclick="switchTab('play'); vibrar();" id="tab-play" class="flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all">Partidas</button>
-            <button onclick="switchTab('stats'); vibrar();" id="tab-stats" class="flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all">Ranking</button>
-        </div>
-
-        <div id="section-play" class="space-y-6">
-            <div class="bg-emerald-800 p-6 rounded-2xl shadow-xl border border-emerald-700">
-                <h2 class="text-lg font-bold text-white mb-4">Nueva partida</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <input list="players-1" type="text" id="p1" placeholder="Jugador 1" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none" oninput="updateDatalists()">
-                    <datalist id="players-1"></datalist>
-                    
-                    <input list="players-2" type="text" id="p2" placeholder="Jugador 2" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none" oninput="updateDatalists()">
-                    <datalist id="players-2"></datalist>
-                </div>
-                <button onclick="startMatch(); vibrar();" class="w-full mt-4 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50">Empezar Duelo</button>
-            </div>
-            
+<!-- ... existing code ... -->
             <div id="active-matches-container" class="space-y-4"></div>
             
-            <button onclick="resetEverything(); vibrar();" class="w-full bg-emerald-950 text-emerald-500 py-2 rounded-xl font-bold border border-emerald-900 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest mt-4">Empezar nueva noche de truco</button>
+            <button onclick="cerrarTodosLosChicos(); vibrar();" class="w-full bg-blue-900/80 text-blue-300 py-3 rounded-xl font-bold border border-blue-700/50 hover:bg-blue-800 transition-all shadow-lg mt-6 mb-2">Cerrar Chico (Todos los enfrentamientos)</button>
+            
+            <button onclick="resetEverything(); vibrar();" class="w-full bg-emerald-950 text-emerald-500 py-2 rounded-xl font-bold border border-emerald-900 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest mt-2">Empezar nueva noche de truco</button>
         </div>
 
         <div id="section-stats" class="hidden">
-            <div id="capture-area" class="bg-emerald-800 p-4 rounded-2xl shadow-xl border border-emerald-700 space-y-4">
-                <h2 class="text-2xl font-bold text-amber-400 score-font text-center drop-shadow-md pb-2 border-b border-emerald-700/50">Resultados Pica Pica</h2>
-                
-                <div class="pt-2">
-                    <h2 class="text-base font-bold text-emerald-300 mb-2 border-b border-emerald-700 pb-1.5 text-center uppercase tracking-widest text-sm">PUNTOS TOTALES</h2>
-                    <div class="flex justify-between px-2 mb-1 mt-3 text-[10px] font-bold text-emerald-500 uppercase tracking-wider">
-                        <div class="flex-1 ml-6">Jugador</div>
-                        <div class="flex w-24 justify-between text-center">
-                            <span class="w-6 text-emerald-400" title="Ganados">G</span>
-                            <span class="w-6 text-red-400" title="Perdidos">P</span>
-                            <span class="w-8 text-blue-400" title="Diferencia">DIF</span>
-                        </div>
-                    </div>
-                    <div id="stats-list-combined" class="grid grid-cols-1 gap-1.5"></div>
-                </div>
+<!-- ... existing code ... -->
+```
 
-                <div class="pt-4">
-                    <h2 class="text-base font-bold text-emerald-300 mb-2 border-b border-emerald-700 pb-1.5 text-center uppercase tracking-widest text-sm">ENFRENTAMIENTOS</h2>
-                    <div id="history-list" class="space-y-2 mt-3"></div>
-                </div>
-            </div>
-            <button onclick="shareStats(); vibrar();" class="w-full mt-6 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">📸 Compartir</button>
-        </div>
-    </div>
-
-    <!-- Modal Personalizado para Alertas y Confirmaciones -->
-    <div id="custom-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm px-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-emerald-900 border border-emerald-600 rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center transform scale-95 transition-transform duration-300" id="modal-content">
-            <p id="modal-message" class="text-white mb-6 text-sm font-semibold leading-relaxed"></p>
-            <div class="flex justify-center space-x-3" id="modal-buttons">
-                <!-- Los botones se inyectan dinámicamente -->
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let gameState = { activeMatches: [], knownPlayers: [] };
-        let historyStack = [];
-        
-        function vibrar() { if (navigator.vibrate) navigator.vibrate(70); }
-
-        // --- SISTEMA DE MODALES ---
-        function showModal(message, type, onConfirmCallback = null) {
-            const modal = document.getElementById('custom-modal');
-            const modalContent = document.getElementById('modal-content');
-            const msgEl = document.getElementById('modal-message');
-            const btnsEl = document.getElementById('modal-buttons');
-
-            msgEl.textContent = message;
-            btnsEl.innerHTML = '';
-
-            if (type === 'alert') {
-                const btn = document.createElement('button');
-                btn.className = "bg-amber-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50 w-full";
-                btn.textContent = "Entendido";
-                btn.onclick = closeModal;
-                btnsEl.appendChild(btn);
-            } else if (type === 'confirm') {
-                const cancelBtn = document.createElement('button');
-                cancelBtn.className = "flex-1 bg-emerald-800 text-emerald-200 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-700 transition-colors border border-emerald-700";
-                cancelBtn.textContent = "Cancelar";
-                cancelBtn.onclick = closeModal;
-
-                const confirmBtn = document.createElement('button');
-                confirmBtn.className = "flex-1 bg-amber-600 text-white px-4 py-2.5 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50";
-                confirmBtn.textContent = "Confirmar";
-                confirmBtn.onclick = () => {
-                    closeModal();
-                    if(onConfirmCallback) onConfirmCallback();
-                };
-
-                btnsEl.appendChild(cancelBtn);
-                btnsEl.appendChild(confirmBtn);
-            }
-
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            // Timeout ligero para permitir la transición de entrada
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                modal.classList.add('opacity-100');
-                modalContent.classList.remove('scale-95');
-                modalContent.classList.add('scale-100');
-            }, 10);
-        }
-
-        function closeModal() {
-            const modal = document.getElementById('custom-modal');
-            const modalContent = document.getElementById('modal-content');
-            
-            modal.classList.remove('opacity-100');
-            modal.classList.add('opacity-0');
-            modalContent.classList.remove('scale-100');
-            modalContent.classList.add('scale-95');
-            
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }, 300);
-        }
-        // --------------------------
-
-        function saveToLocalStorage() { 
-            localStorage.setItem('truco_pica_pica_state', JSON.stringify(gameState)); 
-            localStorage.setItem('truco_pica_pica_history', JSON.stringify(historyStack)); 
-        }
-        
-        function loadFromLocalStorage() {
-            const savedState = localStorage.getItem('truco_pica_pica_state');
-            if (savedState) {
-                gameState = JSON.parse(savedState);
-                if (!gameState.knownPlayers) gameState.knownPlayers = [];
-            }
-            
-            const savedHistory = localStorage.getItem('truco_pica_pica_history');
-            if (savedHistory) historyStack = JSON.parse(savedHistory);
-
-            renderMatches();
-            updateUndoButton();
-        }
-
-        function updateDatalists() {
-            const p1Val = document.getElementById('p1').value.trim();
-            const p2Val = document.getElementById('p2').value.trim();
-            
-            const activePlayers = gameState.activeMatches.flatMap(m => [m.p1, m.p2]);
-            const available = gameState.knownPlayers.filter(p => !activePlayers.includes(p));
-            
-            const dl1 = document.getElementById('players-1');
-            const dl2 = document.getElementById('players-2');
-            
-            dl1.innerHTML = available.filter(p => p !== p2Val).map(p => `<option value="${p}">`).join('');
-            dl2.innerHTML = available.filter(p => p !== p1Val).map(p => `<option value="${p}">`).join('');
-        }
-
-        function updateUndoButton() {
-            const btn = document.getElementById('undo-btn');
-            if (historyStack.length > 0) {
-                btn.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
-                btn.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
-            } else {
-                btn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
-                btn.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
-            }
-        }
-
-        function executeWithUndo(actionFn) {
-            const previousState = JSON.stringify(gameState);
-            
-            actionFn();
-            
-            const newState = JSON.stringify(gameState);
-            
-            if (previousState !== newState) {
-                historyStack.push(previousState);
-                if (historyStack.length > 30) historyStack.shift();
-                updateUndoButton();
-            }
-            
-            saveToLocalStorage();
-            renderMatches();
-            if (!document.getElementById('section-stats').classList.contains('hidden')) {
-                renderStats();
-            }
-        }
-
-        function undo() {
-            if (historyStack.length === 0) return;
-            const previousState = historyStack.pop();
-            gameState = JSON.parse(previousState);
-            saveToLocalStorage();
-            renderMatches();
-            if (!document.getElementById('section-stats').classList.contains('hidden')) {
-                renderStats();
-            }
-            updateUndoButton();
-        }
-
-        function switchTab(tab) {
-            document.getElementById('section-play').classList.toggle('hidden', tab !== 'play');
-            document.getElementById('section-stats').classList.toggle('hidden', tab !== 'stats');
-            document.getElementById('tab-play').className = tab === 'play' ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all' : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all';
-            document.getElementById('tab-stats').className = tab === 'stats' ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all' : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all';
-            if (tab === 'stats') renderStats();
-        }
-
-        function startMatch() {
-            const p1 = document.getElementById('p1').value.trim() || 'J1';
-            const p2 = document.getElementById('p2').value.trim() || 'J2';
-            
-            if (p1 === p2) {
-                showModal("Los jugadores deben ser distintos.", 'alert');
-                return;
-            }
-
-            const activePlayers = gameState.activeMatches.flatMap(m => [m.p1, m.p2]);
-            if (activePlayers.includes(p1) || activePlayers.includes(p2)) {
-                showModal("Uno o ambos jugadores ya están jugando en una partida activa.", 'alert');
-                return;
-            }
-            
-            executeWithUndo(() => {
-                if (!gameState.knownPlayers.includes(p1)) gameState.knownPlayers.push(p1);
-                if (!gameState.knownPlayers.includes(p2)) gameState.knownPlayers.push(p2);
-
-                gameState.activeMatches.push({ 
-                    id: Date.now(), p1, p2, 
-                    score1: 0, score2: 0, 
-                    currentPica1: 0, currentPica2: 0,
-                    picas: [],
-                    chicos: []
-                });
-            });
-
-            document.getElementById('p1').value = '';
-            document.getElementById('p2').value = '';
-            updateDatalists();
-        }
-
-        function updateScore(matchId, playerIdx, delta) {
-            executeWithUndo(() => {
-                const match = gameState.activeMatches.find(m => m.id === matchId);
-                if (playerIdx === 1) {
-                    match.score1 = Math.max(0, match.score1 + delta);
-                    match.currentPica1 = Math.max(0, match.currentPica1 + delta);
-                } else {
-                    match.score2 = Math.max(0, match.score2 + delta);
-                    match.currentPica2 = Math.max(0, match.currentPica2 + delta);
-                }
-            });
-        }
-
+```javascript:Truco Night Tracker:index.html
+<!-- ... existing code ... -->
         function registrarPica(matchId) {
             executeWithUndo(() => {
                 const match = gameState.activeMatches.find(m => m.id === matchId);
@@ -299,128 +21,32 @@
             });
         }
 
-        function cerrarChico(matchId) {
+        function cerrarTodosLosChicos() {
             executeWithUndo(() => {
-                const match = gameState.activeMatches.find(m => m.id === matchId);
-                if (!match.chicos) match.chicos = []; // Por si es una partida vieja cargada
-                
-                if (match.picas && match.picas.length > 0) {
-                    match.chicos.push([...match.picas]);
-                    match.picas = []; // Limpiamos las picas actuales para empezar un nuevo chico
-                }
+                gameState.activeMatches.forEach(match => {
+                    if (!match.chicos) match.chicos = []; // Por si es una partida vieja cargada
+                    
+                    // Solo cerramos el chico si tiene picas registradas
+                    if (match.picas && match.picas.length > 0) {
+                        match.chicos.push([...match.picas]);
+                        match.picas = []; // Limpiamos las picas actuales para empezar un nuevo chico
+                    }
+                });
             });
         }
 
         function deleteMatch(matchId) {
             showModal("¿Seguro que quieres borrar esta partida?", 'confirm', () => {
-                executeWithUndo(() => {
-                    gameState.activeMatches = gameState.activeMatches.filter(m => m.id !== matchId);
-                });
-            });
-        }
+<!-- ... existing code ... -->
+```
 
-        function resetEverything() {
-            showModal("¿Seguro que quieres borrar los resultados para empezar una nueva noche? (Los nombres se guardarán)", 'confirm', () => {
-                executeWithUndo(() => {
-                    gameState.activeMatches = []; 
-                });
-            });
-        }
-
-        function getTotals() {
-            const totals = {};
-            gameState.activeMatches.forEach(m => {
-                if (!totals[m.p1]) totals[m.p1] = { won: 0, lost: 0 };
-                if (!totals[m.p2]) totals[m.p2] = { won: 0, lost: 0 };
-                totals[m.p1].won += m.score1;
-                totals[m.p1].lost += m.score2;
-                totals[m.p2].won += m.score2;
-                totals[m.p2].lost += m.score1;
-            });
-            return totals;
-        }
-
-        function renderMatches() {
-            const container = document.getElementById('active-matches-container');
-            container.innerHTML = gameState.activeMatches.map(m => {
-                
-                let picasHtml = '';
-                
-                // Renderizar Chicos cerrados
-                if (m.chicos && m.chicos.length > 0) {
-                    m.chicos.forEach((chico, cIdx) => {
-                        picasHtml += `<div class="w-full text-center text-amber-500/80 font-bold text-[10px] mb-1 mt-2 uppercase tracking-widest border-b border-emerald-800/30 pb-1">Chico ${cIdx + 1}</div><div class="flex flex-wrap gap-2 mb-3 justify-center w-full">`;
-                        chico.forEach((pica, i) => {
-                            picasHtml += `
-                                <div class="pica-badge px-2 py-1.5 rounded text-[11px] text-emerald-200 font-mono text-center flex flex-col justify-center">
-                                    <div class="text-amber-500 font-bold pb-0.5">Pica ${i + 1}</div>
-                                    <div>${pica.s1} - ${pica.s2}</div>
-                                </div>
-                            `;
-                        });
-                        picasHtml += `</div>`;
-                    });
-                }
-
-                // Renderizar Picas actuales (las que conformarán el siguiente chico)
-                if (m.picas && m.picas.length > 0) {
-                    const nextChico = (m.chicos ? m.chicos.length : 0) + 1;
-                    if (m.chicos && m.chicos.length > 0) {
-                        picasHtml += `<div class="w-full text-center text-emerald-400/80 font-bold text-[10px] mb-1 mt-1 uppercase tracking-widest border-b border-emerald-800/30 pb-1">Chico ${nextChico} (Actual)</div>`;
-                    }
-                    picasHtml += `<div class="flex flex-wrap gap-2 mb-3 justify-center w-full">`;
-                    m.picas.forEach((pica, i) => {
-                        picasHtml += `
-                            <div class="pica-badge px-2 py-1.5 rounded text-[11px] text-emerald-200 font-mono text-center flex flex-col justify-center">
-                                <div class="text-amber-500 font-bold pb-0.5">Pica ${i + 1}</div>
-                                <div>${pica.s1} - ${pica.s2}</div>
-                            </div>
-                        `;
-                    });
-                    picasHtml += `</div>`;
-                }
-
-                return `
-                <div class="truco-table p-4 rounded-xl shadow-lg text-white">
-                    <div class="flex justify-between items-start mb-4">
-                        <div class="w-[45%] text-center">
-                            <div class="font-bold text-lg text-amber-300 truncate pb-1">${m.p1}</div>
-                            <div class="score-font text-4xl font-bold text-amber-500 py-1">${m.currentPica1}</div>
-                        </div>
-                        <div class="text-emerald-500 font-bold text-sm mt-2">VS</div>
-                        <div class="w-[45%] text-center">
-                            <div class="font-bold text-lg text-amber-300 truncate pb-1">${m.p2}</div>
-                            <div class="score-font text-4xl font-bold text-amber-500 py-1">${m.currentPica2}</div>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-                        <div class="flex bg-emerald-900 rounded-lg p-1">
-                            <button onclick="updateScore(${m.id}, 1, -1); vibrar();" class="flex-1 text-2xl py-1">-</button>
-                            <button onclick="updateScore(${m.id}, 1, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md text-2xl py-1">+</button>
-                        </div>
-                        <div class="flex bg-emerald-900 rounded-lg p-1">
-                            <button onclick="updateScore(${m.id}, 2, -1); vibrar();" class="flex-1 text-2xl py-1">-</button>
-                            <button onclick="updateScore(${m.id}, 2, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md text-2xl py-1">+</button>
-                        </div>
-                    </div>
-
-                    <button onclick="registrarPica(${m.id}); vibrar();" class="w-full mb-3 bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 py-2.5 rounded-lg text-sm font-bold transition-colors">
-                        Registrar Pica Actual
-                    </button>
-
-                    ${picasHtml !== '' ? `
-                        <div class="flex flex-wrap gap-2 mb-3 justify-center border-t border-emerald-800 pt-3">
-                            ${picasHtml}
-                        </div>
-                    ` : ''}
-
+```javascript:Truco Night Tracker:index.html
+<!-- ... existing code ... -->
                     <div class="flex justify-between items-center mt-2 border-t border-emerald-800/50 pt-3">
                         <div class="text-sm font-bold text-amber-200">
                             Total: <span class="text-amber-400">${m.score1} - ${m.score2}</span>
                         </div>
                         <div class="flex space-x-2">
-                            <button onclick="cerrarChico(${m.id}); vibrar();" class="bg-blue-950/80 hover:bg-blue-900/80 text-blue-400 text-[10px] uppercase font-bold px-3 py-1.5 rounded border border-blue-900/50 transition-all">Cerrar Chico</button>
                             <button onclick="deleteMatch(${m.id}); vibrar();" class="bg-red-950/80 hover:bg-red-900/80 text-red-400 text-[10px] uppercase font-bold px-3 py-1.5 rounded border border-red-900/50 transition-all">Borrar</button>
                         </div>
                     </div>
@@ -428,128 +54,7 @@
             `}).join('');
             
             updateDatalists();
-        }
+<!-- ... existing code ... -->
+```
 
-        function renderStats() {
-            const totals = getTotals();
-            const listCombined = document.getElementById('stats-list-combined');
-            
-            const sortedPlayers = Object.keys(totals).sort((a, b) => {
-                const diffA = totals[a].won - totals[a].lost;
-                const diffB = totals[b].won - totals[b].lost;
-                return diffB - diffA || totals[b].won - totals[a].won || a.localeCompare(b);
-            });
-            
-            listCombined.innerHTML = sortedPlayers.map((name, index) => {
-                const won = totals[name].won;
-                const lost = totals[name].lost;
-                const diff = won - lost;
-                const diffColor = diff > 0 ? 'text-emerald-400' : (diff < 0 ? 'text-red-400' : 'text-gray-400');
-                const diffSign = diff > 0 ? '+' : '';
-
-                return `
-                <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-3 py-2 mb-1.5">
-                    <div class="flex items-center flex-1 min-w-0">
-                        <span class="text-amber-500 font-bold text-sm w-6 shrink-0">${index + 1}.</span>
-                        <span class="text-white font-bold text-sm truncate pr-1 py-0.5">${name}</span>
-                    </div>
-                    <div class="flex w-24 justify-between items-center text-center shrink-0">
-                        <span class="text-amber-500 font-bold text-sm w-6">${won}</span>
-                        <span class="text-red-400 font-bold text-sm w-6">${lost}</span>
-                        <span class="${diffColor} font-bold text-sm w-8">${diffSign}${diff}</span>
-                    </div>
-                </div>
-                `;
-            }).join('');
-
-            const history = document.getElementById('history-list');
-            history.innerHTML = gameState.activeMatches.map(m => {
-                
-                let picasHtml = '';
-                
-                // Renderizar Chicos en historial
-                if (m.chicos && m.chicos.length > 0) {
-                    m.chicos.forEach((chico, cIdx) => {
-                        picasHtml += `<div class="w-full text-center text-amber-500/80 font-bold text-[10px] mb-1 mt-2 uppercase tracking-widest border-b border-emerald-800/30 pb-0.5">Chico ${cIdx + 1}</div><div class="flex flex-wrap gap-1.5 mb-2 justify-center w-full">`;
-                        chico.forEach((pica, i) => {
-                            picasHtml += `
-                                <div class="pica-badge px-2 py-1.5 rounded text-[11px] text-emerald-200 font-mono text-center flex flex-col justify-center">
-                                    <div class="text-amber-500 font-bold pb-0.5">Pica ${i + 1}</div>
-                                    <div>${pica.s1} - ${pica.s2}</div>
-                                </div>
-                            `;
-                        });
-                        picasHtml += `</div>`;
-                    });
-                }
-                
-                // Renderizar Picas actuales en historial
-                if (m.picas && m.picas.length > 0) {
-                    const nextChico = (m.chicos ? m.chicos.length : 0) + 1;
-                    if (m.chicos && m.chicos.length > 0) {
-                        picasHtml += `<div class="w-full text-center text-emerald-400/80 font-bold text-[10px] mb-1 mt-1 uppercase tracking-widest border-b border-emerald-800/30 pb-0.5">Chico ${nextChico} (Actual)</div>`;
-                    }
-                    picasHtml += `<div class="flex flex-wrap gap-1.5 mb-1.5 justify-center w-full">`;
-                    m.picas.forEach((pica, i) => {
-                        picasHtml += `
-                            <div class="pica-badge px-2 py-1.5 rounded text-[11px] text-emerald-200 font-mono text-center flex flex-col justify-center">
-                                <div class="text-amber-500 font-bold pb-0.5">Pica ${i + 1}</div>
-                                <div>${pica.s1} - ${pica.s2}</div>
-                            </div>
-                        `;
-                    });
-                    picasHtml += `</div>`;
-                }
-
-                return `
-                <div class="truco-table p-3 rounded-xl shadow-lg text-white mb-3" style="border-width: 4px;">
-                    <div class="flex justify-between items-center">
-                        <div class="w-[42%] text-center">
-                            <div class="font-bold text-sm text-amber-300 break-words pb-1 pt-0.5">${m.p1}</div>
-                            <div class="score-font text-2xl font-bold text-amber-500 py-0.5">${m.score1}</div>
-                        </div>
-                        <div class="text-emerald-500 font-bold text-xs">VS</div>
-                        <div class="w-[42%] text-center">
-                            <div class="font-bold text-sm text-amber-300 break-words pb-1 pt-0.5">${m.p2}</div>
-                            <div class="score-font text-2xl font-bold text-amber-500 py-0.5">${m.score2}</div>
-                        </div>
-                    </div>
-                    ${picasHtml !== '' ? `
-                        <div class="flex flex-wrap gap-1.5 mt-2 justify-center border-t border-emerald-800/60 pt-2.5">
-                            ${picasHtml}
-                        </div>
-                    ` : ''}
-                </div>
-            `}).join('');
-        }
-
-        function shareStats() {
-            renderStats(); 
-            // Damos un poco más de tiempo (150ms) para que el navegador termine de pintar fuentes y calcular bounding boxes
-            setTimeout(() => {
-                html2canvas(document.getElementById("capture-area"), {
-                    backgroundColor: "#064e3b", 
-                    scale: 2,
-                    useCORS: true
-                }).then(canvas => {
-                    canvas.toBlob(blob => {
-                        const file = new File([blob], 'resultados_pica_pica.png', { type: 'image/png' });
-                        const shareData = { title: 'Resultados Pica Pica', files: [file] };
-                        
-                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                            navigator.share(shareData).catch(console.error);
-                        } else {
-                            const link = document.createElement('a');
-                            link.download = 'resultados_pica_pica.png';
-                            link.href = canvas.toDataURL("image/png");
-                            link.click();
-                        }
-                    }, 'image/png');
-                });
-            }, 50);
-        }
-        
-        loadFromLocalStorage();
-    </script>
-</body>
-</html>
+Con estos 3 simples cambios, hemos eliminado el botón pequeño de cada tarjeta y hemos agregado un botón grande general al final de la sección "Partidas" que iterará y guardará las picas de todos los jugadores en un nuevo "Chico" al mismo tiempo.
