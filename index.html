@@ -26,7 +26,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
             </svg>
-            <span class="text-[11px] font-bold uppercase tracking-wider"> </span>
+            <span class="text-[11px] font-bold uppercase tracking-wider">Deshacer</span>
         </button>
 
         <header class="text-center mb-6 mt-4 relative">
@@ -267,7 +267,8 @@
                     id: Date.now(), p1, p2, 
                     score1: 0, score2: 0, 
                     currentPica1: 0, currentPica2: 0,
-                    picas: [] 
+                    picas: [],
+                    chicos: []
                 });
             });
 
@@ -295,6 +296,18 @@
                 match.picas.push({ s1: match.currentPica1, s2: match.currentPica2 });
                 match.currentPica1 = 0;
                 match.currentPica2 = 0;
+            });
+        }
+
+        function cerrarChico(matchId) {
+            executeWithUndo(() => {
+                const match = gameState.activeMatches.find(m => m.id === matchId);
+                if (!match.chicos) match.chicos = []; // Por si es una partida vieja cargada
+                
+                if (match.picas && match.picas.length > 0) {
+                    match.chicos.push([...match.picas]);
+                    match.picas = []; // Limpiamos las picas actuales para empezar un nuevo chico
+                }
             });
         }
 
@@ -331,12 +344,41 @@
             const container = document.getElementById('active-matches-container');
             container.innerHTML = gameState.activeMatches.map(m => {
                 
-                const picasHtml = (m.picas || []).map((pica, i) => `
-                    <div class="pica-badge px-2 py-1.5 rounded text-[11px] text-emerald-200 font-mono text-center flex flex-col justify-center">
-                        <div class="text-amber-500 font-bold pb-0.5">Pica ${i + 1}</div>
-                        <div>${pica.s1} - ${pica.s2}</div>
-                    </div>
-                `).join('');
+                let picasHtml = '';
+                
+                // Renderizar Chicos cerrados
+                if (m.chicos && m.chicos.length > 0) {
+                    m.chicos.forEach((chico, cIdx) => {
+                        picasHtml += `<div class="w-full text-center text-amber-500/80 font-bold text-[10px] mb-1 mt-2 uppercase tracking-widest border-b border-emerald-800/30 pb-1">Chico ${cIdx + 1}</div><div class="flex flex-wrap gap-2 mb-3 justify-center w-full">`;
+                        chico.forEach((pica, i) => {
+                            picasHtml += `
+                                <div class="pica-badge px-2 py-1.5 rounded text-[11px] text-emerald-200 font-mono text-center flex flex-col justify-center">
+                                    <div class="text-amber-500 font-bold pb-0.5">Pica ${i + 1}</div>
+                                    <div>${pica.s1} - ${pica.s2}</div>
+                                </div>
+                            `;
+                        });
+                        picasHtml += `</div>`;
+                    });
+                }
+
+                // Renderizar Picas actuales (las que conformarán el siguiente chico)
+                if (m.picas && m.picas.length > 0) {
+                    const nextChico = (m.chicos ? m.chicos.length : 0) + 1;
+                    if (m.chicos && m.chicos.length > 0) {
+                        picasHtml += `<div class="w-full text-center text-emerald-400/80 font-bold text-[10px] mb-1 mt-1 uppercase tracking-widest border-b border-emerald-800/30 pb-1">Chico ${nextChico} (Actual)</div>`;
+                    }
+                    picasHtml += `<div class="flex flex-wrap gap-2 mb-3 justify-center w-full">`;
+                    m.picas.forEach((pica, i) => {
+                        picasHtml += `
+                            <div class="pica-badge px-2 py-1.5 rounded text-[11px] text-emerald-200 font-mono text-center flex flex-col justify-center">
+                                <div class="text-amber-500 font-bold pb-0.5">Pica ${i + 1}</div>
+                                <div>${pica.s1} - ${pica.s2}</div>
+                            </div>
+                        `;
+                    });
+                    picasHtml += `</div>`;
+                }
 
                 return `
                 <div class="truco-table p-4 rounded-xl shadow-lg text-white">
@@ -367,7 +409,7 @@
                         Registrar Pica Actual
                     </button>
 
-                    ${m.picas && m.picas.length > 0 ? `
+                    ${picasHtml !== '' ? `
                         <div class="flex flex-wrap gap-2 mb-3 justify-center border-t border-emerald-800 pt-3">
                             ${picasHtml}
                         </div>
@@ -377,7 +419,10 @@
                         <div class="text-sm font-bold text-amber-200">
                             Total: <span class="text-amber-400">${m.score1} - ${m.score2}</span>
                         </div>
-                        <button onclick="deleteMatch(${m.id}); vibrar();" class="bg-red-950/80 hover:bg-red-900/80 text-red-400 text-xs uppercase font-bold px-3 py-1.5 rounded border border-red-900/50 transition-all">Borrar</button>
+                        <div class="flex space-x-2">
+                            <button onclick="cerrarChico(${m.id}); vibrar();" class="bg-blue-950/80 hover:bg-blue-900/80 text-blue-400 text-[10px] uppercase font-bold px-3 py-1.5 rounded border border-blue-900/50 transition-all">Cerrar Chico</button>
+                            <button onclick="deleteMatch(${m.id}); vibrar();" class="bg-red-950/80 hover:bg-red-900/80 text-red-400 text-[10px] uppercase font-bold px-3 py-1.5 rounded border border-red-900/50 transition-all">Borrar</button>
+                        </div>
                     </div>
                 </div>
             `}).join('');
@@ -420,12 +465,41 @@
             const history = document.getElementById('history-list');
             history.innerHTML = gameState.activeMatches.map(m => {
                 
-                const picasHtml = (m.picas || []).map((pica, i) => `
-                    <div class="pica-badge px-2 py-1.5 rounded text-[11px] text-emerald-200 font-mono text-center flex flex-col justify-center">
-                        <div class="text-amber-500 font-bold pb-0.5">Pica ${i + 1}</div>
-                        <div>${pica.s1} - ${pica.s2}</div>
-                    </div>
-                 `).join('');
+                let picasHtml = '';
+                
+                // Renderizar Chicos en historial
+                if (m.chicos && m.chicos.length > 0) {
+                    m.chicos.forEach((chico, cIdx) => {
+                        picasHtml += `<div class="w-full text-center text-amber-500/80 font-bold text-[10px] mb-1 mt-2 uppercase tracking-widest border-b border-emerald-800/30 pb-0.5">Chico ${cIdx + 1}</div><div class="flex flex-wrap gap-1.5 mb-2 justify-center w-full">`;
+                        chico.forEach((pica, i) => {
+                            picasHtml += `
+                                <div class="pica-badge px-2 py-1.5 rounded text-[11px] text-emerald-200 font-mono text-center flex flex-col justify-center">
+                                    <div class="text-amber-500 font-bold pb-0.5">Pica ${i + 1}</div>
+                                    <div>${pica.s1} - ${pica.s2}</div>
+                                </div>
+                            `;
+                        });
+                        picasHtml += `</div>`;
+                    });
+                }
+                
+                // Renderizar Picas actuales en historial
+                if (m.picas && m.picas.length > 0) {
+                    const nextChico = (m.chicos ? m.chicos.length : 0) + 1;
+                    if (m.chicos && m.chicos.length > 0) {
+                        picasHtml += `<div class="w-full text-center text-emerald-400/80 font-bold text-[10px] mb-1 mt-1 uppercase tracking-widest border-b border-emerald-800/30 pb-0.5">Chico ${nextChico} (Actual)</div>`;
+                    }
+                    picasHtml += `<div class="flex flex-wrap gap-1.5 mb-1.5 justify-center w-full">`;
+                    m.picas.forEach((pica, i) => {
+                        picasHtml += `
+                            <div class="pica-badge px-2 py-1.5 rounded text-[11px] text-emerald-200 font-mono text-center flex flex-col justify-center">
+                                <div class="text-amber-500 font-bold pb-0.5">Pica ${i + 1}</div>
+                                <div>${pica.s1} - ${pica.s2}</div>
+                            </div>
+                        `;
+                    });
+                    picasHtml += `</div>`;
+                }
 
                 return `
                 <div class="truco-table p-3 rounded-xl shadow-lg text-white mb-3" style="border-width: 4px;">
@@ -440,7 +514,7 @@
                             <div class="score-font text-2xl font-bold text-amber-500 py-0.5">${m.score2}</div>
                         </div>
                     </div>
-                    ${m.picas && m.picas.length > 0 ? `
+                    ${picasHtml !== '' ? `
                         <div class="flex flex-wrap gap-1.5 mt-2 justify-center border-t border-emerald-800/60 pt-2.5">
                             ${picasHtml}
                         </div>
