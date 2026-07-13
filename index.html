@@ -348,43 +348,49 @@
             const container = document.getElementById('active-matches-container');
             container.innerHTML = gameState.activeMatches.map(m => {
                 
-                // Render previous chicos if any
-                const chicosHtml = (m.chicos || []).map((chico, index) => {
-                    const picasInChico = chico.map((pica, i) => `
-                        <div class="pica-badge px-2 py-1.5 rounded text-[10px] text-emerald-300/80 font-mono text-center flex flex-col justify-center border-emerald-800 bg-emerald-950/50">
-                            <div class="text-amber-500/70 font-bold pb-0.5">Pica ${i + 1}</div>
-                            <div>${pica.s1} - ${pica.s2}</div>
+                let allGroups = [];
+                
+                // Picas de chicos cerrados
+                if (m.chicos && m.chicos.length > 0) {
+                    m.chicos.forEach((chico) => {
+                        const picasHtml = chico.map((pica, i) => `
+                            <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-300/80 font-mono text-center flex flex-col justify-center border-emerald-800 bg-emerald-950/50">
+                                <div class="text-amber-500/70 font-bold pb-0.5">P${i + 1}</div>
+                                <div>${pica.s1}-${pica.s2}</div>
+                            </div>
+                        `).join('');
+                        allGroups.push(picasHtml);
+                    });
+                }
+
+                // Picas del chico actual
+                if (m.picas && m.picas.length > 0) {
+                    const currentPicasHtml = m.picas.map((pica, i) => `
+                        <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-200 font-mono text-center flex flex-col justify-center shadow-md">
+                            <div class="text-amber-500 font-bold pb-0.5">P${i + 1}</div>
+                            <div>${pica.s1}-${pica.s2}</div>
                         </div>
                     `).join('');
-                    
-                    return `
-                        <div class="mb-4 mt-3 border-t border-emerald-800/50 pt-4">
-                            <div class="text-xs font-bold text-emerald-400 mb-3 uppercase tracking-widest text-center opacity-80">Chico ${index + 1} Cerrado</div>
-                            <div class="flex flex-wrap gap-2 justify-center opacity-70">
-                                ${picasInChico}
-                            </div>
-                        </div>
-                    `;
-                }).join('');
+                    allGroups.push(currentPicasHtml);
+                }
 
-                // Render current picas
-                const currentPicasHtml = (m.picas || []).map((pica, i) => `
-                    <div class="pica-badge px-2 py-1.5 rounded text-[11px] text-emerald-200 font-mono text-center flex flex-col justify-center shadow-md">
-                        <div class="text-amber-500 font-bold pb-0.5">Pica ${i + 1}</div>
-                        <div>${pica.s1} - ${pica.s2}</div>
+                // Unir todos los grupos con una barra separadora
+                const groupedPicasHtml = allGroups.join(`
+                    <div class="flex items-center justify-center px-1">
+                        <div class="w-[2px] h-8 bg-emerald-600/60 rounded-full"></div>
                     </div>
-                `).join('');
+                `);
 
                 return `
                 <div class="truco-table p-4 rounded-xl shadow-lg text-white">
                     <div class="flex justify-between items-start mb-4">
                         <div class="w-[45%] text-center">
-                            <div class="font-bold text-lg text-amber-300 truncate pb-1">${m.p1}</div>
+                            <div class="font-bold text-lg text-amber-300 break-words py-1">${m.p1}</div>
                             <div class="score-font text-4xl font-bold text-amber-500 py-1">${m.currentPica1}</div>
                         </div>
-                        <div class="text-emerald-500 font-bold text-sm mt-2">VS</div>
+                        <div class="text-emerald-500 font-bold text-sm mt-3">VS</div>
                         <div class="w-[45%] text-center">
-                            <div class="font-bold text-lg text-amber-300 truncate pb-1">${m.p2}</div>
+                            <div class="font-bold text-lg text-amber-300 break-words py-1">${m.p2}</div>
                             <div class="score-font text-4xl font-bold text-amber-500 py-1">${m.currentPica2}</div>
                         </div>
                     </div>
@@ -404,12 +410,10 @@
                         Registrar Pica Actual
                     </button>
 
-                    ${chicosHtml}
-
-                    ${m.picas && m.picas.length > 0 ? `
-                        <div class="flex flex-wrap gap-2 mb-4 mt-3 justify-center border-t border-emerald-800 pt-4">
-                            <div class="w-full text-xs font-bold text-emerald-300 mb-3 uppercase tracking-widest text-center">Chico Actual (En Juego)</div>
-                            ${currentPicasHtml}
+                    ${allGroups.length > 0 ? `
+                        <div class="flex flex-wrap gap-1.5 mb-4 mt-3 justify-center items-center border-t border-emerald-800 pt-4">
+                            <div class="w-full text-xs font-bold text-emerald-400 mb-2 uppercase tracking-widest text-center opacity-80">Picas (Chicos divididos por barra)</div>
+                            ${groupedPicasHtml}
                         </div>
                     ` : ''}
 
@@ -437,6 +441,7 @@
                 return diffB - diffA || totals[b].won - totals[a].won || a.localeCompare(b);
             });
             
+            // Reemplazado truncate por break-words y añadido py-1 para dar espacio a la captura de imagen
             listCombined.innerHTML = sortedPlayers.map((name, index) => {
                 const won = totals[name].won;
                 const lost = totals[name].lost;
@@ -447,13 +452,13 @@
                 return `
                 <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-2 py-1 mb-1">
                     <div class="flex items-center flex-1 min-w-0">
-                        <span class="text-amber-500 font-bold text-xs w-5 shrink-0 pt-0.5 pb-0.5">${index + 1}.</span>
-                        <span class="text-white font-bold text-xs truncate pr-1 pt-0.5 pb-0.5">${name}</span>
+                        <span class="text-amber-500 font-bold text-xs w-5 shrink-0 py-1">${index + 1}.</span>
+                        <span class="text-white font-bold text-xs break-words pr-1 py-1">${name}</span>
                     </div>
                     <div class="flex w-24 justify-between items-center text-center shrink-0">
-                        <span class="text-amber-500 font-bold text-xs w-6 pt-0.5 pb-0.5">${won}</span>
-                        <span class="text-red-400 font-bold text-xs w-6 pt-0.5 pb-0.5">${lost}</span>
-                        <span class="${diffColor} font-bold text-xs w-8 pt-0.5 pb-0.5">${diffSign}${diff}</span>
+                        <span class="text-amber-500 font-bold text-xs w-6 py-1">${won}</span>
+                        <span class="text-red-400 font-bold text-xs w-6 py-1">${lost}</span>
+                        <span class="${diffColor} font-bold text-xs w-8 py-1">${diffSign}${diff}</span>
                     </div>
                 </div>
                 `;
@@ -462,64 +467,53 @@
             const history = document.getElementById('history-list');
             history.innerHTML = gameState.activeMatches.map(m => {
                 
-                // Compile all picas, combining closed chicos and current picas
-                let allPicasHtml = '';
+                let allGroups = [];
                 
                 if (m.chicos && m.chicos.length > 0) {
-                    allPicasHtml += m.chicos.map((chico, index) => {
+                    m.chicos.forEach((chico) => {
                         const picasHtml = chico.map((pica, i) => `
-                            <div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center leading-tight">
-                                <div class="text-amber-500 font-bold pt-0.5 pb-0.5">Pica ${i + 1}</div>
-                                <div class="pb-0.5">${pica.s1}-${pica.s2}</div>
+                            <div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center leading-normal">
+                                <div class="text-amber-500 font-bold">P${i + 1}</div>
+                                <div>${pica.s1}-${pica.s2}</div>
                             </div>
                         `).join('');
-                        
-                        return `
-                            <div class="w-full mt-1.5">
-                                <div class="text-[9px] font-bold text-emerald-400 mb-1 uppercase tracking-widest text-center opacity-80 border-t border-emerald-800/60 pt-1.5">Chico ${index + 1}</div>
-                                <div class="flex flex-wrap gap-1 justify-center">
-                                    ${picasHtml}
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
+                        allGroups.push(picasHtml);
+                    });
                 }
 
                 if (m.picas && m.picas.length > 0) {
                     const currentPicasHtml = m.picas.map((pica, i) => `
-                        <div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center border-amber-600/50 leading-tight">
-                            <div class="text-amber-500 font-bold pt-0.5 pb-0.5">Pica ${i + 1}</div>
-                            <div class="pb-0.5">${pica.s1}-${pica.s2}</div>
+                        <div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center border-amber-600/50 leading-normal">
+                            <div class="text-amber-500 font-bold">P${i + 1}</div>
+                            <div>${pica.s1}-${pica.s2}</div>
                         </div>
                     `).join('');
-                    
-                    allPicasHtml += `
-                        <div class="w-full mt-1.5">
-                            <div class="text-[9px] font-bold text-amber-400/80 mb-1 uppercase tracking-widest text-center border-t border-emerald-800/60 pt-1.5">Chico Actual</div>
-                            <div class="flex flex-wrap gap-1 justify-center">
-                                ${currentPicasHtml}
-                            </div>
-                        </div>
-                    `;
+                    allGroups.push(currentPicasHtml);
                 }
 
+                // Unir chicos con barra vertical
+                const finalPicasHtml = allGroups.join(`
+                    <div class="flex items-center justify-center px-0.5">
+                        <div class="w-[2px] h-6 bg-emerald-500/50 rounded-full"></div>
+                    </div>
+                `);
 
                 return `
                 <div class="truco-table p-2.5 rounded-xl shadow-lg text-white mb-2" style="border-width: 3px;">
                     <div class="flex justify-between items-center">
                         <div class="w-[42%] text-center">
-                            <div class="font-bold text-xs text-amber-300 truncate pt-0.5 pb-1">${m.p1}</div>
-                            <div class="score-font text-lg font-bold text-amber-500 leading-tight pb-0.5">${m.score1}</div>
+                            <div class="font-bold text-xs text-amber-300 break-words py-1">${m.p1}</div>
+                            <div class="score-font text-lg font-bold text-amber-500 py-0.5">${m.score1}</div>
                         </div>
                         <div class="text-emerald-500 font-bold text-[9px]">VS</div>
                         <div class="w-[42%] text-center">
-                            <div class="font-bold text-xs text-amber-300 truncate pt-0.5 pb-1">${m.p2}</div>
-                            <div class="score-font text-lg font-bold text-amber-500 leading-tight pb-0.5">${m.score2}</div>
+                            <div class="font-bold text-xs text-amber-300 break-words py-1">${m.p2}</div>
+                            <div class="score-font text-lg font-bold text-amber-500 py-0.5">${m.score2}</div>
                         </div>
                     </div>
-                    ${allPicasHtml !== '' ? `
-                        <div class="flex flex-wrap justify-center mt-1">
-                            ${allPicasHtml}
+                    ${allGroups.length > 0 ? `
+                        <div class="flex flex-wrap justify-center items-center gap-1 mt-1 border-t border-emerald-800/60 pt-2">
+                            ${finalPicasHtml}
                         </div>
                     ` : ''}
                 </div>
