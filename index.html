@@ -61,11 +61,11 @@
 
         <div id="section-stats" class="hidden">
             <div id="capture-area" class="bg-emerald-800 p-4 rounded-2xl shadow-xl border border-emerald-700 space-y-4">
-                <h2 class="text-2xl font-bold text-amber-400 score-font text-center drop-shadow-md pb-2 border-b border-emerald-700/50">Resultados Pica Pica</h2>
+                <h2 class="text-2xl font-bold text-amber-400 score-font text-center drop-shadow-md pb-3 border-b border-emerald-700/50">Resultados Pica Pica</h2>
                 
                 <div class="pt-2">
-                    <h2 class="text-base font-bold text-emerald-300 mb-2 border-b border-emerald-700 pb-1.5 text-center uppercase tracking-widest text-sm">PUNTOS TOTALES</h2>
-                    <div class="flex justify-between px-2 mb-1 mt-3 text-[10px] font-bold text-emerald-500 uppercase tracking-wider">
+                    <h2 class="text-base font-bold text-emerald-300 mb-3 border-b border-emerald-700 pb-2.5 text-center uppercase tracking-widest text-sm">PUNTOS TOTALES</h2>
+                    <div class="flex justify-between px-2 mb-2 mt-4 text-[10px] font-bold text-emerald-500 uppercase tracking-wider">
                         <div class="flex-1 ml-6">Jugador</div>
                         <div class="flex w-24 justify-between text-center">
                             <span class="w-6 text-emerald-400" title="Ganados">G</span>
@@ -76,9 +76,9 @@
                     <div id="stats-list-combined" class="grid grid-cols-1 gap-1.5"></div>
                 </div>
 
-                <div class="pt-4">
-                    <h2 class="text-base font-bold text-emerald-300 mb-2 border-b border-emerald-700 pb-1.5 text-center uppercase tracking-widest text-sm">ENFRENTAMIENTOS</h2>
-                    <div id="history-list" class="space-y-2 mt-3"></div>
+                <div class="pt-5">
+                    <h2 class="text-base font-bold text-emerald-300 mb-3 border-b border-emerald-700 pb-2.5 text-center uppercase tracking-widest text-sm">ENFRENTAMIENTOS</h2>
+                    <div id="history-list" class="space-y-3 mt-4"></div>
                 </div>
             </div>
             <button onclick="shareStats(); vibrar();" class="w-full mt-6 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">📸 Compartir</button>
@@ -358,8 +358,8 @@
                     `).join('');
                     
                     return `
-                        <div class="mb-3 border-t border-emerald-800/50 pt-3">
-                            <div class="text-xs font-bold text-emerald-400 mb-2 uppercase tracking-widest text-center opacity-80">Chico ${index + 1} Cerrado</div>
+                        <div class="mb-4 mt-3 border-t border-emerald-800/50 pt-4">
+                            <div class="text-xs font-bold text-emerald-400 mb-3 uppercase tracking-widest text-center opacity-80">Chico ${index + 1} Cerrado</div>
                             <div class="flex flex-wrap gap-2 justify-center opacity-70">
                                 ${picasInChico}
                             </div>
@@ -400,20 +400,20 @@
                         </div>
                     </div>
 
-                    <button onclick="registrarPica(${m.id}); vibrar();" class="w-full mb-3 bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 py-2.5 rounded-lg text-sm font-bold transition-colors shadow-sm">
+                    <button onclick="registrarPica(${m.id}); vibrar();" class="w-full mb-4 bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 py-2.5 rounded-lg text-sm font-bold transition-colors shadow-sm">
                         Registrar Pica Actual
                     </button>
 
                     ${chicosHtml}
 
                     ${m.picas && m.picas.length > 0 ? `
-                        <div class="flex flex-wrap gap-2 mb-3 justify-center border-t border-emerald-800 pt-3">
-                            <div class="w-full text-xs font-bold text-emerald-300 mb-1 uppercase tracking-widest text-center">Chico Actual (En Juego)</div>
+                        <div class="flex flex-wrap gap-2 mb-4 mt-3 justify-center border-t border-emerald-800 pt-4">
+                            <div class="w-full text-xs font-bold text-emerald-300 mb-3 uppercase tracking-widest text-center">Chico Actual (En Juego)</div>
                             ${currentPicasHtml}
                         </div>
                     ` : ''}
 
-                    <div class="flex justify-between items-center mt-2 border-t border-emerald-800/50 pt-3">
+                    <div class="flex justify-between items-center mt-3 border-t border-emerald-800/50 pt-4">
                         <div class="text-sm font-bold text-amber-200">
                             Total: <span class="text-amber-400">${m.score1} - ${m.score2}</span>
                         </div>
@@ -475,8 +475,8 @@
                         `).join('');
                         
                         return `
-                            <div class="w-full mt-2">
-                                <div class="text-[10px] font-bold text-emerald-400 mb-1 uppercase tracking-widest text-center opacity-80 border-t border-emerald-800/60 pt-2">Chico ${index + 1}</div>
+                            <div class="w-full mt-3">
+                                <div class="text-[10px] font-bold text-emerald-400 mb-2.5 uppercase tracking-widest text-center opacity-80 border-t border-emerald-800/60 pt-3">Chico ${index + 1}</div>
                                 <div class="flex flex-wrap gap-1.5 justify-center">
                                     ${picasHtml}
                                 </div>
@@ -494,8 +494,8 @@
                     `).join('');
                     
                     allPicasHtml += `
-                        <div class="w-full mt-2">
-                            <div class="text-[10px] font-bold text-amber-400/80 mb-1 uppercase tracking-widest text-center border-t border-emerald-800/60 pt-2">Chico Actual</div>
+                        <div class="w-full mt-3">
+                            <div class="text-[10px] font-bold text-amber-400/80 mb-2.5 uppercase tracking-widest text-center border-t border-emerald-800/60 pt-3">Chico Actual</div>
                             <div class="flex flex-wrap gap-1.5 justify-center">
                                 ${currentPicasHtml}
                             </div>
@@ -505,20 +505,20 @@
 
 
                 return `
-                <div class="truco-table p-3 rounded-xl shadow-lg text-white mb-3" style="border-width: 4px;">
+                <div class="truco-table p-4 rounded-xl shadow-lg text-white mb-4" style="border-width: 4px;">
                     <div class="flex justify-between items-center">
                         <div class="w-[42%] text-center">
-                            <div class="font-bold text-sm text-amber-300 break-words pb-1 pt-0.5">${m.p1}</div>
+                            <div class="font-bold text-sm text-amber-300 break-words pb-2 pt-0.5">${m.p1}</div>
                             <div class="score-font text-2xl font-bold text-amber-500 py-0.5">${m.score1}</div>
                         </div>
                         <div class="text-emerald-500 font-bold text-xs">VS</div>
                         <div class="w-[42%] text-center">
-                            <div class="font-bold text-sm text-amber-300 break-words pb-1 pt-0.5">${m.p2}</div>
+                            <div class="font-bold text-sm text-amber-300 break-words pb-2 pt-0.5">${m.p2}</div>
                             <div class="score-font text-2xl font-bold text-amber-500 py-0.5">${m.score2}</div>
                         </div>
                     </div>
                     ${allPicasHtml !== '' ? `
-                        <div class="flex flex-wrap justify-center mt-1">
+                        <div class="flex flex-wrap justify-center mt-2">
                             ${allPicasHtml}
                         </div>
                     ` : ''}
