@@ -21,12 +21,12 @@
 <body class="min-h-screen p-4 md:p-8">
 
     <div class="max-w-md mx-auto relative pt-2" id="app">
-        <!-- Botón de deshacer rediseñado -->
-        <button id="undo-btn" onclick="undo(); vibrar();" class="absolute top-0 right-0 z-50 flex items-center space-x-1 px-3 py-1.5 text-emerald-100 bg-emerald-800 border border-emerald-600 rounded-full hover:bg-emerald-700 transition-all duration-300 opacity-0 pointer-events-none -translate-y-2 shadow-lg" title="Deshacer última acción">
-            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Botón de deshacer rediseñado como botón flotante (FAB) -->
+        <button id="undo-btn" onclick="undo(); vibrar();" class="fixed bottom-6 right-4 sm:right-8 z-[90] flex items-center space-x-1.5 px-4 py-2.5 text-emerald-100 bg-emerald-800/95 backdrop-blur-sm border border-emerald-600 rounded-full hover:bg-emerald-700 transition-all duration-300 opacity-0 pointer-events-none translate-y-4 shadow-2xl" title="Deshacer última acción">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
             </svg>
-            <span class="text-[10px] font-bold uppercase tracking-wider">Deshacer</span>
+            <span class="text-[11px] font-bold uppercase tracking-wider">Deshacer</span>
         </button>
 
         <header class="text-center mb-6 mt-4 relative">
@@ -196,10 +196,10 @@
         function updateUndoButton() {
             const btn = document.getElementById('undo-btn');
             if (historyStack.length > 0) {
-                btn.classList.remove('opacity-0', 'pointer-events-none', '-translate-y-2');
+                btn.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
                 btn.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
             } else {
-                btn.classList.add('opacity-0', 'pointer-events-none', '-translate-y-2');
+                btn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
                 btn.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
             }
         }
