@@ -332,9 +332,9 @@
             container.innerHTML = gameState.activeMatches.map(m => {
                 
                 const picasHtml = (m.picas || []).map((pica, i) => `
-                    <div class="pica-badge px-2 pt-1 pb-1.5 rounded text-[10px] text-emerald-200 font-mono text-center flex flex-col justify-center">
-                        <div class="text-amber-500 font-bold leading-none mb-1">Pica ${i + 1}</div>
-                        <div class="leading-none pb-0.5">${pica.s1} - ${pica.s2}</div>
+                    <div class="pica-badge px-2 py-1.5 rounded text-[11px] text-emerald-200 font-mono text-center flex flex-col justify-center">
+                        <div class="text-amber-500 font-bold pb-0.5">Pica ${i + 1}</div>
+                        <div>${pica.s1} - ${pica.s2}</div>
                     </div>
                 `).join('');
 
@@ -342,28 +342,28 @@
                 <div class="truco-table p-4 rounded-xl shadow-lg text-white">
                     <div class="flex justify-between items-start mb-4">
                         <div class="w-[45%] text-center">
-                            <div class="font-bold text-lg text-amber-300 truncate">${m.p1}</div>
-                            <div class="score-font text-3xl font-bold text-amber-500">${m.currentPica1}</div>
+                            <div class="font-bold text-lg text-amber-300 truncate pb-1">${m.p1}</div>
+                            <div class="score-font text-4xl font-bold text-amber-500 py-1">${m.currentPica1}</div>
                         </div>
                         <div class="text-emerald-500 font-bold text-sm mt-2">VS</div>
                         <div class="w-[45%] text-center">
-                            <div class="font-bold text-lg text-amber-300 truncate">${m.p2}</div>
-                            <div class="score-font text-3xl font-bold text-amber-500">${m.currentPica2}</div>
+                            <div class="font-bold text-lg text-amber-300 truncate pb-1">${m.p2}</div>
+                            <div class="score-font text-4xl font-bold text-amber-500 py-1">${m.currentPica2}</div>
                         </div>
                     </div>
                     
                     <div class="grid grid-cols-2 gap-3 mb-4">
                         <div class="flex bg-emerald-900 rounded-lg p-1">
-                            <button onclick="updateScore(${m.id}, 1, -1); vibrar();" class="flex-1 text-xl">-</button>
-                            <button onclick="updateScore(${m.id}, 1, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md text-xl">+</button>
+                            <button onclick="updateScore(${m.id}, 1, -1); vibrar();" class="flex-1 text-2xl py-1">-</button>
+                            <button onclick="updateScore(${m.id}, 1, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md text-2xl py-1">+</button>
                         </div>
                         <div class="flex bg-emerald-900 rounded-lg p-1">
-                            <button onclick="updateScore(${m.id}, 2, -1); vibrar();" class="flex-1 text-xl">-</button>
-                            <button onclick="updateScore(${m.id}, 2, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md text-xl">+</button>
+                            <button onclick="updateScore(${m.id}, 2, -1); vibrar();" class="flex-1 text-2xl py-1">-</button>
+                            <button onclick="updateScore(${m.id}, 2, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md text-2xl py-1">+</button>
                         </div>
                     </div>
 
-                    <button onclick="registrarPica(${m.id}); vibrar();" class="w-full mb-3 bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 py-2 rounded-lg text-xs font-bold transition-colors">
+                    <button onclick="registrarPica(${m.id}); vibrar();" class="w-full mb-3 bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 py-2.5 rounded-lg text-sm font-bold transition-colors">
                         Registrar Pica Actual
                     </button>
 
@@ -373,11 +373,11 @@
                         </div>
                     ` : ''}
 
-                    <div class="flex justify-between items-center mt-2 border-t border-emerald-800/50 pt-2">
+                    <div class="flex justify-between items-center mt-2 border-t border-emerald-800/50 pt-3">
                         <div class="text-sm font-bold text-amber-200">
                             Total: <span class="text-amber-400">${m.score1} - ${m.score2}</span>
                         </div>
-                        <button onclick="deleteMatch(${m.id}); vibrar();" class="bg-red-950/80 hover:bg-red-900/80 text-red-400 text-[10px] uppercase font-bold px-3 py-1.5 rounded border border-red-900/50 transition-all">Borrar</button>
+                        <button onclick="deleteMatch(${m.id}); vibrar();" class="bg-red-950/80 hover:bg-red-900/80 text-red-400 text-xs uppercase font-bold px-3 py-1.5 rounded border border-red-900/50 transition-all">Borrar</button>
                     </div>
                 </div>
             `}).join('');
@@ -403,15 +403,15 @@
                 const diffSign = diff > 0 ? '+' : '';
 
                 return `
-                <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-2 py-1.5">
+                <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-3 py-2 mb-1.5">
                     <div class="flex items-center flex-1 min-w-0">
-                        <span class="text-amber-500 font-bold text-xs w-5 shrink-0 leading-normal pb-0.5">${index + 1}.</span>
-                        <span class="text-white font-bold text-xs truncate leading-normal pb-0.5 pr-1">${name}</span>
+                        <span class="text-amber-500 font-bold text-sm w-6 shrink-0">${index + 1}.</span>
+                        <span class="text-white font-bold text-sm truncate pr-1 py-0.5">${name}</span>
                     </div>
                     <div class="flex w-24 justify-between items-center text-center shrink-0">
-                        <span class="text-amber-500 font-bold text-xs w-6 leading-normal pb-0.5">${won}</span>
-                        <span class="text-red-400 font-bold text-xs w-6 leading-normal pb-0.5">${lost}</span>
-                        <span class="${diffColor} font-bold text-xs w-8 leading-normal pb-0.5">${diffSign}${diff}</span>
+                        <span class="text-amber-500 font-bold text-sm w-6">${won}</span>
+                        <span class="text-red-400 font-bold text-sm w-6">${lost}</span>
+                        <span class="${diffColor} font-bold text-sm w-8">${diffSign}${diff}</span>
                     </div>
                 </div>
                 `;
@@ -420,31 +420,28 @@
             const history = document.getElementById('history-list');
             history.innerHTML = gameState.activeMatches.map(m => {
                 
-                // ¡AQUÍ ESTABA EL BUG PRINCIPAL!
-                // Faltaba cerrar el contenedor principal del div de cada pica,
-                // lo que provocaba que se anidaran unos dentro de otros iterativamente.
                 const picasHtml = (m.picas || []).map((pica, i) => `
-                    <div class="pica-badge px-2 pt-1 pb-1.5 rounded text-[10px] text-emerald-200 font-mono text-center flex flex-col justify-center">
-                        <div class="text-amber-500 font-bold leading-none mb-1">Pica ${i + 1}</div>
-                        <div class="leading-none pb-0.5">${pica.s1} - ${pica.s2}</div>
+                    <div class="pica-badge px-2 py-1.5 rounded text-[11px] text-emerald-200 font-mono text-center flex flex-col justify-center">
+                        <div class="text-amber-500 font-bold pb-0.5">Pica ${i + 1}</div>
+                        <div>${pica.s1} - ${pica.s2}</div>
                     </div>
                  `).join('');
 
                 return `
-                <div class="truco-table p-2 rounded-xl shadow-lg text-white" style="border-width: 4px;">
+                <div class="truco-table p-3 rounded-xl shadow-lg text-white mb-3" style="border-width: 4px;">
                     <div class="flex justify-between items-center">
                         <div class="w-[42%] text-center">
-                            <div class="font-bold text-sm text-amber-300 break-words leading-normal pb-1">${m.p1}</div>
-                            <div class="score-font text-xl font-bold text-amber-500 leading-none pb-0.5">${m.score1}</div>
+                            <div class="font-bold text-sm text-amber-300 break-words pb-1 pt-0.5">${m.p1}</div>
+                            <div class="score-font text-2xl font-bold text-amber-500 py-0.5">${m.score1}</div>
                         </div>
-                        <div class="text-emerald-500 font-bold text-[10px]">VS</div>
+                        <div class="text-emerald-500 font-bold text-xs">VS</div>
                         <div class="w-[42%] text-center">
-                            <div class="font-bold text-sm text-amber-300 break-words leading-normal pb-1">${m.p2}</div>
-                            <div class="score-font text-xl font-bold text-amber-500 leading-none pb-0.5">${m.score2}</div>
+                            <div class="font-bold text-sm text-amber-300 break-words pb-1 pt-0.5">${m.p2}</div>
+                            <div class="score-font text-2xl font-bold text-amber-500 py-0.5">${m.score2}</div>
                         </div>
                     </div>
                     ${m.picas && m.picas.length > 0 ? `
-                        <div class="flex flex-wrap gap-1 mt-1.5 justify-center border-t border-emerald-800/60 pt-1.5">
+                        <div class="flex flex-wrap gap-1.5 mt-2 justify-center border-t border-emerald-800/60 pt-2.5">
                             ${picasHtml}
                         </div>
                     ` : ''}
@@ -454,7 +451,7 @@
 
         function shareStats() {
             renderStats(); 
-            // Damos un milisegundo extra para que el DOM se refresque si acabamos de cambiar de pestaña
+            // Damos un poco más de tiempo (150ms) para que el navegador termine de pintar fuentes y calcular bounding boxes
             setTimeout(() => {
                 html2canvas(document.getElementById("capture-area"), {
                     backgroundColor: "#064e3b", 
