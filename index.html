@@ -349,28 +349,35 @@
             container.innerHTML = gameState.activeMatches.map(m => {
                 
                 let allGroups = [];
+                let picaGlobalCount = 0; // Contador global de picas para esta partida
                 
                 // Picas de chicos cerrados
                 if (m.chicos && m.chicos.length > 0) {
                     m.chicos.forEach((chico) => {
-                        const picasHtml = chico.map((pica, i) => `
+                        const picasHtml = chico.map((pica) => {
+                            picaGlobalCount++;
+                            return `
                             <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-300/80 font-mono text-center flex flex-col justify-center border-emerald-800 bg-emerald-950/50">
-                                <div class="text-amber-500/70 font-bold pb-0.5">P${i + 1}</div>
+                                <div class="text-amber-500/70 font-bold pb-0.5">P${picaGlobalCount}</div>
                                 <div>${pica.s1}-${pica.s2}</div>
                             </div>
-                        `).join('');
+                            `;
+                        }).join('');
                         allGroups.push(picasHtml);
                     });
                 }
 
                 // Picas del chico actual
                 if (m.picas && m.picas.length > 0) {
-                    const currentPicasHtml = m.picas.map((pica, i) => `
+                    const currentPicasHtml = m.picas.map((pica) => {
+                        picaGlobalCount++;
+                        return `
                         <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-200 font-mono text-center flex flex-col justify-center shadow-md">
-                            <div class="text-amber-500 font-bold pb-0.5">P${i + 1}</div>
+                            <div class="text-amber-500 font-bold pb-0.5">P${picaGlobalCount}</div>
                             <div>${pica.s1}-${pica.s2}</div>
                         </div>
-                    `).join('');
+                        `;
+                    }).join('');
                     allGroups.push(currentPicasHtml);
                 }
 
@@ -441,7 +448,6 @@
                 return diffB - diffA || totals[b].won - totals[a].won || a.localeCompare(b);
             });
             
-            // Reemplazado truncate por break-words y añadido py-1 para dar espacio a la captura de imagen
             listCombined.innerHTML = sortedPlayers.map((name, index) => {
                 const won = totals[name].won;
                 const lost = totals[name].lost;
@@ -468,26 +474,33 @@
             history.innerHTML = gameState.activeMatches.map(m => {
                 
                 let allGroups = [];
+                let picaGlobalCount = 0; // Contador global de picas para las estadísticas
                 
                 if (m.chicos && m.chicos.length > 0) {
                     m.chicos.forEach((chico) => {
-                        const picasHtml = chico.map((pica, i) => `
+                        const picasHtml = chico.map((pica) => {
+                            picaGlobalCount++;
+                            return `
                             <div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center leading-normal">
-                                <div class="text-amber-500 font-bold">P${i + 1}</div>
+                                <div class="text-amber-500 font-bold">P${picaGlobalCount}</div>
                                 <div>${pica.s1}-${pica.s2}</div>
                             </div>
-                        `).join('');
+                            `;
+                        }).join('');
                         allGroups.push(picasHtml);
                     });
                 }
 
                 if (m.picas && m.picas.length > 0) {
-                    const currentPicasHtml = m.picas.map((pica, i) => `
+                    const currentPicasHtml = m.picas.map((pica) => {
+                        picaGlobalCount++;
+                        return `
                         <div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center border-amber-600/50 leading-normal">
-                            <div class="text-amber-500 font-bold">P${i + 1}</div>
+                            <div class="text-amber-500 font-bold">P${picaGlobalCount}</div>
                             <div>${pica.s1}-${pica.s2}</div>
                         </div>
-                    `).join('');
+                        `;
+                    }).join('');
                     allGroups.push(currentPicasHtml);
                 }
 
