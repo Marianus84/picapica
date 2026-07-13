@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Truco Night Tracker - Estilo Argentino</title>
     <link rel="manifest" href="manifest.json">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,12 +13,15 @@
         .truco-table { background: #065f46; border: 8px solid #451a03; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); }
         .score-font { font-family: 'Playfair Display', serif; }
         .pica-badge { background-color: #064e3b; border: 1px solid #10b981; }
+        
+        /* Asegurar que modales y botones táctiles se vean bien en móviles */
+        button { touch-action: manipulation; }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
 
     <div class="max-w-md mx-auto relative pt-2" id="app">
-        <!-- Botón de deshacer rediseñado para asegurar que es interactivo y visible cuando existe historial -->
+        <!-- Botón de deshacer rediseñado -->
         <button id="undo-btn" onclick="undo(); vibrar();" class="absolute top-0 right-0 z-50 flex items-center space-x-1 px-3 py-1.5 text-emerald-100 bg-emerald-800 border border-emerald-600 rounded-full hover:bg-emerald-700 transition-all duration-300 opacity-0 pointer-events-none -translate-y-2 shadow-lg" title="Deshacer última acción">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
@@ -80,13 +83,83 @@
         </div>
     </div>
 
+    <!-- Modal Personalizado para Alertas y Confirmaciones -->
+    <div id="custom-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/70 backdrop-blur-sm px-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-emerald-900 border border-emerald-600 rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center transform scale-95 transition-transform duration-300" id="modal-content">
+            <p id="modal-message" class="text-white mb-6 text-sm font-semibold leading-relaxed"></p>
+            <div class="flex justify-center space-x-3" id="modal-buttons">
+                <!-- Los botones se inyectan dinámicamente -->
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Añadido array para guardar a los jugadores conocidos
         let gameState = { activeMatches: [], knownPlayers: [] };
         let historyStack = [];
         
         function vibrar() { if (navigator.vibrate) navigator.vibrate(70); }
-        
+
+        // --- SISTEMA DE MODALES ---
+        function showModal(message, type, onConfirmCallback = null) {
+            const modal = document.getElementById('custom-modal');
+            const modalContent = document.getElementById('modal-content');
+            const msgEl = document.getElementById('modal-message');
+            const btnsEl = document.getElementById('modal-buttons');
+
+            msgEl.textContent = message;
+            btnsEl.innerHTML = '';
+
+            if (type === 'alert') {
+                const btn = document.createElement('button');
+                btn.className = "bg-amber-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50 w-full";
+                btn.textContent = "Entendido";
+                btn.onclick = closeModal;
+                btnsEl.appendChild(btn);
+            } else if (type === 'confirm') {
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = "flex-1 bg-emerald-800 text-emerald-200 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-700 transition-colors border border-emerald-700";
+                cancelBtn.textContent = "Cancelar";
+                cancelBtn.onclick = closeModal;
+
+                const confirmBtn = document.createElement('button');
+                confirmBtn.className = "flex-1 bg-amber-600 text-white px-4 py-2.5 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50";
+                confirmBtn.textContent = "Confirmar";
+                confirmBtn.onclick = () => {
+                    closeModal();
+                    if(onConfirmCallback) onConfirmCallback();
+                };
+
+                btnsEl.appendChild(cancelBtn);
+                btnsEl.appendChild(confirmBtn);
+            }
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            // Timeout ligero para permitir la transición de entrada
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.classList.add('opacity-100');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('custom-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            modalContent.classList.remove('scale-100');
+            modalContent.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+        // --------------------------
+
         function saveToLocalStorage() { 
             localStorage.setItem('truco_pica_pica_state', JSON.stringify(gameState)); 
             localStorage.setItem('truco_pica_pica_history', JSON.stringify(historyStack)); 
@@ -96,7 +169,7 @@
             const savedState = localStorage.getItem('truco_pica_pica_state');
             if (savedState) {
                 gameState = JSON.parse(savedState);
-                if (!gameState.knownPlayers) gameState.knownPlayers = []; // Migración para datos guardados antiguos
+                if (!gameState.knownPlayers) gameState.knownPlayers = [];
             }
             
             const savedHistory = localStorage.getItem('truco_pica_pica_history');
@@ -106,7 +179,6 @@
             updateUndoButton();
         }
 
-        // Actualiza las listas desplegables filtrando a los jugadores que ya están jugando o seleccionados
         function updateDatalists() {
             const p1Val = document.getElementById('p1').value.trim();
             const p2Val = document.getElementById('p2').value.trim();
@@ -167,8 +239,8 @@
         function switchTab(tab) {
             document.getElementById('section-play').classList.toggle('hidden', tab !== 'play');
             document.getElementById('section-stats').classList.toggle('hidden', tab !== 'stats');
-            document.getElementById('tab-play').className = tab === 'play' ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg' : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200';
-            document.getElementById('tab-stats').className = tab === 'stats' ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg' : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200';
+            document.getElementById('tab-play').className = tab === 'play' ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all' : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all';
+            document.getElementById('tab-stats').className = tab === 'stats' ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all' : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all';
             if (tab === 'stats') renderStats();
         }
 
@@ -177,18 +249,17 @@
             const p2 = document.getElementById('p2').value.trim() || 'J2';
             
             if (p1 === p2) {
-                alert("Los jugadores deben ser distintos.");
+                showModal("Los jugadores deben ser distintos.", 'alert');
                 return;
             }
 
             const activePlayers = gameState.activeMatches.flatMap(m => [m.p1, m.p2]);
             if (activePlayers.includes(p1) || activePlayers.includes(p2)) {
-                alert("Uno o ambos jugadores ya están jugando en una partida activa.");
+                showModal("Uno o ambos jugadores ya están jugando en una partida activa.", 'alert');
                 return;
             }
             
             executeWithUndo(() => {
-                // Registrar a los jugadores si son nuevos
                 if (!gameState.knownPlayers.includes(p1)) gameState.knownPlayers.push(p1);
                 if (!gameState.knownPlayers.includes(p2)) gameState.knownPlayers.push(p2);
 
@@ -228,19 +299,19 @@
         }
 
         function deleteMatch(matchId) {
-            if (confirm("¿Seguro que quieres borrar esta partida?")) {
+            showModal("¿Seguro que quieres borrar esta partida?", 'confirm', () => {
                 executeWithUndo(() => {
                     gameState.activeMatches = gameState.activeMatches.filter(m => m.id !== matchId);
                 });
-            }
+            });
         }
 
         function resetEverything() {
-            if(confirm("¿Seguro que quieres borrar los resultados para empezar una nueva noche? (Los nombres de los jugadores se guardarán)")) {
+            showModal("¿Seguro que quieres borrar los resultados para empezar una nueva noche? (Los nombres se guardarán)", 'confirm', () => {
                 executeWithUndo(() => {
-                    gameState.activeMatches = []; // Solo borramos las partidas, conservando knownPlayers
+                    gameState.activeMatches = []; 
                 });
-            }
+            });
         }
 
         function getTotals() {
@@ -283,12 +354,12 @@
                     
                     <div class="grid grid-cols-2 gap-3 mb-4">
                         <div class="flex bg-emerald-900 rounded-lg p-1">
-                            <button onclick="updateScore(${m.id}, 1, -1); vibrar();" class="flex-1">-</button>
-                            <button onclick="updateScore(${m.id}, 1, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md">+</button>
+                            <button onclick="updateScore(${m.id}, 1, -1); vibrar();" class="flex-1 text-xl">-</button>
+                            <button onclick="updateScore(${m.id}, 1, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md text-xl">+</button>
                         </div>
                         <div class="flex bg-emerald-900 rounded-lg p-1">
-                            <button onclick="updateScore(${m.id}, 2, -1); vibrar();" class="flex-1">-</button>
-                            <button onclick="updateScore(${m.id}, 2, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md">+</button>
+                            <button onclick="updateScore(${m.id}, 2, -1); vibrar();" class="flex-1 text-xl">-</button>
+                            <button onclick="updateScore(${m.id}, 2, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md text-xl">+</button>
                         </div>
                     </div>
 
@@ -311,14 +382,13 @@
                 </div>
             `}).join('');
             
-            updateDatalists(); // Actualizar las listas cada vez que el estado cambie
+            updateDatalists();
         }
 
         function renderStats() {
             const totals = getTotals();
             const listCombined = document.getElementById('stats-list-combined');
             
-            // Ordenamos por diferencia (ganados - perdidos) de mayor a menor. En caso de empate, por más ganados.
             const sortedPlayers = Object.keys(totals).sort((a, b) => {
                 const diffA = totals[a].won - totals[a].lost;
                 const diffB = totals[b].won - totals[b].lost;
@@ -350,10 +420,14 @@
             const history = document.getElementById('history-list');
             history.innerHTML = gameState.activeMatches.map(m => {
                 
+                // ¡AQUÍ ESTABA EL BUG PRINCIPAL!
+                // Faltaba cerrar el contenedor principal del div de cada pica,
+                // lo que provocaba que se anidaran unos dentro de otros iterativamente.
                 const picasHtml = (m.picas || []).map((pica, i) => `
                     <div class="pica-badge px-2 pt-1 pb-1.5 rounded text-[10px] text-emerald-200 font-mono text-center flex flex-col justify-center">
                         <div class="text-amber-500 font-bold leading-none mb-1">Pica ${i + 1}</div>
                         <div class="leading-none pb-0.5">${pica.s1} - ${pica.s2}</div>
+                    </div>
                  `).join('');
 
                 return `
@@ -380,19 +454,28 @@
 
         function shareStats() {
             renderStats(); 
-            html2canvas(document.getElementById("capture-area"), {backgroundColor: "#064e3b", scale: 2}).then(canvas => {
-                canvas.toBlob(blob => {
-                    const file = new File([blob], 'resultados_pica_pica.png', { type: 'image/png' });
-                    const shareData = { title: 'Resultados Pica Pica', files: [file] };
-                    if (navigator.canShare && navigator.canShare({ files: [file] })) navigator.share(shareData).catch(console.error);
-                    else {
-                        const link = document.createElement('a');
-                        link.download = 'resultados_pica_pica.png';
-                        link.href = canvas.toDataURL("image/png");
-                        link.click();
-                    }
-                }, 'image/png');
-            });
+            // Damos un milisegundo extra para que el DOM se refresque si acabamos de cambiar de pestaña
+            setTimeout(() => {
+                html2canvas(document.getElementById("capture-area"), {
+                    backgroundColor: "#064e3b", 
+                    scale: 2,
+                    useCORS: true
+                }).then(canvas => {
+                    canvas.toBlob(blob => {
+                        const file = new File([blob], 'resultados_pica_pica.png', { type: 'image/png' });
+                        const shareData = { title: 'Resultados Pica Pica', files: [file] };
+                        
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                            navigator.share(shareData).catch(console.error);
+                        } else {
+                            const link = document.createElement('a');
+                            link.download = 'resultados_pica_pica.png';
+                            link.href = canvas.toDataURL("image/png");
+                            link.click();
+                        }
+                    }, 'image/png');
+                });
+            }, 50);
         }
         
         loadFromLocalStorage();
