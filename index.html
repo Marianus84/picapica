@@ -112,7 +112,7 @@
         
         <div class="mt-12 pt-6 border-t border-emerald-900 flex gap-3">
             <button onclick="exportBackup(); vibrar();" class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
                 Guardar Backup
             </button>
             <button onclick="document.getElementById('backup-input').click(); vibrar();" class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-1">
@@ -124,7 +124,6 @@
         </div>
     </div>
 
-    <!-- Modal Personalizado para Alertas y Confirmaciones -->
     <div id="custom-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm px-4 opacity-0 transition-opacity duration-300">
         <div class="bg-emerald-950 border-2 border-emerald-600 rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center transform scale-95 transition-transform duration-300" id="modal-content">
             <p id="modal-message" class="text-emerald-50 mb-6 text-sm font-semibold leading-relaxed"></p>
@@ -137,11 +136,10 @@
     <script>
         let gameState = { activeMatches: [], knownPlayers: [] };
         let historyStack = [];
-        let historicalStats = {}; // Nueva variable para la tabla histórica
+        let historicalStats = {}; 
         
         function vibrar() { if (navigator.vibrate) navigator.vibrate(50); }
 
-        // --- SISTEMA DE MODALES ---
         function showModal(message, type, onConfirmCallback = null, customConfirmText = "Confirmar", customCancelText = "Cancelar") {
             const modal = document.getElementById('custom-modal');
             const modalContent = document.getElementById('modal-content');
@@ -177,7 +175,7 @@
 
             modal.classList.remove('hidden');
             modal.classList.add('flex');
-            // Timeout ligero para permitir la transición de entrada
+            
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 modal.classList.add('opacity-100');
@@ -225,7 +223,7 @@
             renderHistoricalStats();
         }
 
-        // SISTEMA DE BACKUPS
+        // SISTEMA DE BACKUPS (SOLUCIONADO: Uso de Blob y nombre específico)
         function exportBackup() {
             const backupData = {
                 version: "1.1",
@@ -235,17 +233,23 @@
                 historicalStats: historicalStats
             };
             
-            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupData));
+            // Creamos un Blob para que no haya límites de tamaño al guardar el texto JSON
+            const jsonStr = JSON.stringify(backupData);
+            const blob = new Blob([jsonStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
             const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("href", url);
             
-            const dateStr = new Date().toISOString().split('T')[0];
-            downloadAnchorNode.setAttribute("download", `truco_backup_${dateStr}.json`);
-            document.body.appendChild(downloadAnchorNode); // requerido para Firefox
+            // Nombre especificado: PICA PICA
+            downloadAnchorNode.setAttribute("download", "PICA_PICA.json");
+            
+            document.body.appendChild(downloadAnchorNode); // Requerido en Firefox
             downloadAnchorNode.click();
-            downloadAnchorNode.remove();
+            document.body.removeChild(downloadAnchorNode);
+            URL.revokeObjectURL(url); // Liberar memoria
             
-            showModal("Backup guardado exitosamente. Se ha descargado un archivo JSON.", "alert");
+            showModal("Backup guardado exitosamente. Se ha descargado el archivo PICA_PICA.json", "alert");
         }
 
         function importBackup(event) {
@@ -257,7 +261,6 @@
                 try {
                     const importedData = JSON.parse(e.target.result);
                     
-                    // Validación básica
                     if (importedData.state && importedData.state.activeMatches) {
                         showModal("¿Estás seguro de cargar este backup? Se sobrescribirán todos los datos actuales y el histórico.", "confirm", () => {
                             gameState = importedData.state;
@@ -278,10 +281,11 @@
                 } catch (error) {
                     showModal("Error al leer el archivo. Asegúrate de que sea un JSON válido.", "alert");
                 }
-                // Limpiar el input para permitir volver a cargar el mismo archivo si es necesario
-                document.getElementById('backup-input').value = "";
             };
             reader.readAsText(file);
+            
+            // Limpiar el input para permitir volver a cargar el mismo archivo si se desea
+            event.target.value = "";
         }
 
         function updateDatalists() {
@@ -666,7 +670,6 @@
 
             showModal("¿Seguro que quieres sumar los puntos actuales a la Tabla Histórica Anual? Asegúrate de hacerlo solo al finalizar la noche.", "confirm", () => {
                 
-                // Sumar al histórico
                 for (const player in currentTotals) {
                     if (!historicalStats[player]) {
                         historicalStats[player] = { won: 0, lost: 0 };
@@ -704,7 +707,6 @@
                 const diffColor = diff > 0 ? 'text-emerald-400' : (diff < 0 ? 'text-red-400' : 'text-gray-500');
                 const diffSign = diff > 0 ? '+' : '';
 
-                // Estilo ligeramente distinto para diferenciarlo de la tabla de la noche
                 return `
                 <div class="flex justify-between items-center bg-[#022c22] border border-emerald-800/70 rounded-md px-2 py-1.5 mb-1 shadow-sm">
                     <div class="flex items-center flex-1 min-w-0">
