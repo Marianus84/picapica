@@ -107,6 +107,7 @@
                         <div id="historical-stats-list" class="grid grid-cols-1 gap-1"></div>
                     </div>
                 </div>
+                <button onclick="shareHistoricalStats(); vibrar();" class="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">📸 Compartir Histórico</button>
             </div>
         </div>
         
@@ -409,21 +410,6 @@
                 match.currentPica1 = 0;
                 match.currentPica2 = 0;
             });
-
-            const currentMatch = gameState.activeMatches.find(m => m.id === matchId);
-            if (currentMatch) {
-                const getTotalPicas = (match) => (match.chicos || []).reduce((acc, c) => acc + c.length, 0) + (match.picas ? match.picas.length : 0);
-                const totalCurrent = getTotalPicas(currentMatch);
-
-                const nextMatch = gameState.activeMatches.find(m => m.id !== matchId && getTotalPicas(m) < totalCurrent);
-
-                if (nextMatch) {
-                    setTimeout(() => {
-                        const el = document.getElementById('match-' + nextMatch.id);
-                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 50);
-                }
-            }
         }
 
         function cerrarTodosLosChicos() {
@@ -740,6 +726,31 @@
                         } else {
                             const link = document.createElement('a');
                             link.download = 'resultados_pica_pica.png';
+                            link.href = canvas.toDataURL("image/png");
+                            link.click();
+                        }
+                    }, 'image/png');
+                });
+            }, 50);
+        }
+
+        function shareHistoricalStats() {
+            renderHistoricalStats(); 
+            setTimeout(() => {
+                html2canvas(document.getElementById("capture-area-history"), {
+                    backgroundColor: "#064e3b", 
+                    scale: 2,
+                    useCORS: true
+                }).then(canvas => {
+                    canvas.toBlob(blob => {
+                        const file = new File([blob], 'historico_pica_pica.png', { type: 'image/png' });
+                        const shareData = { title: 'Histórico Pica Pica', files: [file] };
+                        
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                            navigator.share(shareData).catch(console.error);
+                        } else {
+                            const link = document.createElement('a');
+                            link.download = 'historico_pica_pica.png';
                             link.href = canvas.toDataURL("image/png");
                             link.click();
                         }
