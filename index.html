@@ -68,7 +68,7 @@
         #view-camp th { background: var(--header-table); color: #ffffff; padding: 4px 2px; font-size: 0.6rem; border: 1px solid #444; }
         #displayTitle { font-size: 0.6rem; font-weight: 800; margin: 0; display: block; }
 
-        #view-camp td { padding: 0 2px; text-align: center; border: 1px solid #000000; font-size: 0.85rem; font-weight: 700; height: 32px; vertical-align: middle; transition: background 0.3s; }
+        #view-camp td { padding: 0 4px; text-align: center; border: 1px solid #000000; font-size: 0.85rem; font-weight: 700; height: 32px; vertical-align: middle; transition: background 0.3s; }
 
         .fila-campeon td { background: var(--dorado-campeon) !important; color: #000 !important; border-color: #b8860b !important; }
         .fila-campeon .col-pos, .fila-campeon .col-g { background: #b8860b !important; color: #fff !important; }
@@ -79,28 +79,29 @@
             padding: 0; margin: 0; line-height: 32px; cursor: pointer;
         }
 
-        .input-snapshot { display: none; font-size: 0.7rem; font-weight: 800; line-height: 32px; text-align: center; }
+        .input-snapshot { display: none; font-size: 0.8rem; font-weight: 800; line-height: 32px; text-align: center; padding: 0 2px; }
 
+        .exporting .table-input, .exporting .btn-delete, .exporting .btn-undo-ui, .exporting .btn-edit-ui, .exporting .btn-record-match { display: none !important; }
         .exporting .table-input, .exporting .btn-delete, .exporting .btn-undo-ui, .exporting .btn-edit-ui, .exporting .btn-record-match { display: none !important; }
         .exporting .input-snapshot { display: block !important; }
 
-        .col-pos { background: var(--azul-oscuro); color: white; width: 34px; font-size: 0.8rem; }
+        .col-pos { background: var(--azul-oscuro); color: white; width: 30px; font-size: 0.8rem; }
         .name-col { text-align: left; padding: 0 6px; background: var(--blanco-marfil); width: auto; font-size: 0.85rem; font-weight: 800; position: relative; user-select: none; -webkit-user-select: none; }
         
         .name-wrapper { display: flex; justify-content: space-between; align-items: center; width: 100%; height: 100%; }
 
-        .dots-container { display: flex; gap: 1px; margin-left: 4px; flex-shrink: 0; flex-wrap: nowrap; justify-content: flex-end; }
+        .dots-container { display: flex; gap: 1px; margin-left: 4px; padding-right: 4px; flex-shrink: 0; flex-wrap: nowrap; justify-content: flex-end; }
         
         .dot { width: 4.3px; height: 4.3px; border-radius: 50%; display: inline-block; }
         .dot-g { background-color: var(--win-dot); }
         .dot-p { background-color: var(--loss-dot); }
 
-        .col-pj { background: var(--blanco-marfil); width: 34px; font-size: 0.85rem; }
-        .col-p { background: var(--blanco-marfil); color: #dc2626; width: 36px; font-size: 0.85rem; }
-        .col-g { background: var(--azul-oscuro); color: white; width: 36px; }
+        .col-pj { background: var(--blanco-marfil); width: 30px; font-size: 0.85rem; }
+        .col-p { background: var(--blanco-marfil); color: #dc2626; width: 40px; font-size: 0.85rem; }
+        .col-g { background: var(--azul-oscuro); color: white; width: 40px; }
         .col-g .table-input, .col-g .input-snapshot { font-size: 1rem; font-weight: 900; }
-        .col-food { background: var(--blanco-marfil); width: 36px; }
-        .perc-cell { font-size: 0.65rem; color: #000; width: 48px; }
+        .col-food { background: var(--blanco-marfil); width: 28px; }
+        .perc-cell { font-size: 0.65rem; color: #000; width: 40px; }
 
         .racha { font-size: 0.8rem; margin-left: 3px; font-weight: bold; }
         .sube { color: #15803d; }
@@ -295,13 +296,13 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th style="width: 34px;">Pos</th>
+                                    <th style="width: 30px;">Pos</th>
                                     <th><span id="displayTitle">CLAUSURA TRUCO 2026</span></th>
-                                    <th style="width: 34px;">J</th>
-                                    <th style="width: 36px;">P</th>
-                                    <th style="width: 36px;">G</th>
-                                    <th style="width: 48px;">%</th>
-                                    <th style="width: 36px;">🏠</th>
+                                    <th style="width: 30px;">J</th>
+                                    <th style="width: 40px;">P</th>
+                                    <th style="width: 40px;">G</th>
+                                    <th style="width: 40px;">%</th>
+                                    <th style="width: 28px;">🏠</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody"></tbody>
