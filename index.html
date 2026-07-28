@@ -1,147 +1,416 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es-AR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Truco Night Tracker - Estilo Argentino</title>
-    <link rel="manifest" href="manifest.json">
+    <title>Truco Tracker Unificado</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <meta name="theme-color" content="#064e3b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #064e3b; }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #064e3b; 
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
         .truco-table { background: #065f46; border: 8px solid #451a03; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); }
         .score-font { font-family: 'Playfair Display', serif; }
         .pica-badge { background-color: #064e3b; border: 1px solid #10b981; }
-        
-        /* Asegurar que modales y botones táctiles se vean bien en móviles */
         button { touch-action: manipulation; }
+
+        :root {
+            --verde-mesa: #1a472a;
+            --header-table: #000000;
+            --azul-oscuro: #002060;
+            --blanco-marfil: #FFFFFF;
+            --rojo-delete: #ef4444;
+            --win-dot: #22c55e;
+            --loss-dot: #ef4444;
+            --dorado-campeon: #ffd700;
+        }
+
+        #view-camp {
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            background: var(--verde-mesa); 
+            color: #f3f4f6; 
+            min-height: 100vh;
+        }
+
+        .camp-container { max-width: 100%; margin: auto; padding: 5px; }
+        
+        #captureArea {
+            background: var(--verde-mesa);
+            padding: 0;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .table-container { 
+            background: transparent; 
+            width: 100%; 
+            display: block; 
+            overflow: hidden; 
+            border: none;
+        }
+
+        #view-camp table { width: 100%; border-collapse: collapse; color: #000; table-layout: fixed; border: none; }
+        
+        #view-camp th { background: var(--header-table); color: #ffffff; padding: 3px 1px; font-size: 0.6rem; border: 1px solid #444; }
+        #displayTitle { font-size: 0.6rem; font-weight: 800; margin: 0; display: block; }
+
+        #view-camp td { padding: 0; text-align: center; border: 1px solid #000000; font-size: 0.85rem; font-weight: 700; height: 32px; vertical-align: middle; transition: background 0.3s; }
+
+        .fila-campeon td { background: var(--dorado-campeon) !important; color: #000 !important; border-color: #b8860b !important; }
+        .fila-campeon .col-pos, .fila-campeon .col-g { background: #b8860b !important; color: #fff !important; }
+
+        .table-input { 
+            width: 100%; height: 32px; background: transparent; border: none; 
+            text-align: center; font-size: 0.7rem; font-weight: 800; color: inherit; outline: none;
+            padding: 0; margin: 0; line-height: 32px; cursor: pointer;
+        }
+
+        .input-snapshot { display: none; font-size: 0.7rem; font-weight: 800; line-height: 32px; text-align: center; }
+
+        .exporting .table-input, .exporting .btn-delete, .exporting .btn-undo-ui, .exporting .btn-edit-ui, .exporting .btn-record-match { display: none !important; }
+        .exporting .input-snapshot { display: block !important; }
+
+        .col-pos { background: var(--azul-oscuro); color: white; width: 28px; font-size: 0.8rem; }
+        .name-col { text-align: left; padding: 0 5px; background: var(--blanco-marfil); width: auto; font-size: 0.85rem; font-weight: 800; position: relative; user-select: none; -webkit-user-select: none; }
+        
+        .name-wrapper { display: flex; justify-content: space-between; align-items: center; width: 100%; height: 100%; }
+
+        .dots-container { display: flex; gap: 1px; margin-left: 4px; flex-shrink: 0; flex-wrap: nowrap; justify-content: flex-end; }
+        
+        .dot { width: 4.3px; height: 4.3px; border-radius: 50%; display: inline-block; }
+        .dot-g { background-color: var(--win-dot); }
+        .dot-p { background-color: var(--loss-dot); }
+
+        .col-pj { background: var(--blanco-marfil); width: 30px; font-size: 0.85rem; }
+        .col-p { background: var(--blanco-marfil); color: #dc2626; width: 32px; font-size: 0.85rem; }
+        .col-g { background: var(--azul-oscuro); color: white; width: 32px; }
+        .col-g .table-input, .col-g .input-snapshot { font-size: 1rem; font-weight: 900; }
+        .col-food { background: var(--blanco-marfil); width: 32px; }
+        .perc-cell { font-size: 0.65rem; color: #000; width: 42px; }
+
+        .racha { font-size: 0.8rem; margin-left: 3px; font-weight: bold; }
+        .sube { color: #15803d; }
+        .baja { color: #dc2626; }
+
+        #resumenCompacto {
+            background: #111; color: #fff; padding: 8px; display: grid;
+            grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px solid #333;
+        }
+        .resumen-section { font-size: 0.65rem; }
+        .resumen-section h4 { margin: 0 0 4px 0; font-size: 0.6rem; text-transform: uppercase; color: #888; border-bottom: 1px solid #222; }
+        .resumen-full-width { grid-column: span 2; border-top: 1px solid #222; padding-top: 4px; margin-top: 2px; }
+        .resumen-item { display: flex; justify-content: space-between; margin-bottom: 2px; }
+        .val-win { color: #22c55e; font-weight: bold; }
+        .val-loss { color: #ef4444; font-weight: bold; }
+        .val-prob { color: var(--dorado-campeon); font-weight: bold; }
+
+        .camp-card { background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 8px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.2); }
+        .camp-btn { width: 100%; padding: 10px; margin-top: 8px; border-radius: 6px; border: none; font-weight: bold; font-size: 0.85rem; cursor: pointer; text-transform: uppercase; }
+        .btn-update { background: #22c55e; color: #000; }
+        .btn-share { background: #25d366; color: white; }
+        .btn-record-match { background: #a855f7; color: white; }
+        
+        .btn-undo-ui { 
+            background: #facc15; color: #000; padding: 4px 10px; font-size: 0.65rem; 
+            border-radius: 4px; border: none; font-weight: bold; cursor: pointer; float: right; 
+            margin: 8px 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .btn-edit-ui {
+            background: #6b7280; color: #fff; padding: 4px 10px; font-size: 0.65rem; 
+            border-radius: 4px; border: none; font-weight: bold; cursor: pointer; float: left; 
+            margin: 8px 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: all 0.2s;
+        }
+        .btn-edit-ui.active { background: #ef4444; color: #fff; }
+
+        .btn-add { background: #3b82f6; color: white; margin-top: 0; }
+        .btn-backup { background: #6b7280; color: white; font-size: 0.7rem; margin-top: 5px; }
+        .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 5px; }
+        
+        .input-group { display: flex; gap: 5px; margin-top: 5px; }
+        .camp-input { flex: 1; background: #fff; border: 1px solid #3b82f6; padding: 6px; border-radius: 4px; font-size: 0.85rem; color: #000; }
+
+        .camp-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .camp-modal-content {
+            background: #1a1a1a; padding: 20px; border-radius: 12px; width: 90%; max-width: 320px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6); border: 1px solid #333; max-height: 90vh; overflow-y: auto; color: white;
+        }
+        .camp-modal-title { margin-top: 0; color: #fff; font-size: 1.1rem; text-align: center; margin-bottom: 20px; font-weight: 800; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        .camp-modal-btn {
+            width: 100%; padding: 14px; margin-bottom: 10px; border-radius: 8px; border: none;
+            font-weight: 900; cursor: pointer; font-size: 0.85rem; text-transform: uppercase;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-modal-cancel { background: #333; color: #aaa; margin-top: 5px; }
+        .team-box { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; border: 1px solid #444; margin-bottom: 10px; }
+        .team-box h5 { margin: 0 0 8px 0; font-size: 0.7rem; text-transform: uppercase; color: #aaa; }
+        .player-select-item { display: flex; align-items: center; gap: 8px; padding: 8px; background: #222; margin-bottom: 4px; border-radius: 4px; font-size: 0.8rem; }
+        .player-select-item.disabled { opacity: 0.2; pointer-events: none; background: #111; }
     </style>
 </head>
-<body class="min-h-screen p-4 md:p-8 flex flex-col items-center">
+<body class="antialiased">
 
-    <div class="max-w-md w-full relative pt-2 pb-24" id="app">
-        <!-- Botón de deshacer rediseñado como botón flotante (FAB) -->
-        <button id="undo-btn" onclick="undo(); vibrar();" class="fixed bottom-6 right-4 sm:right-8 z-[90] flex items-center space-x-1.5 px-4 py-2.5 text-emerald-100 bg-emerald-800/95 backdrop-blur-sm border border-emerald-600 rounded-full hover:bg-emerald-700 transition-all duration-300 opacity-0 pointer-events-none translate-y-4 shadow-2xl" title="Deshacer última acción">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
-            </svg>
-            <span class="text-[11px] font-bold uppercase tracking-wider"> </span>
-        </button>
+    <nav class="fixed top-0 left-0 w-full z-[200] bg-emerald-950 border-b border-emerald-800 flex justify-center shadow-lg">
+        <button onclick="switchMainApp('pica')" id="nav-pica" class="flex-1 py-3 font-bold text-center border-b-4 border-amber-500 text-amber-500 transition-all uppercase text-sm tracking-wider bg-black/20">Pica Pica</button>
+        <button onclick="switchMainApp('camp')" id="nav-camp" class="flex-1 py-3 font-bold text-center border-b-4 border-transparent text-emerald-500 hover:text-emerald-300 transition-all uppercase text-sm tracking-wider">Tabla Truco</button>
+    </nav>
 
-        <header class="text-center mb-6 mt-4 relative">
-            <h1 class="text-4xl font-bold text-amber-500 score-font drop-shadow-md">Noche de Truco</h1>
-            <p class="text-emerald-100 opacity-80">Pica Pica Profesional</p>
-        </header>
-
-        <div class="flex space-x-2 mb-6 bg-emerald-950 p-1 rounded-xl shadow-inner border border-emerald-800">
-            <button onclick="switchTab('play'); vibrar();" id="tab-play" class="flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all">Partidas</button>
-            <button onclick="switchTab('stats'); vibrar();" id="tab-stats" class="flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all">Ranking</button>
-        </div>
-
-        <div id="section-play" class="space-y-6">
-            <div id="active-matches-container" class="space-y-4"></div>
-            
-            <button onclick="cerrarTodosLosChicos(); vibrar();" class="w-full bg-blue-900/80 text-blue-300 py-3 rounded-xl font-bold border border-blue-700/50 hover:bg-blue-800 transition-all shadow-lg mt-6 mb-2">Cerrar Chico (Todos los enfrentamientos)</button>
-
-            <div class="bg-emerald-800 p-6 rounded-2xl shadow-xl border border-emerald-700 mt-4">
-                <h2 class="text-lg font-bold text-white mb-4">Nueva partida</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <input list="players-1" type="text" id="p1" placeholder="Jugador 1" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none" oninput="updateDatalists()">
-                    <datalist id="players-1"></datalist>
-                    
-                    <input list="players-2" type="text" id="p2" placeholder="Jugador 2" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none" oninput="updateDatalists()">
-                    <datalist id="players-2"></datalist>
-                </div>
-                <button onclick="startMatch(); vibrar();" class="w-full mt-4 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50">Empezar Duelo</button>
-            </div>
-            
-            <button onclick="resetEverything(); vibrar();" class="w-full bg-emerald-950 text-emerald-500 py-2 rounded-xl font-bold border border-emerald-900 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest mt-2">Empezar nueva noche de truco</button>
-        </div>
-
-        <div id="section-stats" class="hidden space-y-6">
-            <div id="capture-area" class="bg-emerald-800 p-3 rounded-2xl shadow-xl border border-emerald-700 space-y-2 relative">
-                <h2 class="text-xl font-bold text-amber-400 score-font text-center drop-shadow-md pb-1.5 border-b border-emerald-700/50">Resultados Pica Pica</h2>
-                
-                <div class="pt-1">
-                    <h2 class="text-xs font-bold text-emerald-300 mb-1.5 border-b border-emerald-700 pb-1 text-center uppercase tracking-widest">PUNTOS DE ESTA NOCHE</h2>
-                    <div class="flex justify-between px-2 mb-1 mt-1 text-[9px] font-bold text-emerald-500 uppercase tracking-wider">
-                        <div class="flex-1 ml-6">Jugador</div>
-                        <div class="flex w-24 justify-between text-center">
-                            <span class="w-6 text-emerald-400" title="Ganados">G</span>
-                            <span class="w-6 text-red-400" title="Perdidos">P</span>
-                            <span class="w-8 text-blue-400" title="Diferencia">DIF</span>
-                        </div>
-                    </div>
-                    <div id="stats-list-combined" class="grid grid-cols-1 gap-1"></div>
-                </div>
-
-                <div class="pt-1">
-                    <h2 class="text-xs font-bold text-emerald-300 mb-1.5 border-b border-emerald-700 pb-1 text-center uppercase tracking-widest">ENFRENTAMIENTOS</h2>
-                    <div id="history-list" class="space-y-1.5 mt-1"></div>
-                </div>
-            </div>
-
-            <button onclick="shareStats(); vibrar();" class="w-full mt-2 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">📸 Compartir Noche</button>
-
-            <!-- Nueva Sección: Tabla Histórica -->
-            <div class="mt-8 pt-6 border-t border-emerald-800/50">
-                <button onclick="confirmarRegistroNoche(); vibrar();" class="w-full bg-amber-700 text-amber-100 py-3 rounded-xl font-bold border border-amber-600 hover:bg-amber-600 transition-all shadow-lg mb-6 uppercase tracking-wider text-sm flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                    Registrar Noche en Histórico
+    <div class="pt-[52px] w-full min-h-screen">
+        
+        <div id="view-pica" class="w-full flex flex-col items-center p-4 md:p-8">
+            <div class="max-w-md w-full relative pt-2 pb-24" id="app">
+                <button id="undo-btn" onclick="undoPica(); vibrar();" class="fixed bottom-6 right-4 sm:right-8 z-[90] flex items-center space-x-1.5 px-4 py-2.5 text-emerald-100 bg-emerald-800/95 backdrop-blur-sm border border-emerald-600 rounded-full hover:bg-emerald-700 transition-all duration-300 opacity-0 pointer-events-none translate-y-4 shadow-2xl" title="Deshacer última acción">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
+                    </svg>
+                    <span class="text-[11px] font-bold uppercase tracking-wider"> </span>
                 </button>
 
-                <div id="capture-area-history" class="bg-[#043d2e] p-3 rounded-2xl shadow-xl border border-emerald-900 space-y-2 relative">
-                    <h2 class="text-xl font-bold text-amber-500 score-font text-center drop-shadow-md pb-1.5 border-b border-emerald-800/80">Tabla Histórica Anual</h2>
+                <header class="text-center mb-6 mt-4 relative">
+                    <h1 class="text-4xl font-bold text-amber-500 score-font drop-shadow-md">Noche de Truco</h1>
+                    <p class="text-emerald-100 opacity-80">Pica Pica Profesional</p>
+                </header>
+
+                <div class="flex space-x-2 mb-6 bg-emerald-950 p-1 rounded-xl shadow-inner border border-emerald-800">
+                    <button onclick="switchPicaTab('play'); vibrar();" id="tab-play" class="flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all">Partidas</button>
+                    <button onclick="switchPicaTab('stats'); vibrar();" id="tab-stats" class="flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all">Ranking</button>
+                </div>
+
+                <div id="section-play" class="space-y-6">
+                    <div id="active-matches-container" class="space-y-4"></div>
                     
-                    <div class="pt-1">
-                        <h2 class="text-[10px] font-bold text-emerald-400 mb-1.5 border-b border-emerald-800 pb-1 text-center uppercase tracking-widest">PUNTOS ACUMULADOS EN PICA PICAS</h2>
-                        <div class="flex justify-between px-2 mb-1 mt-1 text-[9px] font-bold text-emerald-600 uppercase tracking-wider">
-                            <div class="flex-1 ml-6">Jugador</div>
-                            <div class="flex w-24 justify-between text-center">
-                                <span class="w-6 text-emerald-500" title="Ganados Totales">G</span>
-                                <span class="w-6 text-red-500" title="Perdidos Totales">P</span>
-                                <span class="w-8 text-blue-500" title="Diferencia Total">DIF</span>
+                    <button onclick="cerrarTodosLosChicos(); vibrar();" class="w-full bg-blue-900/80 text-blue-300 py-3 rounded-xl font-bold border border-blue-700/50 hover:bg-blue-800 transition-all shadow-lg mt-6 mb-2">Cerrar Chico (Todos los enfrentamientos)</button>
+
+                    <div class="bg-emerald-800 p-6 rounded-2xl shadow-xl border border-emerald-700 mt-4">
+                        <h2 class="text-lg font-bold text-white mb-4">Nueva partida</h2>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input list="players-1" type="text" id="p1" placeholder="Jugador 1" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none" oninput="updateDatalists()">
+                            <datalist id="players-1"></datalist>
+                            
+                            <input list="players-2" type="text" id="p2" placeholder="Jugador 2" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none" oninput="updateDatalists()">
+                            <datalist id="players-2"></datalist>
+                        </div>
+                        <button onclick="startMatch(); vibrar();" class="w-full mt-4 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50">Empezar Duelo</button>
+                    </div>
+                    
+                    <button onclick="resetEverything(); vibrar();" class="w-full bg-emerald-950 text-emerald-500 py-2 rounded-xl font-bold border border-emerald-900 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest mt-2">Empezar nueva noche de truco</button>
+                </div>
+
+                <div id="section-stats" class="hidden space-y-6">
+                    <div id="capture-area-pica" class="bg-emerald-800 p-3 rounded-2xl shadow-xl border border-emerald-700 space-y-2 relative">
+                        <h2 class="text-xl font-bold text-amber-400 score-font text-center drop-shadow-md pb-1.5 border-b border-emerald-700/50">Resultados Pica Pica</h2>
+                        
+                        <div class="pt-1">
+                            <h2 class="text-xs font-bold text-emerald-300 mb-1.5 border-b border-emerald-700 pb-1 text-center uppercase tracking-widest">PUNTOS DE ESTA NOCHE</h2>
+                            <div class="flex justify-between px-2 mb-1 mt-1 text-[9px] font-bold text-emerald-500 uppercase tracking-wider">
+                                <div class="flex-1 ml-6">Jugador</div>
+                                <div class="flex w-24 justify-between text-center">
+                                    <span class="w-6 text-emerald-400" title="Ganados">G</span>
+                                    <span class="w-6 text-red-400" title="Perdidos">P</span>
+                                    <span class="w-8 text-blue-400" title="Diferencia">DIF</span>
+                                </div>
+                            </div>
+                            <div id="stats-list-combined" class="grid grid-cols-1 gap-1"></div>
+                        </div>
+
+                        <div class="pt-1">
+                            <h2 class="text-xs font-bold text-emerald-300 mb-1.5 border-b border-emerald-700 pb-1 text-center uppercase tracking-widest">ENFRENTAMIENTOS</h2>
+                            <div id="history-list" class="space-y-1.5 mt-1"></div>
+                        </div>
+                    </div>
+
+                    <button onclick="shareStats(); vibrar();" class="w-full mt-2 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">📸 Compartir Noche</button>
+
+                    <div class="mt-8 pt-6 border-t border-emerald-800/50">
+                        <button onclick="confirmarRegistroNoche(); vibrar();" class="w-full bg-amber-700 text-amber-100 py-3 rounded-xl font-bold border border-amber-600 hover:bg-amber-600 transition-all shadow-lg mb-6 uppercase tracking-wider text-sm flex items-center justify-center gap-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                            Registrar Noche en Histórico
+                        </button>
+
+                        <div id="capture-area-history" class="bg-[#043d2e] p-3 rounded-2xl shadow-xl border border-emerald-900 space-y-2 relative">
+                            <h2 class="text-xl font-bold text-amber-500 score-font text-center drop-shadow-md pb-1.5 border-b border-emerald-800/80">Tabla Histórica Anual</h2>
+                            
+                            <div class="pt-1">
+                                <h2 class="text-[10px] font-bold text-emerald-400 mb-1.5 border-b border-emerald-800 pb-1 text-center uppercase tracking-widest">PUNTOS ACUMULADOS EN PICA PICAS</h2>
+                                <div class="flex justify-between px-2 mb-1 mt-1 text-[9px] font-bold text-emerald-600 uppercase tracking-wider">
+                                    <div class="flex-1 ml-6">Jugador</div>
+                                    <div class="flex w-24 justify-between text-center">
+                                        <span class="w-6 text-emerald-500" title="Ganados Totales">G</span>
+                                        <span class="w-6 text-red-500" title="Perdidos Totales">P</span>
+                                        <span class="w-8 text-blue-500" title="Diferencia Total">DIF</span>
+                                    </div>
+                                </div>
+                                <div id="historical-stats-list" class="grid grid-cols-1 gap-1"></div>
                             </div>
                         </div>
-                        <div id="historical-stats-list" class="grid grid-cols-1 gap-1"></div>
+                        <button onclick="shareHistoricalStats(); vibrar();" class="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">📸 Compartir Histórico</button>
                     </div>
                 </div>
-                <button onclick="shareHistoricalStats(); vibrar();" class="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">📸 Compartir Histórico</button>
+                
+                <div class="mt-12 pt-6 border-t border-emerald-900 flex gap-3">
+                    <button onclick="exportPicaBackup(); vibrar();" class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Guardar Backup
+                    </button>
+                    <button onclick="document.getElementById('backup-input-pica').click(); vibrar();" class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                        Cargar Backup
+                    </button>
+                    <input type="file" id="backup-input-pica" class="hidden" accept=".json" onchange="importPicaBackup(event)">
+                </div>
+            </div>
+
+            <!-- Modal Pica Pica -->
+            <div id="custom-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm px-4 opacity-0 transition-opacity duration-300">
+                <div class="bg-emerald-950 border-2 border-emerald-600 rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center transform scale-95 transition-transform duration-300" id="modal-content">
+                    <p id="modal-message" class="text-emerald-50 mb-6 text-sm font-semibold leading-relaxed"></p>
+                    <div class="flex justify-center gap-3" id="modal-buttons"></div>
+                </div>
             </div>
         </div>
-        
-        <div class="mt-12 pt-6 border-t border-emerald-900 flex gap-3">
-            <button onclick="exportBackup(); vibrar();" class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                Guardar Backup
-            </button>
-            <button onclick="document.getElementById('backup-input').click(); vibrar();" class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                Cargar Backup
-            </button>
-            <!-- Input oculto para cargar archivos -->
-            <input type="file" id="backup-input" class="hidden" accept=".json" onchange="importBackup(event)">
-        </div>
-    </div>
 
-    <div id="custom-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm px-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-emerald-950 border-2 border-emerald-600 rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center transform scale-95 transition-transform duration-300" id="modal-content">
-            <p id="modal-message" class="text-emerald-50 mb-6 text-sm font-semibold leading-relaxed"></p>
-            <div class="flex justify-center gap-3" id="modal-buttons">
-                <!-- Los botones se inyectan dinámicamente -->
+        <div id="view-camp" class="hidden pb-10">
+            <div class="camp-container pt-4">
+                <div id="captureArea">
+                    <div class="table-container">
+                        <button class="btn-edit-ui" id="editToggle" onclick="toggleEditMode()">EDIT OFF</button>
+                        <button class="btn-undo-ui" onclick="undoCampAction()">↩ DESHACER</button>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 32px;">Pos</th>
+                                    <th><span id="displayTitle">CLAUSURA TRUCO 2026</span></th>
+                                    <th style="width: 32px;">J</th>
+                                    <th style="width: 32px;">P</th>
+                                    <th style="width: 35px;">G</th>
+                                    <th style="width: 30px;">%</th>
+                                    <th style="width: 20px;">🏠</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                        <div id="resumenCompacto"></div>
+                    </div>
+                </div>
+
+                <div class="btn-main" style="padding: 0 5px;">
+                    <button class="camp-btn btn-record-match" onclick="openMatchModal()">⚔️ Registrar Partida</button>
+                    <button class="camp-btn btn-share" onclick="shareCampAsImage()">Compartir Tabla 📲</button>
+
+                    <div class="camp-card">
+                        <div class="input-group">
+                            <input type="text" id="newPlayerName" class="camp-input" placeholder="Nombre...">
+                            <button class="camp-btn btn-add" style="width: auto;" onclick="addNewPlayer()">+</button>
+                        </div>
+                        <input type="text" id="editTitle" class="camp-input" style="width: 100%; margin-top: 8px;" placeholder="Título" oninput="updateTitle(this.value)">
+                        
+                        <div class="actions-grid">
+                            <button class="camp-btn btn-backup" onclick="exportCampData()">💾 Guardar Backup</button>
+                            <button class="camp-btn btn-backup" onclick="importCampData()">📂 Cargar Backup</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Campeonato - Jugador -->
+            <div id="playerModal" class="camp-modal-overlay">
+                <div class="camp-modal-content">
+                    <h4 id="modalPlayerName" class="camp-modal-title">Opciones</h4>
+                    <div id="modalMainActions">
+                        <button class="camp-modal-btn btn-update" style="background:#3b82f6;color:white" onclick="showEditSection()">✏️ EDITAR NOMBRE</button>
+                        <button class="camp-modal-btn btn-update" style="background:var(--dorado-campeon);color:black" onclick="modalAction('champion')">👑 MARCAR CAMPEÓN</button>
+                        <button class="camp-modal-btn btn-update" style="background:var(--rojo-delete);color:white" onclick="showDelSection()">🗑️ ELIMINAR</button>
+                    </div>
+                    <div id="editNameContainer" style="display:none">
+                        <input type="text" id="editNameInput" style="width:100%;padding:10px;margin-bottom:10px;border-radius:4px;border:1px solid #333;background:#000;color:#fff;">
+                        <div style="display:flex; gap:5px;">
+                            <button class="btn-update" style="flex:1;padding:10px;border:none;border-radius:4px;background:#22c55e;font-weight:bold" onclick="modalAction('edit')">GUARDAR</button>
+                            <button class="btn-modal-cancel" style="flex:1;padding:10px;border:none;border-radius:4px;font-weight:bold" onclick="resetModalViews()">ATRÁS</button>
+                        </div>
+                    </div>
+                    <div id="confirmDelContainer" style="display:none">
+                        <p style="color:#ef4444; font-weight:bold; text-align:center; margin-bottom: 10px;">¿ELIMINAR JUGADOR?</p>
+                        <button class="camp-modal-btn btn-update" style="background:#ef4444;color:white" onclick="modalAction('delete')">SÍ, ELIMINAR</button>
+                        <button class="camp-modal-btn btn-modal-cancel" onclick="resetModalViews()">CANCELAR</button>
+                    </div>
+                    <button class="camp-modal-btn btn-modal-cancel" onclick="closePlayerModal()">CERRAR</button>
+                </div>
+            </div>
+
+            <!-- Modal Campeonato - Partida -->
+            <div id="matchModal" class="camp-modal-overlay">
+                <div class="camp-modal-content">
+                    <h4 class="camp-modal-title">REGISTRAR PARTIDA</h4>
+                    <div class="team-box">
+                        <h5>🏆 EQUIPO GANADOR</h5>
+                        <div id="winnersList"></div>
+                    </div>
+                    <div class="team-box">
+                        <h5>💀 EQUIPO PERDEDOR</h5>
+                        <div id="losersList"></div>
+                    </div>
+                    <button class="camp-modal-btn btn-update" onclick="submitMatch()">CONFIRMAR RESULTADO</button>
+                    <button class="camp-modal-btn btn-modal-cancel" onclick="closeMatchModal()">CANCELAR</button>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Utilidades Globales
+        function vibrar(ms = 50) { if (navigator.vibrate) navigator.vibrate(ms); }
+        const sonidoShare = new Audio('https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3');
+        function sonar() { sonidoShare.play().catch(e => {}); }
+
+        function switchMainApp(appId) {
+            vibrar();
+            document.getElementById('view-pica').classList.toggle('hidden', appId !== 'pica');
+            document.getElementById('view-pica').classList.toggle('flex', appId === 'pica');
+            document.getElementById('view-camp').classList.toggle('hidden', appId !== 'camp');
+            
+            const btnPica = document.getElementById('nav-pica');
+            const btnCamp = document.getElementById('nav-camp');
+
+            if(appId === 'pica') {
+                btnPica.classList.add('border-amber-500', 'text-amber-500', 'bg-black/20');
+                btnPica.classList.remove('border-transparent', 'text-emerald-500', 'hover:text-emerald-300', 'bg-transparent');
+                
+                btnCamp.classList.remove('border-amber-500', 'text-amber-500', 'bg-black/20');
+                btnCamp.classList.add('border-transparent', 'text-emerald-500', 'hover:text-emerald-300', 'bg-transparent');
+            } else {
+                btnCamp.classList.add('border-amber-500', 'text-amber-500', 'bg-black/20');
+                btnCamp.classList.remove('border-transparent', 'text-emerald-500', 'hover:text-emerald-300', 'bg-transparent');
+                
+                btnPica.classList.remove('border-amber-500', 'text-amber-500', 'bg-black/20');
+                btnPica.classList.add('border-transparent', 'text-emerald-500', 'hover:text-emerald-300', 'bg-transparent');
+            }
+        }
+
+        // ==========================================
+        // LÓGICA PICA PICA
+        // ==========================================
         let gameState = { activeMatches: [], knownPlayers: [] };
-        let historyStack = [];
+        let historyStackPica = [];
         let historicalStats = {}; 
         
-        function vibrar() { if (navigator.vibrate) navigator.vibrate(50); }
-
-        function showModal(message, type, onConfirmCallback = null, customConfirmText = "Confirmar", customCancelText = "Cancelar") {
+        function showPicaModal(message, type, onConfirmCallback = null, customConfirmText = "Confirmar", customCancelText = "Cancelar") {
             const modal = document.getElementById('custom-modal');
             const modalContent = document.getElementById('modal-content');
             const msgEl = document.getElementById('modal-message');
@@ -154,19 +423,19 @@
                 const btn = document.createElement('button');
                 btn.className = "bg-amber-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50 w-full";
                 btn.textContent = "Entendido";
-                btn.onclick = closeModal;
+                btn.onclick = closePicaModal;
                 btnsEl.appendChild(btn);
             } else if (type === 'confirm') {
                 const cancelBtn = document.createElement('button');
                 cancelBtn.className = "flex-1 bg-emerald-900 text-emerald-200 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-800 transition-colors border border-emerald-700";
                 cancelBtn.textContent = customCancelText;
-                cancelBtn.onclick = closeModal;
+                cancelBtn.onclick = closePicaModal;
 
                 const confirmBtn = document.createElement('button');
                 confirmBtn.className = "flex-1 bg-amber-600 text-white px-4 py-2.5 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50";
                 confirmBtn.textContent = customConfirmText;
                 confirmBtn.onclick = () => {
-                    closeModal();
+                    closePicaModal();
                     if(onConfirmCallback) onConfirmCallback();
                 };
 
@@ -185,7 +454,7 @@
             }, 10);
         }
 
-        function closeModal() {
+        function closePicaModal() {
             const modal = document.getElementById('custom-modal');
             const modalContent = document.getElementById('modal-content');
             
@@ -200,112 +469,79 @@
             }, 300);
         }
         
-        function saveToLocalStorage() { 
+        function savePicaToLocal() { 
             localStorage.setItem('truco_pica_pica_state', JSON.stringify(gameState)); 
-            localStorage.setItem('truco_pica_pica_history', JSON.stringify(historyStack)); 
+            localStorage.setItem('truco_pica_pica_history', JSON.stringify(historyStackPica)); 
             localStorage.setItem('truco_pica_pica_historical_stats', JSON.stringify(historicalStats));
         }
         
-        function loadFromLocalStorage() {
+        function loadPicaFromLocal() {
             const savedState = localStorage.getItem('truco_pica_pica_state');
             if (savedState) {
                 gameState = JSON.parse(savedState);
                 if (!gameState.knownPlayers) gameState.knownPlayers = [];
             }
-            
             const savedHistory = localStorage.getItem('truco_pica_pica_history');
-            if (savedHistory) historyStack = JSON.parse(savedHistory);
+            if (savedHistory) historyStackPica = JSON.parse(savedHistory);
 
             const savedHistorical = localStorage.getItem('truco_pica_pica_historical_stats');
             if (savedHistorical) historicalStats = JSON.parse(savedHistorical);
 
             renderMatches();
-            updateUndoButton();
+            updateUndoButtonPica();
             renderHistoricalStats();
         }
 
-        // SISTEMA DE BACKUPS (SOLUCIONADO: Uso de Blob y nombre específico)
-        function exportBackup() {
-            const backupData = {
-                version: "1.1",
-                timestamp: new Date().toISOString(),
-                state: gameState,
-                history: historyStack,
-                historicalStats: historicalStats
-            };
-            
-            // Creamos un Blob para que no haya límites de tamaño al guardar el texto JSON
+        function exportPicaBackup() {
+            const backupData = { version: "1.1", timestamp: new Date().toISOString(), state: gameState, history: historyStackPica, historicalStats: historicalStats };
             const jsonStr = JSON.stringify(backupData);
             const blob = new Blob([jsonStr], { type: "application/json" });
             const url = URL.createObjectURL(blob);
-            
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", url);
-            
-            // Nombre especificado: PICA PICA
-            downloadAnchorNode.setAttribute("download", "PICA_PICA.json");
-            
-            document.body.appendChild(downloadAnchorNode); // Requerido en Firefox
-            downloadAnchorNode.click();
-            document.body.removeChild(downloadAnchorNode);
-            URL.revokeObjectURL(url); // Liberar memoria
-            
-            showModal("Backup guardado exitosamente. Se ha descargado el archivo PICA_PICA.json", "alert");
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "PICA_PICA.json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showPicaModal("Backup guardado exitosamente.", "alert");
         }
 
-        function importBackup(event) {
+        function importPicaBackup(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const importedData = JSON.parse(e.target.result);
-                    
                     if (importedData.state && importedData.state.activeMatches) {
-                        showModal("¿Estás seguro de cargar este backup? Se sobrescribirán todos los datos actuales y el histórico.", "confirm", () => {
+                        showPicaModal("¿Cargar backup? Se sobrescribirán los datos.", "confirm", () => {
                             gameState = importedData.state;
-                            historyStack = importedData.history || [];
+                            historyStackPica = importedData.history || [];
                             historicalStats = importedData.historicalStats || {};
-                            
-                            saveToLocalStorage();
-                            renderMatches();
-                            renderStats();
-                            renderHistoricalStats();
-                            updateUndoButton();
-                            
-                            showModal("Backup cargado correctamente.", "alert");
+                            savePicaToLocal(); renderMatches(); renderStats(); renderHistoricalStats(); updateUndoButtonPica();
+                            showPicaModal("Backup cargado correctamente.", "alert");
                         }, "Sí, Cargar", "Cancelar");
-                    } else {
-                        showModal("El archivo seleccionado no parece ser un backup válido de Truco Tracker.", "alert");
-                    }
-                } catch (error) {
-                    showModal("Error al leer el archivo. Asegúrate de que sea un JSON válido.", "alert");
-                }
+                    } else showPicaModal("Archivo inválido.", "alert");
+                } catch (err) { showPicaModal("Error leyendo archivo.", "alert"); }
             };
             reader.readAsText(file);
-            
-            // Limpiar el input para permitir volver a cargar el mismo archivo si se desea
             event.target.value = "";
         }
 
         function updateDatalists() {
             const p1Val = document.getElementById('p1').value.trim();
             const p2Val = document.getElementById('p2').value.trim();
-            
             const activePlayers = gameState.activeMatches.flatMap(m => [m.p1, m.p2]);
             const available = gameState.knownPlayers.filter(p => !activePlayers.includes(p));
             
-            const dl1 = document.getElementById('players-1');
-            const dl2 = document.getElementById('players-2');
-            
-            dl1.innerHTML = available.filter(p => p !== p2Val).map(p => `<option value="${p}">`).join('');
-            dl2.innerHTML = available.filter(p => p !== p1Val).map(p => `<option value="${p}">`).join('');
+            document.getElementById('players-1').innerHTML = available.filter(p => p !== p2Val).map(p => `<option value="${p}">`).join('');
+            document.getElementById('players-2').innerHTML = available.filter(p => p !== p1Val).map(p => `<option value="${p}">`).join('');
         }
 
-        function updateUndoButton() {
+        function updateUndoButtonPica() {
             const btn = document.getElementById('undo-btn');
-            if (historyStack.length > 0) {
+            if (historyStackPica.length > 0) {
                 btn.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
                 btn.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
             } else {
@@ -316,90 +552,55 @@
 
         function executeWithUndo(actionFn) {
             const previousState = JSON.stringify(gameState);
-            
             actionFn();
-            
             const newState = JSON.stringify(gameState);
             
             if (previousState !== newState) {
-                historyStack.push(previousState);
-                if (historyStack.length > 30) historyStack.shift();
-                updateUndoButton();
+                historyStackPica.push(previousState);
+                if (historyStackPica.length > 30) historyStackPica.shift();
+                updateUndoButtonPica();
             }
-            
-            saveToLocalStorage();
-            renderMatches();
-            if (!document.getElementById('section-stats').classList.contains('hidden')) {
-                renderStats();
-            }
+            savePicaToLocal(); renderMatches();
+            if (!document.getElementById('section-stats').classList.contains('hidden')) renderStats();
         }
 
-        function undo() {
-            if (historyStack.length === 0) return;
-            const previousState = historyStack.pop();
+        function undoPica() {
+            if (historyStackPica.length === 0) return;
+            const previousState = historyStackPica.pop();
             gameState = JSON.parse(previousState);
-            saveToLocalStorage();
-            renderMatches();
-            if (!document.getElementById('section-stats').classList.contains('hidden')) {
-                renderStats();
-            }
-            updateUndoButton();
+            savePicaToLocal(); renderMatches();
+            if (!document.getElementById('section-stats').classList.contains('hidden')) renderStats();
+            updateUndoButtonPica();
         }
 
-        function switchTab(tab) {
+        function switchPicaTab(tab) {
             document.getElementById('section-play').classList.toggle('hidden', tab !== 'play');
             document.getElementById('section-stats').classList.toggle('hidden', tab !== 'stats');
             document.getElementById('tab-play').className = tab === 'play' ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all' : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all';
             document.getElementById('tab-stats').className = tab === 'stats' ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all' : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all';
-            if (tab === 'stats') {
-                renderStats();
-                renderHistoricalStats();
-            }
+            if (tab === 'stats') { renderStats(); renderHistoricalStats(); }
         }
 
         function startMatch() {
             const p1 = document.getElementById('p1').value.trim() || 'J1';
             const p2 = document.getElementById('p2').value.trim() || 'J2';
-            
-            if (p1 === p2) {
-                showModal("Los jugadores deben ser distintos.", 'alert');
-                return;
-            }
-
+            if (p1 === p2) return showPicaModal("Los jugadores deben ser distintos.", 'alert');
             const activePlayers = gameState.activeMatches.flatMap(m => [m.p1, m.p2]);
-            if (activePlayers.includes(p1) || activePlayers.includes(p2)) {
-                showModal("Uno o ambos jugadores ya están jugando en una partida activa.", 'alert');
-                return;
-            }
+            if (activePlayers.includes(p1) || activePlayers.includes(p2)) return showPicaModal("Jugador ya en partida activa.", 'alert');
             
             executeWithUndo(() => {
                 if (!gameState.knownPlayers.includes(p1)) gameState.knownPlayers.push(p1);
                 if (!gameState.knownPlayers.includes(p2)) gameState.knownPlayers.push(p2);
-
-                gameState.activeMatches.push({ 
-                    id: Date.now(), p1, p2, 
-                    score1: 0, score2: 0, 
-                    currentPica1: 0, currentPica2: 0,
-                    picas: [],
-                    chicos: []
-                });
+                gameState.activeMatches.push({ id: Date.now(), p1, p2, score1: 0, score2: 0, currentPica1: 0, currentPica2: 0, picas: [], chicos: [] });
             });
-
-            document.getElementById('p1').value = '';
-            document.getElementById('p2').value = '';
-            updateDatalists();
+            document.getElementById('p1').value = ''; document.getElementById('p2').value = ''; updateDatalists();
         }
 
         function updateScore(matchId, playerIdx, delta) {
             executeWithUndo(() => {
                 const match = gameState.activeMatches.find(m => m.id === matchId);
-                if (playerIdx === 1) {
-                    match.score1 = Math.max(0, match.score1 + delta);
-                    match.currentPica1 = Math.max(0, match.currentPica1 + delta);
-                } else {
-                    match.score2 = Math.max(0, match.score2 + delta);
-                    match.currentPica2 = Math.max(0, match.currentPica2 + delta);
-                }
+                if (playerIdx === 1) { match.score1 = Math.max(0, match.score1 + delta); match.currentPica1 = Math.max(0, match.currentPica1 + delta); }
+                else { match.score2 = Math.max(0, match.score2 + delta); match.currentPica2 = Math.max(0, match.currentPica2 + delta); }
             });
         }
 
@@ -407,8 +608,7 @@
             executeWithUndo(() => {
                 const match = gameState.activeMatches.find(m => m.id === matchId);
                 match.picas.push({ s1: match.currentPica1, s2: match.currentPica2 });
-                match.currentPica1 = 0;
-                match.currentPica2 = 0;
+                match.currentPica1 = 0; match.currentPica2 = 0;
             });
         }
 
@@ -416,70 +616,50 @@
             executeWithUndo(() => {
                 gameState.activeMatches.forEach(match => {
                     if (!match.chicos) match.chicos = [];
-                    if (match.picas && match.picas.length > 0) {
-                        match.chicos.push([...match.picas]);
-                        match.picas = [];
-                    }
+                    if (match.picas && match.picas.length > 0) { match.chicos.push([...match.picas]); match.picas = []; }
                 });
             });
         }
 
         function deleteMatch(matchId) {
-            showModal("¿Seguro que quieres borrar esta partida de la noche actual?", 'confirm', () => {
-                executeWithUndo(() => {
-                    gameState.activeMatches = gameState.activeMatches.filter(m => m.id !== matchId);
-                });
+            showPicaModal("¿Borrar esta partida?", 'confirm', () => {
+                executeWithUndo(() => { gameState.activeMatches = gameState.activeMatches.filter(m => m.id !== matchId); });
             }, "Borrar", "Cancelar");
         }
 
         function resetEverything() {
-            showModal("¿Seguro que quieres borrar los resultados actuales para empezar una nueva noche? (Los nombres y el histórico se guardarán)", 'confirm', () => {
-                executeWithUndo(() => {
-                    gameState.activeMatches = []; 
-                });
-            }, "Sí, Nueva Noche", "Cancelar");
+            showPicaModal("¿Empezar nueva noche? (Se limpiarán las partidas actuales)", 'confirm', () => {
+                executeWithUndo(() => { gameState.activeMatches = []; });
+            }, "Sí", "Cancelar");
         }
 
         function renderMatches() {
             const container = document.getElementById('active-matches-container');
             container.innerHTML = gameState.activeMatches.map(m => {
-                
-                let allGroups = [];
-                let picaGlobalCount = 0;
-                
+                let allGroups = []; let picaGlobalCount = 0;
                 if (m.chicos && m.chicos.length > 0) {
                     m.chicos.forEach((chico) => {
                         const picasHtml = chico.map((pica) => {
                             picaGlobalCount++;
-                            return `
-                            <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-300/80 font-mono text-center flex flex-col justify-center border-emerald-800 bg-emerald-950/50">
+                            return `<div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-300/80 font-mono text-center flex flex-col justify-center border-emerald-800 bg-emerald-950/50">
                                 <div class="text-amber-500/70 font-bold pb-0.5">P${picaGlobalCount}</div>
                                 <div>${pica.s1}-${pica.s2}</div>
-                            </div>
-                            `;
+                            </div>`;
                         }).join('');
                         allGroups.push(picasHtml);
                     });
                 }
-
                 if (m.picas && m.picas.length > 0) {
                     const currentPicasHtml = m.picas.map((pica) => {
                         picaGlobalCount++;
-                        return `
-                        <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-200 font-mono text-center flex flex-col justify-center shadow-md">
+                        return `<div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-200 font-mono text-center flex flex-col justify-center shadow-md">
                             <div class="text-amber-500 font-bold pb-0.5">P${picaGlobalCount}</div>
                             <div>${pica.s1}-${pica.s2}</div>
-                        </div>
-                        `;
+                        </div>`;
                     }).join('');
                     allGroups.push(currentPicasHtml);
                 }
-
-                const groupedPicasHtml = allGroups.join(`
-                    <div class="flex items-center justify-center px-1.5">
-                        <div class="w-[3.5px] h-8 bg-[#451a03] rounded-full shadow-sm"></div>
-                    </div>
-                `);
+                const groupedPicasHtml = allGroups.join(`<div class="flex items-center justify-center px-1.5"><div class="w-[3.5px] h-8 bg-[#451a03] rounded-full shadow-sm"></div></div>`);
 
                 return `
                 <div class="truco-table p-4 rounded-xl shadow-lg text-white" id="match-${m.id}">
@@ -505,29 +685,14 @@
                             <button onclick="updateScore(${m.id}, 2, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md text-2xl py-1 hover:bg-amber-500 transition-colors shadow-inner">+</button>
                         </div>
                     </div>
-
-                    <button onclick="registrarPica(${m.id}); vibrar();" class="w-full mb-4 bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 py-2.5 rounded-lg text-sm font-bold transition-colors shadow-sm">
-                        Registrar Pica Actual
-                    </button>
-
-                    ${allGroups.length > 0 ? `
-                        <div class="flex flex-wrap gap-1.5 mb-4 mt-3 justify-center items-center border-t border-emerald-800 pt-4">
-                            <div class="w-full text-xs font-bold text-emerald-400 mb-2 uppercase tracking-widest text-center opacity-80">Picas</div>
-                            ${groupedPicasHtml}
-                        </div>
-                    ` : ''}
-
+                    <button onclick="registrarPica(${m.id}); vibrar();" class="w-full mb-4 bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 py-2.5 rounded-lg text-sm font-bold transition-colors shadow-sm">Registrar Pica Actual</button>
+                    ${allGroups.length > 0 ? `<div class="flex flex-wrap gap-1.5 mb-4 mt-3 justify-center items-center border-t border-emerald-800 pt-4"><div class="w-full text-xs font-bold text-emerald-400 mb-2 uppercase tracking-widest text-center opacity-80">Picas</div>${groupedPicasHtml}</div>` : ''}
                     <div class="flex justify-between items-center mt-3 border-t border-emerald-800/50 pt-4">
-                        <div class="text-sm font-bold text-amber-200">
-                            Total: <span class="text-amber-400">${m.score1} - ${m.score2}</span>
-                        </div>
-                        <div class="flex space-x-2">
-                            <button onclick="deleteMatch(${m.id}); vibrar();" class="bg-red-950/80 hover:bg-red-900/80 text-red-400 text-[10px] uppercase font-bold px-3 py-1.5 rounded border border-red-900/50 transition-all">Borrar</button>
-                        </div>
+                        <div class="text-sm font-bold text-amber-200">Total: <span class="text-amber-400">${m.score1} - ${m.score2}</span></div>
+                        <div class="flex space-x-2"><button onclick="deleteMatch(${m.id}); vibrar();" class="bg-red-950/80 hover:bg-red-900/80 text-red-400 text-[10px] uppercase font-bold px-3 py-1.5 rounded border border-red-900/50 transition-all">Borrar</button></div>
                     </div>
-                </div>
-            `}).join('');
-            
+                </div>`;
+            }).join('');
             updateDatalists();
         }
 
@@ -536,10 +701,8 @@
             gameState.activeMatches.forEach(m => {
                 if (!totals[m.p1]) totals[m.p1] = { won: 0, lost: 0 };
                 if (!totals[m.p2]) totals[m.p2] = { won: 0, lost: 0 };
-                totals[m.p1].won += m.score1;
-                totals[m.p1].lost += m.score2;
-                totals[m.p2].won += m.score2;
-                totals[m.p2].lost += m.score1;
+                totals[m.p1].won += m.score1; totals[m.p1].lost += m.score2;
+                totals[m.p2].won += m.score2; totals[m.p2].lost += m.score1;
             });
             return totals;
         }
@@ -547,188 +710,103 @@
         function renderStats() {
             const totals = getTotals();
             const listCombined = document.getElementById('stats-list-combined');
-            
             const sortedPlayers = Object.keys(totals).sort((a, b) => {
                 const diffA = totals[a].won - totals[a].lost;
                 const diffB = totals[b].won - totals[b].lost;
                 return diffB - diffA || totals[b].won - totals[a].won || a.localeCompare(b);
             });
             
-            if(sortedPlayers.length === 0) {
-                listCombined.innerHTML = `<div class="text-center text-emerald-500/70 text-xs py-4">No hay datos esta noche</div>`;
-            } else {
+            if(sortedPlayers.length === 0) listCombined.innerHTML = `<div class="text-center text-emerald-500/70 text-xs py-4">No hay datos esta noche</div>`;
+            else {
                 listCombined.innerHTML = sortedPlayers.map((name, index) => {
-                    const won = totals[name].won;
-                    const lost = totals[name].lost;
-                    const diff = won - lost;
+                    const won = totals[name].won; const lost = totals[name].lost; const diff = won - lost;
                     const diffColor = diff > 0 ? 'text-emerald-400' : (diff < 0 ? 'text-red-400' : 'text-gray-400');
-                    const diffSign = diff > 0 ? '+' : '';
-
-                    return `
-                    <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-2 py-1 mb-1">
-                        <div class="flex items-center flex-1 min-w-0">
-                            <span class="text-amber-500 font-bold text-xs w-5 shrink-0 py-1">${index + 1}.</span>
-                            <span class="text-white font-bold text-xs break-words pr-1 py-1">${name}</span>
-                        </div>
+                    return `<div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-2 py-1 mb-1">
+                        <div class="flex items-center flex-1 min-w-0"><span class="text-amber-500 font-bold text-xs w-5 shrink-0 py-1">${index + 1}.</span><span class="text-white font-bold text-xs break-words pr-1 py-1">${name}</span></div>
                         <div class="flex w-24 justify-between items-center text-center shrink-0">
                             <span class="text-amber-500 font-bold text-xs w-6 py-1">${won}</span>
                             <span class="text-red-400 font-bold text-xs w-6 py-1">${lost}</span>
-                            <span class="${diffColor} font-bold text-xs w-8 py-1">${diffSign}${diff}</span>
+                            <span class="${diffColor} font-bold text-xs w-8 py-1">${diff > 0 ? '+' : ''}${diff}</span>
                         </div>
-                    </div>
-                    `;
+                    </div>`;
                 }).join('');
             }
 
             const history = document.getElementById('history-list');
-            if(gameState.activeMatches.length === 0){
-                history.innerHTML = `<div class="text-center text-emerald-500/70 text-xs py-4">No hay enfrentamientos activos</div>`;
-            } else {
+            if(gameState.activeMatches.length === 0) history.innerHTML = `<div class="text-center text-emerald-500/70 text-xs py-4">No hay enfrentamientos activos</div>`;
+            else {
                 history.innerHTML = gameState.activeMatches.map(m => {
-                    
-                    let allGroups = [];
-                    let picaGlobalCount = 0;
-                    
+                    let allGroups = []; let picaGlobalCount = 0;
                     if (m.chicos && m.chicos.length > 0) {
                         m.chicos.forEach((chico) => {
-                            const picasHtml = chico.map((pica) => {
-                                picaGlobalCount++;
-                                return `
-                                <div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center leading-normal">
-                                    <div class="text-amber-500 font-bold">P${picaGlobalCount}</div>
-                                    <div>${pica.s1}-${pica.s2}</div>
-                                </div>
-                                `;
-                            }).join('');
-                            allGroups.push(picasHtml);
+                            allGroups.push(chico.map((pica) => {
+                                picaGlobalCount++; return `<div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center leading-normal"><div class="text-amber-500 font-bold">P${picaGlobalCount}</div><div>${pica.s1}-${pica.s2}</div></div>`;
+                            }).join(''));
                         });
                     }
-
                     if (m.picas && m.picas.length > 0) {
-                        const currentPicasHtml = m.picas.map((pica) => {
-                            picaGlobalCount++;
-                            return `
-                            <div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center border-amber-600/50 leading-normal">
-                                <div class="text-amber-500 font-bold">P${picaGlobalCount}</div>
-                                <div>${pica.s1}-${pica.s2}</div>
-                            </div>
-                            `;
-                        }).join('');
-                        allGroups.push(currentPicasHtml);
+                        allGroups.push(m.picas.map((pica) => {
+                            picaGlobalCount++; return `<div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center border-amber-600/50 leading-normal"><div class="text-amber-500 font-bold">P${picaGlobalCount}</div><div>${pica.s1}-${pica.s2}</div></div>`;
+                        }).join(''));
                     }
+                    const finalPicasHtml = allGroups.join(`<div class="flex items-center justify-center px-1"><div class="w-[3.5px] h-6 bg-[#451a03] rounded-full shadow-sm"></div></div>`);
 
-                    const finalPicasHtml = allGroups.join(`
-                        <div class="flex items-center justify-center px-1">
-                            <div class="w-[3.5px] h-6 bg-[#451a03] rounded-full shadow-sm"></div>
-                        </div>
-                    `);
-
-                    return `
-                    <div class="truco-table p-2.5 rounded-xl shadow-lg text-white mb-2" style="border-width: 3px;">
+                    return `<div class="truco-table p-2.5 rounded-xl shadow-lg text-white mb-2" style="border-width: 3px;">
                         <div class="flex justify-between items-center">
-                            <div class="w-[42%] text-center">
-                                <div class="font-bold text-xs text-amber-300 break-words py-1">${m.p1}</div>
-                                <div class="score-font text-lg font-bold text-amber-500 py-0.5">${m.score1}</div>
-                            </div>
+                            <div class="w-[42%] text-center"><div class="font-bold text-xs text-amber-300 break-words py-1">${m.p1}</div><div class="score-font text-lg font-bold text-amber-500 py-0.5">${m.score1}</div></div>
                             <div class="text-emerald-500 font-bold text-[9px]">VS</div>
-                            <div class="w-[42%] text-center">
-                                <div class="font-bold text-xs text-amber-300 break-words py-1">${m.p2}</div>
-                                <div class="score-font text-lg font-bold text-amber-500 py-0.5">${m.score2}</div>
-                            </div>
+                            <div class="w-[42%] text-center"><div class="font-bold text-xs text-amber-300 break-words py-1">${m.p2}</div><div class="score-font text-lg font-bold text-amber-500 py-0.5">${m.score2}</div></div>
                         </div>
-                        ${allGroups.length > 0 ? `
-                            <div class="flex flex-wrap justify-center items-center gap-1 mt-1 border-t border-emerald-800/60 pt-2">
-                                ${finalPicasHtml}
-                            </div>
-                        ` : ''}
-                    </div>
-                `}).join('');
+                        ${allGroups.length > 0 ? `<div class="flex flex-wrap justify-center items-center gap-1 mt-1 border-t border-emerald-800/60 pt-2">${finalPicasHtml}</div>` : ''}
+                    </div>`;
+                }).join('');
             }
         }
 
-        // LOGICA DE TABLA HISTORICA
         function confirmarRegistroNoche() {
             const currentTotals = getTotals();
-            if (Object.keys(currentTotals).length === 0) {
-                showModal("No hay datos en la noche actual para registrar.", "alert");
-                return;
-            }
-
-            showModal("¿Seguro que quieres sumar los puntos actuales a la Tabla Histórica Anual? Asegúrate de hacerlo solo al finalizar la noche.", "confirm", () => {
-                
+            if (Object.keys(currentTotals).length === 0) return showPicaModal("No hay datos para registrar.", "alert");
+            showPicaModal("¿Sumar puntos a la Tabla Histórica Anual?", "confirm", () => {
                 for (const player in currentTotals) {
-                    if (!historicalStats[player]) {
-                        historicalStats[player] = { won: 0, lost: 0 };
-                    }
+                    if (!historicalStats[player]) historicalStats[player] = { won: 0, lost: 0 };
                     historicalStats[player].won += currentTotals[player].won;
                     historicalStats[player].lost += currentTotals[player].lost;
                 }
-                
-                saveToLocalStorage();
-                renderHistoricalStats();
-                
-                showModal("¡Noche registrada exitosamente en el histórico!", "alert");
-                
-            }, "Sí, Registrar Noche", "Cancelar");
+                savePicaToLocal(); renderHistoricalStats(); showPicaModal("¡Registrado en el histórico!", "alert");
+            }, "Sí", "Cancelar");
         }
 
         function renderHistoricalStats() {
             const listCombined = document.getElementById('historical-stats-list');
-            
             const sortedPlayers = Object.keys(historicalStats).sort((a, b) => {
                 const diffA = historicalStats[a].won - historicalStats[a].lost;
                 const diffB = historicalStats[b].won - historicalStats[b].lost;
                 return diffB - diffA || historicalStats[b].won - historicalStats[a].won || a.localeCompare(b);
             });
-            
-            if(sortedPlayers.length === 0) {
-                listCombined.innerHTML = `<div class="text-center text-emerald-500/50 text-xs py-4">Aún no hay noches registradas</div>`;
-                return;
-            }
+            if(sortedPlayers.length === 0) return listCombined.innerHTML = `<div class="text-center text-emerald-500/50 text-xs py-4">Aún no hay noches registradas</div>`;
 
             listCombined.innerHTML = sortedPlayers.map((name, index) => {
-                const won = historicalStats[name].won;
-                const lost = historicalStats[name].lost;
-                const diff = won - lost;
+                const won = historicalStats[name].won; const lost = historicalStats[name].lost; const diff = won - lost;
                 const diffColor = diff > 0 ? 'text-emerald-400' : (diff < 0 ? 'text-red-400' : 'text-gray-500');
-                const diffSign = diff > 0 ? '+' : '';
-
-                return `
-                <div class="flex justify-between items-center bg-[#022c22] border border-emerald-800/70 rounded-md px-2 py-1.5 mb-1 shadow-sm">
-                    <div class="flex items-center flex-1 min-w-0">
-                        <span class="text-amber-600 font-black text-xs w-5 shrink-0">${index + 1}.</span>
-                        <span class="text-emerald-50 font-bold text-xs break-words pr-1">${name}</span>
-                    </div>
+                return `<div class="flex justify-between items-center bg-[#022c22] border border-emerald-800/70 rounded-md px-2 py-1.5 mb-1 shadow-sm">
+                    <div class="flex items-center flex-1 min-w-0"><span class="text-amber-600 font-black text-xs w-5 shrink-0">${index + 1}.</span><span class="text-emerald-50 font-bold text-xs break-words pr-1">${name}</span></div>
                     <div class="flex w-24 justify-between items-center text-center shrink-0">
                         <span class="text-amber-500/90 font-bold text-xs w-6">${won}</span>
                         <span class="text-red-500/90 font-bold text-xs w-6">${lost}</span>
-                        <span class="${diffColor} font-black text-xs w-8 bg-black/20 rounded py-0.5">${diffSign}${diff}</span>
+                        <span class="${diffColor} font-black text-xs w-8 bg-black/20 rounded py-0.5">${diff > 0 ? '+' : ''}${diff}</span>
                     </div>
-                </div>
-                `;
+                </div>`;
             }).join('');
         }
 
         function shareStats() {
             renderStats(); 
             setTimeout(() => {
-                html2canvas(document.getElementById("capture-area"), {
-                    backgroundColor: "#064e3b", 
-                    scale: 2,
-                    useCORS: true
-                }).then(canvas => {
+                html2canvas(document.getElementById("capture-area-pica"), { backgroundColor: "#064e3b", scale: 2, useCORS: true }).then(canvas => {
                     canvas.toBlob(blob => {
                         const file = new File([blob], 'resultados_pica_pica.png', { type: 'image/png' });
-                        const shareData = { title: 'Resultados Pica Pica', files: [file] };
-                        
-                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                            navigator.share(shareData).catch(console.error);
-                        } else {
-                            const link = document.createElement('a');
-                            link.download = 'resultados_pica_pica.png';
-                            link.href = canvas.toDataURL("image/png");
-                            link.click();
-                        }
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) navigator.share({ title: 'Resultados', files: [file] }).catch(console.error);
+                        else { const link = document.createElement('a'); link.download = 'resultados.png'; link.href = canvas.toDataURL("image/png"); link.click(); }
                     }, 'image/png');
                 });
             }, 50);
@@ -737,29 +815,320 @@
         function shareHistoricalStats() {
             renderHistoricalStats(); 
             setTimeout(() => {
-                html2canvas(document.getElementById("capture-area-history"), {
-                    backgroundColor: "#064e3b", 
-                    scale: 2,
-                    useCORS: true
-                }).then(canvas => {
+                html2canvas(document.getElementById("capture-area-history"), { backgroundColor: "#064e3b", scale: 2, useCORS: true }).then(canvas => {
                     canvas.toBlob(blob => {
                         const file = new File([blob], 'historico_pica_pica.png', { type: 'image/png' });
-                        const shareData = { title: 'Histórico Pica Pica', files: [file] };
-                        
-                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                            navigator.share(shareData).catch(console.error);
-                        } else {
-                            const link = document.createElement('a');
-                            link.download = 'historico_pica_pica.png';
-                            link.href = canvas.toDataURL("image/png");
-                            link.click();
-                        }
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) navigator.share({ title: 'Histórico', files: [file] }).catch(console.error);
+                        else { const link = document.createElement('a'); link.download = 'historico.png'; link.href = canvas.toDataURL("image/png"); link.click(); }
                     }, 'image/png');
                 });
             }, 50);
         }
+
+        // ==========================================
+        // LÓGICA CAMPEONATO
+        // ==========================================
+        let undoStackCamp = [];
+        let statsCamp = JSON.parse(localStorage.getItem('torneo_final_stats')) || [];
+        let partnershipsCamp = JSON.parse(localStorage.getItem('torneo_partnerships')) || {};
+        let prevOrderCamp = JSON.parse(localStorage.getItem('torneo_prev_order')) || [];
+        let activePlayerIdx = null;
+        let pressTimer = null;
+        let isEditMode = false;
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const btn = document.getElementById('editToggle');
+            btn.innerText = isEditMode ? "EDIT ON" : "EDIT OFF";
+            btn.classList.toggle('active', isEditMode);
+            vibrar(isEditMode ? 150 : 50);
+        }
+
+        function saveUndoStateCamp() {
+            undoStackCamp.push(JSON.stringify({stats: statsCamp, partnerships: partnershipsCamp}));
+            if (undoStackCamp.length > 30) undoStackCamp.shift();
+        }
+
+        function undoCampAction() {
+            if (undoStackCamp.length > 0) {
+                const last = JSON.parse(undoStackCamp.pop());
+                statsCamp = last.stats;
+                partnershipsCamp = last.partnerships;
+                renderCamp();
+            }
+        }
+
+        function openMatchModal() {
+            if (statsCamp.length < 2) return;
+            const wList = document.getElementById('winnersList');
+            const lList = document.getElementById('losersList');
+            wList.innerHTML = ''; lList.innerHTML = '';
+            
+            statsCamp.forEach((p, i) => {
+                const createItem = (type) => {
+                    const div = document.createElement('div');
+                    div.className = 'player-select-item';
+                    div.id = `container-${type}-${i}`;
+                    div.innerHTML = `
+                        <input type="checkbox" id="chk-${type}-${i}" data-idx="${i}" data-type="${type}" onchange="syncCheckboxes(this)">
+                        <span>${p.name}</span>
+                    `;
+                    return div;
+                };
+                wList.appendChild(createItem('win'));
+                lList.appendChild(createItem('loss'));
+            });
+            document.getElementById('matchModal').style.display = 'flex';
+        }
+
+        function syncCheckboxes(el) {
+            const idx = el.dataset.idx;
+            const type = el.dataset.type;
+            const otherType = type === 'win' ? 'loss' : 'win';
+            const otherContainer = document.getElementById(`container-${otherType}-${idx}`);
+            const otherCheckbox = document.getElementById(`chk-${otherType}-${idx}`);
+            
+            if (el.checked) {
+                otherContainer.classList.add('disabled');
+                otherCheckbox.checked = false;
+            } else {
+                otherContainer.classList.remove('disabled');
+            }
+        }
+
+        function closeMatchModal() { document.getElementById('matchModal').style.display = 'none'; }
+
+        function submitMatch() {
+            const wins = Array.from(document.querySelectorAll('#matchModal input[data-type="win"]:checked')).map(el => parseInt(el.dataset.idx));
+            const loss = Array.from(document.querySelectorAll('#matchModal input[data-type="loss"]:checked')).map(el => parseInt(el.dataset.idx));
+            if (wins.length === 0 || loss.length === 0) return;
+            
+            saveUndoStateCamp();
+            vibrar(100);
+
+            wins.forEach(idx => handleStatChange(idx, 'g', statsCamp[idx].g + 1));
+            loss.forEach(idx => handleStatChange(idx, 'p', statsCamp[idx].p + 1));
+
+            const recordPair = (idxA, idxB) => {
+                const names = [statsCamp[idxA].name, statsCamp[idxB].name].sort();
+                const key = names.join(' | ');
+                partnershipsCamp[key] = (partnershipsCamp[key] || 0) + 1;
+            };
+
+            for(let i=0; i<wins.length; i++) for(let j=i+1; j<wins.length; j++) recordPair(wins[i], wins[j]);
+            for(let i=0; i<loss.length; i++) for(let j=i+1; j<loss.length; j++) recordPair(loss[i], loss[j]);
+
+            closeMatchModal();
+            saveTableData();
+        }
+
+        function getCurrentTournamentFecha() {
+            const now = new Date(); const year = now.getFullYear();
+            const getFirstFriday = (y, m) => { let d = new Date(y, m, 1); while (d.getDay() !== 5) d.setDate(d.getDate() + 1); return d; };
+            const getLastFriday = (y, m) => { let d = new Date(y, m + 1, 0); while (d.getDay() !== 5) d.setDate(d.getDate() - 1); return d; };
+            
+            const startApertura = getFirstFriday(year, 0);
+            const startClausura = getFirstFriday(year, 6);
+            const corteClausura = new Date(startClausura.getTime() - (6 * 24 * 60 * 60 * 1000));
+            const isClausura = now >= corteClausura;
+            
+            const seasonStart = isClausura ? startClausura : startApertura;
+            const seasonEnd = isClausura ? getLastFriday(year, 11) : getLastFriday(year, 5);
+            let diffMs = now.getTime() - seasonStart.getTime() + (6 * 24 * 60 * 60 * 1000);
+            let diffWeeks = Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000)) + 1;
+            let totalFechasSeason = Math.floor((seasonEnd.getTime() - seasonStart.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1;
+
+            return { actual: Math.max(1, Math.min(totalFechasSeason, diffWeeks)), total: totalFechasSeason };
+        }
+
+        function renderResumen() {
+            if (statsCamp.length === 0) return;
+            const maxPJ = Math.max(...statsCamp.map(p => p.g + p.p), 1);
+            const currentLeaderG = Math.max(...statsCamp.map(p => p.g), 0);
+            const fechaInfo = getCurrentTournamentFecha();
+            const TOTAL_FECHAS = fechaInfo.total;
+            const fechasFaltantes = Math.max(0, TOTAL_FECHAS - fechaInfo.actual + 1);
+            
+            const data = statsCamp.map(p => {
+                const total = p.g + p.p;
+                return { name: p.name, pj: total, g: p.g, perc: total > 0 ? (p.g / total) * 100 : 0, racha: getRacha(p.history), isBA: (maxPJ >= 7 && total < (maxPJ / 2)) };
+            });
+
+            const validData = data.filter(d => !d.isBA);
+            const topPerc = [...validData].sort((a,b) => b.perc - a.perc).slice(0, 3);
+            const botPerc = [...validData].sort((a,b) => a.perc - b.perc).slice(0, 3);
+            const topRacha = [...validData].sort((a,b) => b.racha - a.racha).slice(0, 3);
+            const botRacha = [...validData].sort((a,b) => a.racha - b.racha).slice(0, 3);
+
+            const validNames = new Set(validData.map(d => d.name));
+            const duoEntries = Object.entries(partnershipsCamp).map(([duo, count]) => ({ duo, count }))
+                .filter(({ duo }) => { const [p1, p2] = duo.split(' | '); return validNames.has(p1) && validNames.has(p2); })
+                .sort((a,b) => b.count - a.count);
+            const topDuos = duoEntries.slice(0, 5);
+            const botDuos = duoEntries.filter(d => d.count > 0).reverse().slice(0, 5);
+
+            const html = `
+                <div class="resumen-section">
+                    <h4>Mejores (%)</h4>
+                    ${topPerc.map(p => `<div class="resumen-item"><span>${p.name}</span><span class="val-win">${Math.round(p.perc)}%</span></div>`).join('')}
+                    <h4 style="margin-top:6px">Peores (%)</h4>
+                    ${botPerc.map(p => `<div class="resumen-item"><span>${p.name}</span><span class="val-loss">${Math.round(p.perc)}%</span></div>`).join('')}
+                    <h4 style="margin-top:6px">Parejas más frecuentes</h4>
+                    ${topDuos.length > 0 ? topDuos.map(d => `<div class="resumen-item"><span>${d.duo}</span><span class="val-win">${d.count}</span></div>`).join('') : '<div>-</div>'}
+                </div>
+                <div class="resumen-section">
+                    <h4>Mejores Rachas</h4>
+                    ${topRacha.map(p => `<div class="resumen-item"><span>${p.name}</span><span class="val-win">${p.racha > 0 ? '' + p.racha : '-'}</span></div>`).join('')}
+                    <h4 style="margin-top:6px">Peores Rachas</h4>
+                    ${botRacha.map(p => `<div class="resumen-item"><span>${p.name}</span><span class="val-loss">${p.racha < 0 ? '' + Math.abs(p.racha) : '-'}</span></div>`).join('')}
+                    <h4 style="margin-top:6px">Parejas menos frecuentes</h4>
+                    ${botDuos.length > 0 ? botDuos.map(d => `<div class="resumen-item"><span>${d.duo}</span><span class="val-loss">${d.count}</span></div>`).join('') : '<div>-</div>'}
+                </div>
+                <div class="resumen-section resumen-full-width">
+                    <h4 style="text-align: center;">PROBABILIDADES CAMPEÓN (FALTAN ${fechasFaltantes} FECHAS)</h4>
+                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 2px;">
+                    ${maxPJ > 0 ? validData.map(d => {
+                        const r = Math.max(0, TOTAL_FECHAS - maxPJ);
+                        const maxPossibleWins = d.g + r;
+                        if (maxPossibleWins < currentLeaderG || d.pj === 0) return { name: d.name, score: 0 };
+                        const chance = Math.pow(d.g + (r * ((d.g + 1) / (d.pj + 2)) * (d.pj / maxPJ)), 3);
+                        return { name: d.name, score: chance };
+                    }).sort((a,b)=>b.score-a.score).map(p => {
+                        const totalS = validData.reduce((acc,s)=>{
+                            const r = Math.max(0, TOTAL_FECHAS - maxPJ);
+                            if ((s.g + r) < currentLeaderG) return acc;
+                            return acc + Math.pow(s.g+(r*((s.g+1)/(s.pj+2))*(s.pj/maxPJ)), 3);
+                        }, 0);
+                        const perc = Math.round((p.score / (totalS||1))*100);
+                        return `<div style="text-align: center; min-width: 48px; flex: 1; padding: 2px; background: rgba(255,255,255,0.05); border-radius: 3px;">
+                            <div style="font-weight: 800; font-size: 0.5rem; color: ${perc > 0 ? '#fff' : '#666'}">${p.name}</div>
+                            <div class="val-prob" style="font-size: 0.7rem; color: ${perc > 0 ? 'var(--dorado-campeon)' : '#666'}">${perc}%</div>
+                        </div>`;
+                    }).join('') : '<div style="font-size:0.6rem; color:#666; width:100%; text-align:center">Disponible en Fecha 13</div>'}
+                    </div>
+                </div>`;
+            document.getElementById('resumenCompacto').innerHTML = html;
+        }
+
+        function renderCamp() {
+            const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
+            const maxPJ = Math.max(...statsCamp.map(p => p.g + p.p), 0);
+            statsCamp.forEach((p, i) => {
+                const total = p.g + p.p;
+                const perc = total > 0 ? Math.round((p.g / total) * 100) : 0;
+                const isBA = maxPJ >= 7 && total < (maxPJ / 2);
+                const bgPerc = isBA ? '#888' : getGradientColor(perc);
+                let posDisplay = (i===0)?'🏆':(i===1)?'🥈':(i===2)?'🥉':(i===statsCamp.length-1 && statsCamp.length > 3)?'💀':i+1;
+                
+                let rachaIcon = '';
+                const oldIndex = prevOrderCamp.indexOf(p.name);
+                if (oldIndex !== -1) {
+                    if (i < oldIndex) rachaIcon = '<span class="racha sube">↑</span>';
+                    else if (i > oldIndex) rachaIcon = '<span class="racha baja">↓</span>';
+                }
+
+                const racha = getRacha(p.history);
+                const anchor = racha <= -4 ? ' ⚓' : '';
+                const trunk = (total >= 5 && perc < 30) ? ' 🪵' : '';
+                const lastResults = (p.history || []).slice(-30);
+                let dots = '<div class="dots-container">' + lastResults.map(res => `<span class="dot dot-${res}"></span>`).join('') + '</div>';
+
+                tbody.innerHTML += `
+                    <tr class="${(i === 0 && p.isChampion) ? 'fila-campeon' : ''}">
+                        <td class="col-pos">${posDisplay}</td>
+                        <td class="name-col" onmousedown="handleStart(${i})" onmouseup="handleEnd()" ontouchstart="handleStart(${i})" ontouchend="handleEnd()">
+                            <div class="name-wrapper">
+                                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${p.isChampion ? '👑 ' : ''}${p.name}${anchor}${trunk}${isBA ? ' <small>(BA)</small>' : ''}${rachaIcon}</span>
+                                ${dots}
+                            </div>
+                        </td>
+                        <td class="col-pj">${total}</td>
+                        <td class="col-p" onclick="quickAdd(${i}, 'p')"><input type="number" class="table-input" readonly value="${p.p}"><span class="input-snapshot">${p.p}</span></td>
+                        <td class="col-g" onclick="quickAdd(${i}, 'g')"><input type="number" class="table-input" readonly value="${p.g}"><span class="input-snapshot">${p.g}</span></td>
+                        <td class="perc-cell" style="background:${bgPerc}; color:${(isBA||perc>=75||perc<35)?'white':'black'}">${perc}%</td>
+                        <td class="col-food" onclick="handleFoodChange(${i})"><input type="number" class="table-input" readonly value="${p.food}"><span class="input-snapshot">${p.food}</span></td>
+                    </tr>`;
+            });
+            localStorage.setItem('torneo_final_stats', JSON.stringify(statsCamp));
+            localStorage.setItem('torneo_partnerships', JSON.stringify(partnershipsCamp));
+            renderResumen();
+        }
+
+        function updateTitle(val) { document.getElementById('displayTitle').innerText = val; localStorage.setItem('torneo_titulo', val); }
+        function handleStart(idx) { if (!isEditMode) return; pressTimer = setTimeout(() => openPlayerModal(idx), 1000); }
+        function handleEnd() { clearTimeout(pressTimer); }
+        function openPlayerModal(idx) { vibrar(200); activePlayerIdx = idx; document.getElementById('modalPlayerName').innerText = statsCamp[idx].name; resetModalViews(); document.getElementById('playerModal').style.display = 'flex'; }
+        function closePlayerModal() { document.getElementById('playerModal').style.display = 'none'; }
+        function showEditSection() { document.getElementById('modalMainActions').style.display = 'none'; document.getElementById('editNameContainer').style.display = 'block'; document.getElementById('editNameInput').value = statsCamp[activePlayerIdx].name; }
+        function showDelSection() { document.getElementById('modalMainActions').style.display = 'none'; document.getElementById('confirmDelContainer').style.display = 'block'; }
+        function resetModalViews() { document.getElementById('modalMainActions').style.display = 'block'; document.getElementById('editNameContainer').style.display = 'none'; document.getElementById('confirmDelContainer').style.display = 'none'; }
         
-        loadFromLocalStorage();
+        function modalAction(type) {
+            saveUndoStateCamp();
+            if (type === 'edit') statsCamp[activePlayerIdx].name = document.getElementById('editNameInput').value.trim();
+            else if (type === 'champion') { const was = statsCamp[activePlayerIdx].isChampion; statsCamp.forEach(s=>s.isChampion=false); statsCamp[activePlayerIdx].isChampion = !was; }
+            else if (type === 'delete') {
+                const deletedName = statsCamp[activePlayerIdx].name;
+                statsCamp.splice(activePlayerIdx, 1);
+                for (let key in partnershipsCamp) if (key.split(' | ').includes(deletedName)) delete partnershipsCamp[key];
+            }
+            renderCamp(); closePlayerModal();
+        }
+
+        function getRacha(history) {
+            if (!history || history.length === 0) return 0;
+            let r = 0; const last = history[history.length - 1];
+            for (let i = history.length - 1; i >= 0; i--) if (history[i] === last) r++; else break;
+            return last === 'g' ? r : -r;
+        }
+
+        function getGradientColor(perc) { if (perc >= 70) return "#388E3C"; if (perc >= 50) return "#FBC02D"; if (perc >= 35) return "#F57C00"; return "#D32F2F"; }
+        function quickAdd(idx, field) { if (!isEditMode) return; saveUndoStateCamp(); handleStatChange(idx, field, statsCamp[idx][field] + 1); saveTableData(); }
+        function handleStatChange(idx, f, v) { 
+            if (!statsCamp[idx].history) statsCamp[idx].history = [];
+            if (v > statsCamp[idx][f]) statsCamp[idx].history.push(f);
+            else if (v < statsCamp[idx][f]) { const l = statsCamp[idx].history.lastIndexOf(f); if (l !== -1) statsCamp[idx].history.splice(l, 1); }
+            statsCamp[idx][f] = v;
+        }
+        function handleFoodChange(idx) { if (!isEditMode) return; saveUndoStateCamp(); statsCamp[idx].food++; renderCamp(); }
+        
+        function saveTableData() { 
+            vibrar();
+            prevOrderCamp = statsCamp.map(s => s.name); 
+            localStorage.setItem('torneo_prev_order', JSON.stringify(prevOrderCamp)); 
+            statsCamp.sort((a, b) => {
+                if (b.g !== a.g) return b.g - a.g;
+                return (b.g/(b.g+b.p||1)) - (a.g/(a.g+a.p||1));
+            });
+            renderCamp(); 
+        }
+        
+        async function shareCampAsImage() { 
+            sonar(); document.getElementById('view-camp').classList.add('exporting'); 
+            try { 
+                const c = await html2canvas(document.getElementById('captureArea'), { backgroundColor: "#000", scale: 3, useCORS: true }); 
+                const b = await new Promise(r => c.toBlob(r)); 
+                const f = new File([b], 'tabla_campeonato.png', { type: 'image/png' }); 
+                if (navigator.share) await navigator.share({ files: [f] }); 
+                else { const link = document.createElement('a'); link.download = 'tabla_campeonato.png'; link.href = URL.createObjectURL(b); link.click(); }
+            } catch (e) { console.error(e); } 
+            document.getElementById('view-camp').classList.remove('exporting'); 
+        }
+
+        function exportCampData() { const b = new Blob([JSON.stringify({stats: statsCamp, partnerships: partnershipsCamp})], {type: "application/json"}); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = "backup_campeonato.json"; a.click(); }
+        function importCampData() { const i = document.createElement('input'); i.type = 'file'; i.onchange = e => { const r = new FileReader(); r.onload = ev => { const d = JSON.parse(ev.target.result); statsCamp = d.stats || d; partnershipsCamp = d.partnerships || {}; renderCamp(); }; r.readAsText(e.target.files[0]); }; i.click(); }
+        function addNewPlayer() { const n = document.getElementById('newPlayerName').value.trim(); if (n) { saveUndoStateCamp(); statsCamp.push({ name: n, p: 0, g: 0, food: 0, history: [], isChampion: false }); document.getElementById('newPlayerName').value = ''; saveTableData(); } }
+
+        window.onload = () => {
+            // Iniciar Pica Pica
+            loadPicaFromLocal();
+            
+            // Iniciar Campeonato
+            const savedTitle = localStorage.getItem('torneo_titulo') || "Clausura Truco 2026";
+            document.getElementById('displayTitle').innerText = savedTitle;
+            document.getElementById('editTitle').value = savedTitle;
+            renderCamp();
+        };
     </script>
 </body>
 </html>
