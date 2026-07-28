@@ -65,10 +65,10 @@
 
         #view-camp table { width: 100%; border-collapse: collapse; color: #000; table-layout: fixed; border: none; }
         
-        #view-camp th { background: var(--header-table); color: #ffffff; padding: 3px 1px; font-size: 0.6rem; border: 1px solid #444; }
+        #view-camp th { background: var(--header-table); color: #ffffff; padding: 4px 2px; font-size: 0.6rem; border: 1px solid #444; }
         #displayTitle { font-size: 0.6rem; font-weight: 800; margin: 0; display: block; }
 
-        #view-camp td { padding: 0; text-align: center; border: 1px solid #000000; font-size: 0.85rem; font-weight: 700; height: 32px; vertical-align: middle; transition: background 0.3s; }
+        #view-camp td { padding: 0 2px; text-align: center; border: 1px solid #000000; font-size: 0.85rem; font-weight: 700; height: 32px; vertical-align: middle; transition: background 0.3s; }
 
         .fila-campeon td { background: var(--dorado-campeon) !important; color: #000 !important; border-color: #b8860b !important; }
         .fila-campeon .col-pos, .fila-campeon .col-g { background: #b8860b !important; color: #fff !important; }
@@ -84,8 +84,8 @@
         .exporting .table-input, .exporting .btn-delete, .exporting .btn-undo-ui, .exporting .btn-edit-ui, .exporting .btn-record-match { display: none !important; }
         .exporting .input-snapshot { display: block !important; }
 
-        .col-pos { background: var(--azul-oscuro); color: white; width: 28px; font-size: 0.8rem; }
-        .name-col { text-align: left; padding: 0 5px; background: var(--blanco-marfil); width: auto; font-size: 0.85rem; font-weight: 800; position: relative; user-select: none; -webkit-user-select: none; }
+        .col-pos { background: var(--azul-oscuro); color: white; width: 34px; font-size: 0.8rem; }
+        .name-col { text-align: left; padding: 0 6px; background: var(--blanco-marfil); width: auto; font-size: 0.85rem; font-weight: 800; position: relative; user-select: none; -webkit-user-select: none; }
         
         .name-wrapper { display: flex; justify-content: space-between; align-items: center; width: 100%; height: 100%; }
 
@@ -95,12 +95,12 @@
         .dot-g { background-color: var(--win-dot); }
         .dot-p { background-color: var(--loss-dot); }
 
-        .col-pj { background: var(--blanco-marfil); width: 30px; font-size: 0.85rem; }
-        .col-p { background: var(--blanco-marfil); color: #dc2626; width: 32px; font-size: 0.85rem; }
-        .col-g { background: var(--azul-oscuro); color: white; width: 32px; }
+        .col-pj { background: var(--blanco-marfil); width: 34px; font-size: 0.85rem; }
+        .col-p { background: var(--blanco-marfil); color: #dc2626; width: 36px; font-size: 0.85rem; }
+        .col-g { background: var(--azul-oscuro); color: white; width: 36px; }
         .col-g .table-input, .col-g .input-snapshot { font-size: 1rem; font-weight: 900; }
-        .col-food { background: var(--blanco-marfil); width: 32px; }
-        .perc-cell { font-size: 0.65rem; color: #000; width: 42px; }
+        .col-food { background: var(--blanco-marfil); width: 36px; }
+        .perc-cell { font-size: 0.65rem; color: #000; width: 48px; }
 
         .racha { font-size: 0.8rem; margin-left: 3px; font-weight: bold; }
         .sube { color: #15803d; }
@@ -221,10 +221,10 @@
                             <h2 class="text-xs font-bold text-emerald-300 mb-1.5 border-b border-emerald-700 pb-1 text-center uppercase tracking-widest">PUNTOS DE ESTA NOCHE</h2>
                             <div class="flex justify-between px-2 mb-1 mt-1 text-[9px] font-bold text-emerald-500 uppercase tracking-wider">
                                 <div class="flex-1 ml-6">Jugador</div>
-                                <div class="flex w-24 justify-between text-center">
-                                    <span class="w-6 text-emerald-400" title="Ganados">G</span>
-                                    <span class="w-6 text-red-400" title="Perdidos">P</span>
-                                    <span class="w-8 text-blue-400" title="Diferencia">DIF</span>
+                                <div class="flex w-28 justify-between text-center pr-1">
+                                    <span class="w-8 text-emerald-400" title="Ganados">G</span>
+                                    <span class="w-8 text-red-400" title="Perdidos">P</span>
+                                    <span class="w-10 text-blue-400" title="Diferencia">DIF</span>
                                 </div>
                             </div>
                             <div id="stats-list-combined" class="grid grid-cols-1 gap-1"></div>
@@ -251,10 +251,10 @@
                                 <h2 class="text-[10px] font-bold text-emerald-400 mb-1.5 border-b border-emerald-800 pb-1 text-center uppercase tracking-widest">PUNTOS ACUMULADOS EN PICA PICAS</h2>
                                 <div class="flex justify-between px-2 mb-1 mt-1 text-[9px] font-bold text-emerald-600 uppercase tracking-wider">
                                     <div class="flex-1 ml-6">Jugador</div>
-                                    <div class="flex w-24 justify-between text-center">
-                                        <span class="w-6 text-emerald-500" title="Ganados Totales">G</span>
-                                        <span class="w-6 text-red-500" title="Perdidos Totales">P</span>
-                                        <span class="w-8 text-blue-500" title="Diferencia Total">DIF</span>
+                                    <div class="flex w-28 justify-between text-center pr-1">
+                                        <span class="w-8 text-emerald-500" title="Ganados Totales">G</span>
+                                        <span class="w-8 text-red-500" title="Perdidos Totales">P</span>
+                                        <span class="w-10 text-blue-500" title="Diferencia Total">DIF</span>
                                     </div>
                                 </div>
                                 <div id="historical-stats-list" class="grid grid-cols-1 gap-1"></div>
@@ -295,13 +295,13 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th style="width: 32px;">Pos</th>
+                                    <th style="width: 34px;">Pos</th>
                                     <th><span id="displayTitle">CLAUSURA TRUCO 2026</span></th>
-                                    <th style="width: 32px;">J</th>
-                                    <th style="width: 32px;">P</th>
-                                    <th style="width: 35px;">G</th>
-                                    <th style="width: 30px;">%</th>
-                                    <th style="width: 20px;">🏠</th>
+                                    <th style="width: 34px;">J</th>
+                                    <th style="width: 36px;">P</th>
+                                    <th style="width: 36px;">G</th>
+                                    <th style="width: 48px;">%</th>
+                                    <th style="width: 36px;">🏠</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody"></tbody>
@@ -723,10 +723,10 @@
                     const diffColor = diff > 0 ? 'text-emerald-400' : (diff < 0 ? 'text-red-400' : 'text-gray-400');
                     return `<div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-2 py-1 mb-1">
                         <div class="flex items-center flex-1 min-w-0"><span class="text-amber-500 font-bold text-xs w-5 shrink-0 py-1">${index + 1}.</span><span class="text-white font-bold text-xs break-words pr-1 py-1">${name}</span></div>
-                        <div class="flex w-24 justify-between items-center text-center shrink-0">
-                            <span class="text-amber-500 font-bold text-xs w-6 py-1">${won}</span>
-                            <span class="text-red-400 font-bold text-xs w-6 py-1">${lost}</span>
-                            <span class="${diffColor} font-bold text-xs w-8 py-1">${diff > 0 ? '+' : ''}${diff}</span>
+                        <div class="flex w-28 justify-between items-center text-center shrink-0 pr-1">
+                            <span class="text-amber-500 font-bold text-xs w-8 py-1">${won}</span>
+                            <span class="text-red-400 font-bold text-xs w-8 py-1">${lost}</span>
+                            <span class="${diffColor} font-bold text-xs w-10 py-1">${diff > 0 ? '+' : ''}${diff}</span>
                         </div>
                     </div>`;
                 }).join('');
@@ -790,10 +790,10 @@
                 const diffColor = diff > 0 ? 'text-emerald-400' : (diff < 0 ? 'text-red-400' : 'text-gray-500');
                 return `<div class="flex justify-between items-center bg-[#022c22] border border-emerald-800/70 rounded-md px-2 py-1.5 mb-1 shadow-sm">
                     <div class="flex items-center flex-1 min-w-0"><span class="text-amber-600 font-black text-xs w-5 shrink-0">${index + 1}.</span><span class="text-emerald-50 font-bold text-xs break-words pr-1">${name}</span></div>
-                    <div class="flex w-24 justify-between items-center text-center shrink-0">
-                        <span class="text-amber-500/90 font-bold text-xs w-6">${won}</span>
-                        <span class="text-red-500/90 font-bold text-xs w-6">${lost}</span>
-                        <span class="${diffColor} font-black text-xs w-8 bg-black/20 rounded py-0.5">${diff > 0 ? '+' : ''}${diff}</span>
+                    <div class="flex w-28 justify-between items-center text-center shrink-0 pr-1">
+                        <span class="text-amber-500/90 font-bold text-xs w-8">${won}</span>
+                        <span class="text-red-500/90 font-bold text-xs w-8">${lost}</span>
+                        <span class="${diffColor} font-black text-xs w-10 bg-black/20 rounded py-0.5">${diff > 0 ? '+' : ''}${diff}</span>
                     </div>
                 </div>`;
             }).join('');
