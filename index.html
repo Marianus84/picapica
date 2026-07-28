@@ -117,7 +117,7 @@
                 Guardar Backup
             </button>
             <button onclick="document.getElementById('backup-input').click(); vibrar();" class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                 Cargar Backup
             </button>
             <!-- Input oculto para cargar archivos -->
@@ -358,14 +358,42 @@
         }
 
         function startMatch() {
-            const p1 = document.getElementById('p1').value.trim() || 'J1';
-            const p2 = document.getElementById('p2').value.trim() || 'J2';
+            const p1Input = document.getElementById('p1');
+            const p2Input = document.getElementById('p2');
+            const p1 = p1Input.value.trim();
+            const p2 = p2Input.value.trim();
             
+            // Validación de existencia: check si el nombre es nuevo o está en la lista
+            const esValido = (name) => name.length > 0; // O puedes verificar contra gameState.knownPlayers
+            
+            if (!p1 || !p2) {
+                showModal("Debes ingresar nombres para ambos jugadores.", 'alert');
+                return;
+            }
+
             if (p1 === p2) {
                 showModal("Los jugadores deben ser distintos.", 'alert');
                 return;
             }
 
+            // Lógica para detectar si el usuario escribió algo que NO está en la lista de conocidos
+            const p1Existe = gameState.knownPlayers.includes(p1);
+            const p2Existe = gameState.knownPlayers.includes(p2);
+
+            if (!p1Existe || !p2Existe) {
+                const nuevos = [];
+                if (!p1Existe) nuevos.push(p1);
+                if (!p2Existe) nuevos.push(p2);
+                
+                showModal(`¿Confirmar nuevos jugadores? Se añadirán al sistema: ${nuevos.join(' y ')}`, 'confirm', () => {
+                    procesarInicioMatch(p1, p2);
+                }, "Sí, Iniciar", "Cancelar");
+            } else {
+                procesarInicioMatch(p1, p2);
+            }
+        }
+
+        function procesarInicioMatch(p1, p2) {
             const activePlayers = gameState.activeMatches.flatMap(m => [m.p1, m.p2]);
             if (activePlayers.includes(p1) || activePlayers.includes(p2)) {
                 showModal("Uno o ambos jugadores ya están jugando en una partida activa.", 'alert');
