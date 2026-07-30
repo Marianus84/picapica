@@ -433,6 +433,7 @@
         }
 
         function registrarPica(matchId) {
+            vibrar();
             executeWithUndo(() => {
                 const match = gameState.activeMatches.find(m => m.id === matchId);
                 match.picas.push({ s1: match.currentPica1, s2: match.currentPica2 });
@@ -442,6 +443,7 @@
         }
 
         function cerrarTodosLosChicos() {
+            vibrar();
             executeWithUndo(() => {
                 gameState.activeMatches.forEach(match => {
                     if (!match.chicos) match.chicos = [];
