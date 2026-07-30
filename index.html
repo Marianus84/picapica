@@ -147,8 +147,9 @@
             const msgEl = document.getElementById('modal-message');
             const btnsEl = document.getElementById('modal-buttons');
 
-            msgEl.textContent = message;
+            msgEl.innerHTML = message; // Cambiado a innerHTML para permitir texto rico en custom modals
             btnsEl.innerHTML = '';
+            btnsEl.className = "flex justify-center gap-3"; // Asegurar que sea flex-row por defecto
 
             if (type === 'alert') {
                 const btn = document.createElement('button');
@@ -674,7 +675,86 @@
             }
         }
 
-        // LOGICA DE TABLA HISTORICA
+        let pressTimer = null;
+        
+        function startPress(event, playerName) {
+            pressTimer = setTimeout(() => {
+                vibrar();
+                showPlayerOptionsModal(playerName);
+            }, 3000); // 3 Segundos
+        }
+
+        function cancelPress() {
+            if (pressTimer !== null) {
+                clearTimeout(pressTimer);
+                pressTimer = null;
+            }
+        }
+
+        function showPlayerOptionsModal(playerName) {
+            const modal = document.getElementById('custom-modal');
+            const modalContent = document.getElementById('modal-content');
+            const msgEl = document.getElementById('modal-message');
+            const btnsEl = document.getElementById('modal-buttons');
+
+            const isBA = historicalStats[playerName] && historicalStats[playerName].isBA;
+
+            msgEl.innerHTML = `Opciones para <span class="text-amber-400 font-bold break-words">${playerName}</span>`;
+            
+            // Cambiamos el flex a columna para este modal específico debido a los textos largos
+            btnsEl.className = "flex flex-col gap-3";
+            btnsEl.innerHTML = '';
+
+            const btnBA = document.createElement('button');
+            btnBA.className = "w-full bg-gray-700 text-white px-4 py-3 rounded-xl font-bold hover:bg-gray-600 transition-colors shadow-lg border border-gray-500";
+            btnBA.textContent = isBA ? "Quitar Baja Asistencia (BA)" : "Marcar como Baja Asistencia (BA)";
+            btnBA.onclick = () => {
+                historicalStats[playerName].isBA = !isBA;
+                saveToLocalStorage();
+                renderHistoricalStats();
+                closePlayerOptionsModal();
+                vibrar();
+            };
+
+            const btnDelete = document.createElement('button');
+            btnDelete.className = "w-full bg-red-900/80 text-red-100 px-4 py-3 rounded-xl font-bold hover:bg-red-800 transition-colors shadow-lg border border-red-700";
+            btnDelete.textContent = "Eliminar Jugador";
+            btnDelete.onclick = () => {
+                delete historicalStats[playerName];
+                saveToLocalStorage();
+                renderHistoricalStats();
+                closePlayerOptionsModal();
+                vibrar();
+            };
+
+            const btnCancel = document.createElement('button');
+            btnCancel.className = "w-full bg-emerald-900 text-emerald-200 px-4 py-3 rounded-xl font-bold hover:bg-emerald-800 transition-colors border border-emerald-700 mt-2";
+            btnCancel.textContent = "Cancelar";
+            btnCancel.onclick = closePlayerOptionsModal;
+
+            btnsEl.appendChild(btnBA);
+            btnsEl.appendChild(btnDelete);
+            btnsEl.appendChild(btnCancel);
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.classList.add('opacity-100');
+                modalContent.classList.remove('scale-95');
+                modalContent.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closePlayerOptionsModal() {
+            closeModal();
+            // Restaurar la clase original del contenedor de botones tras la animación
+            setTimeout(() => {
+                document.getElementById('modal-buttons').className = "flex justify-center gap-3";
+            }, 300);
+        }
+
         function confirmarRegistroNoche() {
             const currentTotals = getTotals();
             if (Object.keys(currentTotals).length === 0) {
@@ -686,7 +766,7 @@
                 
                 for (const player in currentTotals) {
                     if (!historicalStats[player]) {
-                        historicalStats[player] = { won: 0, lost: 0 };
+                        historicalStats[player] = { won: 0, lost: 0, isBA: false };
                     }
                     historicalStats[player].won += currentTotals[player].won;
                     historicalStats[player].lost += currentTotals[player].lost;
@@ -704,6 +784,12 @@
             const listCombined = document.getElementById('historical-stats-list');
             
             const sortedPlayers = Object.keys(historicalStats).sort((a, b) => {
+                // Primero ordenamos por Baja Asistencia (los BA van al fondo)
+                const isBaA = historicalStats[a].isBA ? 1 : 0;
+                const isBaB = historicalStats[b].isBA ? 1 : 0;
+                if (isBaA !== isBaB) return isBaA - isBaB;
+
+                // Luego ordenamos por puntaje normal
                 const diffA = historicalStats[a].won - historicalStats[a].lost;
                 const diffB = historicalStats[b].won - historicalStats[b].lost;
                 return diffB - diffA || historicalStats[b].won - historicalStats[a].won || a.localeCompare(b);
@@ -717,19 +803,41 @@
             listCombined.innerHTML = sortedPlayers.map((name, index) => {
                 const won = historicalStats[name].won;
                 const lost = historicalStats[name].lost;
+                const isBA = historicalStats[name].isBA;
                 const diff = won - lost;
-                const diffColor = diff > 0 ? 'text-emerald-400' : (diff < 0 ? 'text-red-400' : 'text-gray-500');
+                
                 const diffSign = diff > 0 ? '+' : '';
+                
+                // Estilos que varían si el jugador es Baja Asistencia (BA)
+                const bgClass = isBA ? 'bg-gray-800/80 border-gray-700/50 opacity-80' : 'bg-[#022c22] border-emerald-800/70';
+                const rankColor = isBA ? 'text-gray-500' : 'text-amber-600';
+                const nameColor = isBA ? 'text-gray-400' : 'text-emerald-50';
+                const numColorWON = isBA ? 'text-gray-500' : 'text-amber-500/90';
+                const numColorLOST = isBA ? 'text-gray-500' : 'text-red-500/90';
+                const diffColor = isBA ? 'text-gray-400' : (diff > 0 ? 'text-emerald-400' : (diff < 0 ? 'text-red-400' : 'text-gray-500'));
+                
+                const nameDisplay = isBA ? `${name} <span class="text-[9px] text-gray-400 font-normal ml-1 border border-gray-600 rounded px-1">(BA)</span>` : name;
+                
+                // Escapar comillas para los eventos inline
+                const safeName = name.replace(/'/g, "\\'");
 
                 return `
-                <div class="flex justify-between items-center bg-[#022c22] border border-emerald-800/70 rounded-md px-2 py-1.5 mb-1 shadow-sm">
+                <div onmousedown="startPress(event, '${safeName}')" 
+                     onmouseup="cancelPress()" 
+                     onmouseleave="cancelPress()" 
+                     ontouchstart="startPress(event, '${safeName}')" 
+                     ontouchend="cancelPress()" 
+                     ontouchmove="cancelPress()"
+                     oncontextmenu="event.preventDefault();"
+                     style="-webkit-touch-callout: none;"
+                     class="flex justify-between items-center ${bgClass} border rounded-md px-2 py-1.5 mb-1 shadow-sm select-none cursor-pointer transition-all duration-300">
                     <div class="flex items-center flex-1 min-w-0">
-                        <span class="text-amber-600 font-black text-xs w-5 shrink-0">${index + 1}.</span>
-                        <span class="text-emerald-50 font-bold text-xs break-words pr-1">${name}</span>
+                        <span class="${rankColor} font-black text-xs w-5 shrink-0">${index + 1}.</span>
+                        <span class="${nameColor} font-bold text-xs break-words pr-1">${nameDisplay}</span>
                     </div>
                     <div class="flex w-24 justify-between items-center text-center shrink-0">
-                        <span class="text-amber-500/90 font-bold text-xs w-6">${won}</span>
-                        <span class="text-red-500/90 font-bold text-xs w-6">${lost}</span>
+                        <span class="${numColorWON} font-bold text-xs w-6">${won}</span>
+                        <span class="${numColorLOST} font-bold text-xs w-6">${lost}</span>
                         <span class="${diffColor} font-black text-xs w-8 bg-black/20 rounded py-0.5">${diffSign}${diff}</span>
                     </div>
                 </div>
