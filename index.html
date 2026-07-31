@@ -139,7 +139,19 @@
         let historyStack = [];
         let historicalStats = {}; 
         
-        function vibrar() { if (navigator.vibrate) navigator.vibrate(50); }
+        function vibrar() {
+    if (!navigator.vibrate) return;
+
+    try {
+        // Detiene cualquier vibración pendiente
+        navigator.vibrate(0);
+
+        // Vibración larga y claramente perceptible
+        navigator.vibrate([180, 60, 180]);
+    } catch (e) {
+        // Ignorar si el dispositivo no lo soporta
+    }
+}
 
         function showModal(message, type, onConfirmCallback = null, customConfirmText = "Confirmar", customCancelText = "Cancelar") {
             const modal = document.getElementById('custom-modal');
