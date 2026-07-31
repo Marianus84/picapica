@@ -42,7 +42,7 @@
         <div id="section-play" class="space-y-6">
             <div id="active-matches-container" class="space-y-4"></div>
             
-            <button onclick="cerrarTodosLosChicos(); vibrar();" class="w-full bg-blue-900/80 text-blue-300 py-3 rounded-xl font-bold border border-blue-700/50 hover:bg-blue-800 transition-all shadow-lg mt-6 mb-2">Cerrar Chico (Todos los enfrentamientos)</button>
+            <button onclick="cerrarTodosLosChicos();" class="w-full bg-blue-900/80 text-blue-300 py-3 rounded-xl font-bold border border-blue-700/50 hover:bg-blue-800 transition-all shadow-lg mt-6 mb-2">Cerrar Chico (Todos los enfrentamientos)</button>
 
             <div class="bg-emerald-800 p-6 rounded-2xl shadow-xl border border-emerald-700 mt-4">
                 <h2 class="text-lg font-bold text-white mb-4">Nueva partida</h2>
@@ -140,16 +140,8 @@
         let historicalStats = {}; 
         
         function vibrar() {
-    if (!navigator.vibrate) return;
-
-    try {
-        // Detiene cualquier vibración pendiente
-        navigator.vibrate(0);
-
-        // Vibración larga y claramente perceptible
-        navigator.vibrate([180, 60, 180]);
-    } catch (e) {
-        // Ignorar si el dispositivo no lo soporta
+    if (navigator.vibrate) {
+        navigator.vibrate(120);
     }
 }
 
@@ -549,7 +541,7 @@
                         </div>
                     </div>
 
-                    <button onclick="registrarPica(${m.id}); vibrar();" class="w-full mb-4 bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 py-2.5 rounded-lg text-sm font-bold transition-colors shadow-sm">
+                    <button onclick="registrarPica(${m.id});" class="w-full mb-4 bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 py-2.5 rounded-lg text-sm font-bold transition-colors shadow-sm">
                         Registrar Pica Actual
                     </button>
 
