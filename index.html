@@ -145,6 +145,12 @@
     }
 }
 
+function vibrarFuerte() {
+    if (navigator.vibrate) {
+        navigator.vibrate([180, 70, 180]);
+    }
+}
+
         function showModal(message, type, onConfirmCallback = null, customConfirmText = "Confirmar", customCancelText = "Cancelar") {
             const modal = document.getElementById('custom-modal');
             const modalContent = document.getElementById('modal-content');
@@ -437,7 +443,7 @@
         }
 
         function registrarPica(matchId) {
-            vibrar();
+            vibrarFuerte();
             executeWithUndo(() => {
                 const match = gameState.activeMatches.find(m => m.id === matchId);
                 match.picas.push({ s1: match.currentPica1, s2: match.currentPica2 });
@@ -447,7 +453,7 @@
         }
 
         function cerrarTodosLosChicos() {
-            vibrar();
+            vibrarFuerte();
             executeWithUndo(() => {
                 gameState.activeMatches.forEach(match => {
                     if (!match.chicos) match.chicos = [];
