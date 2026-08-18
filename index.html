@@ -912,8 +912,8 @@ function vibrarFuerte() {
                         // En la app el BA está correctamente centrado, pero html2canvas
                         // lo dibuja demasiado arriba. Lo bajamos solo en el clon.
                         clonedDocument.querySelectorAll(".ba-badge").forEach(ba => {
-                            ba.style.position = "relative";
-                            ba.style.top = "10px";
+                            ba.style.position = "static";
+                            ba.style.top = "";
                         });
                     }
                 }).then(canvas => {
