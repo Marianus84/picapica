@@ -842,15 +842,22 @@ function vibrarFuerte() {
                      ontouchmove="cancelPress()"
                      oncontextmenu="event.preventDefault();"
                      style="-webkit-touch-callout: none;"
-                     class="flex justify-between items-center ${bgClass} border rounded-md px-2 py-1.5 mb-1 shadow-sm select-none cursor-pointer transition-all duration-300">
-                    <div class="flex items-center flex-1 min-w-0">
-                        <span class="${rankColor} font-black text-xs w-5 shrink-0">${index + 1}.</span>
-                        <span class="${nameColor} font-bold text-xs break-words pr-1">${nameDisplay}</span>
+                     class="flex justify-between items-center h-10 min-h-10 ${bgClass} border rounded-md px-2 mb-1 shadow-sm select-none cursor-pointer transition-all duration-300">
+                    <div class="flex items-center flex-1 min-w-0 h-full">
+                        <span class="${rankColor} font-black text-xs w-5 shrink-0 leading-none">${index + 1}.</span>
+                        <div class="${nameColor} font-bold text-xs pr-1 flex items-center min-w-0 leading-none">
+                            <span class="break-words">${name}</span>
+                            ${isBA ? `
+                                <span class="text-[9px] text-gray-400 font-normal ml-1 border border-gray-600 rounded px-1 leading-none shrink-0">
+                                    (BA)
+                                </span>
+                            ` : ''}
+                        </div>
                     </div>
-                    <div class="flex w-24 justify-between items-center text-center shrink-0">
-                        <span class="${numColorWON} font-bold text-xs w-6">${won}</span>
-                        <span class="${numColorLOST} font-bold text-xs w-6">${lost}</span>
-                        <span class="${diffColor} font-black text-xs w-8 bg-black/20 rounded py-0.5">${diffSign}${diff}</span>
+                    <div class="flex w-24 h-full justify-between items-center text-center shrink-0">
+                        <span class="${numColorWON} font-bold text-xs w-6 leading-none flex items-center justify-center h-full">${won}</span>
+                        <span class="${numColorLOST} font-bold text-xs w-6 leading-none flex items-center justify-center h-full">${lost}</span>
+                        <span class="${diffColor} font-black text-xs w-8 h-7 bg-black/20 rounded flex items-center justify-center leading-none">${diffSign}${diff}</span>
                     </div>
                 </div>
                 `;
