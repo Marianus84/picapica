@@ -856,21 +856,21 @@ function vibrarFuerte() {
                 return `
                 <div onmousedown="startPress(event, '${safeName}')" 
                      onmouseup="cancelPress()" 
-                     onmouseleave="cancelPress()"
+                     onmouseleave="cancelPress()" 
                      ontouchstart="startPress(event, '${safeName}')" 
                      ontouchend="cancelPress()" 
                      ontouchmove="cancelPress()"
                      oncontextmenu="event.preventDefault();"
                      style="-webkit-touch-callout: none;"
-                     class="flex justify-between items-center h-10 min-h-10 ${bgClass} border rounded-md px-2 py-0 mb-1 shadow-sm select-none cursor-pointer transition-all duration-300">
-                    <div class="flex items-center h-full flex-1 min-w-0">
-                        <span class="${rankColor} font-black text-xs w-5 shrink-0 leading-[18px]">${index + 1}.</span>
-                        <span class="${nameColor} font-bold text-xs break-words pr-1 leading-[18px]">${nameDisplay}</span>
+                     class="historical-row flex justify-between items-center ${bgClass} border rounded-md px-2 py-1.5 mb-1 shadow-sm select-none cursor-pointer transition-all duration-300">
+                    <div class="flex items-center flex-1 min-w-0">
+                        <span class="${rankColor} font-black text-xs w-5 shrink-0">${index + 1}.</span>
+                        <span class="${nameColor} font-bold text-xs break-words pr-1">${nameDisplay}</span>
                     </div>
-                    <div class="flex w-24 h-full justify-between items-center text-center shrink-0">
-                        <span class="${numColorWON} font-bold text-xs w-6 leading-[18px]">${won}</span>
-                        <span class="${numColorLOST} font-bold text-xs w-6 leading-[18px]">${lost}</span>
-                        <span class="${diffColor} font-black text-xs w-8 h-7 bg-black/20 rounded flex items-center justify-center leading-[18px]">${diffSign}${diff}</span>
+                    <div class="flex w-24 justify-between items-center text-center shrink-0">
+                        <span class="${numColorWON} font-bold text-xs w-6">${won}</span>
+                        <span class="${numColorLOST} font-bold text-xs w-6">${lost}</span>
+                        <span class="${diffColor} font-black text-xs w-8 bg-black/20 rounded py-0.5">${diffSign}${diff}</span>
                     </div>
                 </div>
                 `;
@@ -903,17 +903,84 @@ function vibrarFuerte() {
         }
 
         function shareHistoricalStats() {
-            renderHistoricalStats(); 
+            renderHistoricalStats();
             setTimeout(() => {
                 html2canvas(document.getElementById("capture-area-history"), {
-                    backgroundColor: "#064e3b", 
+                    backgroundColor: "#064e3b",
                     scale: 2,
-                    useCORS: true
+                    useCORS: true,
+                    onclone: (clonedDoc) => {
+                        // Corrección EXCLUSIVA para la imagen compartida.
+                        // En la app no modificamos el diseño. html2canvas estaba
+                        // dibujando el contenido de las filas demasiado abajo.
+                        const rows = clonedDoc.querySelectorAll('#historical-stats-list .historical-row');
+
+                        rows.forEach(row => {
+                            row.style.height = '40px';
+                            row.style.minHeight = '40px';
+                            row.style.boxSizing = 'border-box';
+                            row.style.paddingTop = '0';
+                            row.style.paddingBottom = '0';
+                            row.style.display = 'flex';
+                            row.style.alignItems = 'center';
+
+                            const left = row.children[0];
+                            const stats = row.children[1];
+
+                            if (left) {
+                                left.style.height = '40px';
+                                left.style.display = 'flex';
+                                left.style.alignItems = 'center';
+                            }
+
+                            if (stats) {
+                                stats.style.height = '40px';
+                                stats.style.display = 'flex';
+                                stats.style.alignItems = 'center';
+                            }
+
+                            row.querySelectorAll(':scope > div:first-child > span').forEach(el => {
+                                el.style.display = 'flex';
+                                el.style.alignItems = 'center';
+                                el.style.height = '40px';
+                                el.style.lineHeight = '1';
+                            });
+
+                            row.querySelectorAll(':scope > div:last-child > span').forEach(el => {
+                                el.style.display = 'flex';
+                                el.style.alignItems = 'center';
+                                el.style.justifyContent = 'center';
+                                el.style.height = '40px';
+                                el.style.lineHeight = '1';
+                            });
+
+                            const diff = row.querySelector(':scope > div:last-child > span:last-child');
+                            if (diff) {
+                                diff.style.height = '32px';
+                                diff.style.alignSelf = 'center';
+                            }
+
+                            const ba = row.querySelector('.ba-label');
+                            if (ba) {
+                                ba.style.display = 'inline';
+                                ba.style.position = 'static';
+                                ba.style.transform = 'none';
+                                ba.style.top = 'auto';
+                                ba.style.bottom = 'auto';
+                                ba.style.marginTop = '0';
+                                ba.style.marginBottom = '0';
+                                ba.style.padding = '0';
+                                ba.style.border = '0';
+                                ba.style.lineHeight = '1';
+                                ba.style.verticalAlign = 'baseline';
+                            }
+                        });
+                    }
                 }).then(canvas => {
                     canvas.toBlob(blob => {
                         const file = new File([blob], 'historico_pica_pica.png', { type: 'image/png' });
                         const shareData = { title: 'Histórico Pica Pica', files: [file] };
-                        
+
                         if (navigator.canShare && navigator.canShare({ files: [file] })) {
                             navigator.share(shareData).catch(console.error);
                         } else {
@@ -926,6 +993,7 @@ function vibrarFuerte() {
                 });
             }, 50);
         }
+
         
         loadFromLocalStorage();
     </script>
