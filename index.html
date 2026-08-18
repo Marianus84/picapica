@@ -841,31 +841,33 @@ function vibrarFuerte() {
                      ontouchend="cancelPress()" 
                      ontouchmove="cancelPress()"
                      oncontextmenu="event.preventDefault();"
-                     style="-webkit-touch-callout: none; position: relative;"
-                     class="h-10 min-h-10 ${bgClass} border rounded-md px-2 mb-1 shadow-sm select-none cursor-pointer transition-all duration-300">
+                     style="-webkit-touch-callout: none; position: relative; height: 40px; min-height: 40px;"
+                     class="${bgClass} border rounded-md px-2 mb-1 shadow-sm select-none cursor-pointer transition-all duration-300">
 
-                    <!-- IZQUIERDA: posición vertical absoluta para que html2canvas no desplace el texto -->
-                    <div class="absolute left-2 top-1/2 -translate-y-1/2 flex items-center h-7 min-w-0"
-                         style="transform: translateY(-50%);">
-                        <span class="${rankColor} font-black text-xs w-5 shrink-0 leading-[14px]">${index + 1}.</span>
+                    <!-- Contenido alineado sobre una única línea vertical fija -->
+                    <div style="position:absolute; left:8px; right:8px; top:0; height:40px; display:flex; align-items:center;">
+                        <div style="width:100%; height:18px; display:flex; align-items:center;">
+                            <div style="width:20px; flex-shrink:0; height:18px; line-height:18px; font-size:12px; font-weight:900;" class="${rankColor}">
+                                ${index + 1}.
+                            </div>
 
-                        <div class="${nameColor} font-bold text-xs pr-1 flex items-center min-w-0 leading-[14px]">
-                            <span class="leading-[14px] whitespace-nowrap">${name}</span>
-                            ${isBA ? `
-                                <span class="text-[9px] text-gray-400 font-normal ml-1 border border-gray-600 rounded px-1 shrink-0 leading-[12px] h-[15px] flex items-center"
-                                      style="line-height:12px;">
-                                    (BA)
+                            <div style="flex:1; min-width:0; height:18px; line-height:18px; display:flex; align-items:center; white-space:nowrap; overflow:visible;" class="${nameColor}">
+                                <span style="font-size:12px; line-height:18px; font-weight:700; display:inline-block; height:18px;">
+                                    ${name}
                                 </span>
-                            ` : ''}
-                        </div>
-                    </div>
+                                ${isBA ? `
+                                    <span style="font-size:9px; line-height:13px; height:15px; display:inline-flex; align-items:center; box-sizing:border-box; margin-left:5px; padding:0 4px; border:1px solid #4b5563; border-radius:5px; font-weight:400; flex-shrink:0; transform:translateY(0);" class="text-gray-400">
+                                        (BA)
+                                    </span>
+                                ` : ''}
+                            </div>
 
-                    <!-- DERECHA: posición vertical absoluta e independiente -->
-                    <div class="absolute right-2 top-1/2 -translate-y-1/2 flex w-24 h-7 justify-between items-center text-center shrink-0"
-                         style="transform: translateY(-50%);">
-                        <span class="${numColorWON} font-bold text-xs w-6 h-7 flex items-center justify-center leading-[14px]">${won}</span>
-                        <span class="${numColorLOST} font-bold text-xs w-6 h-7 flex items-center justify-center leading-[14px]">${lost}</span>
-                        <span class="${diffColor} font-black text-xs w-8 h-7 bg-black/20 rounded flex items-center justify-center leading-[14px]">${diffSign}${diff}</span>
+                            <div style="width:96px; flex-shrink:0; height:18px; display:flex; align-items:center; justify-content:space-between; text-align:center;">
+                                <span style="width:24px; height:18px; line-height:18px; font-size:12px; font-weight:700; display:block;" class="${numColorWON}">${won}</span>
+                                <span style="width:24px; height:18px; line-height:18px; font-size:12px; font-weight:700; display:block;" class="${numColorLOST}">${lost}</span>
+                                <span style="width:32px; height:28px; line-height:28px; font-size:12px; font-weight:900; display:block; border-radius:6px; text-align:center;" class="${diffColor} bg-black/20">${diffSign}${diff}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 `;
