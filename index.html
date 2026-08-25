@@ -3,25 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
     <title>Truco Night Tracker - Estilo Argentino</title>
+
     <link rel="manifest" href="manifest.json">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #064e3b; }
-        .truco-table { background: #065f46; border: 8px solid #451a03; box-shadow: inset 0 0 50px rgba(0,0,0,0.5); }
-        .score-font { font-family: 'Playfair Display', serif; }
-        .pica-badge { background-color: #064e3b; border: 1px solid #10b981; }
 
-        /* Etiqueta BA: sin caja y alineada en la misma línea del nombre.
-           Evita que html2canvas cree una caja vertical independiente. */
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #064e3b;
+        }
+
+        .truco-table {
+            background: #065f46;
+            border: 8px solid #451a03;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        .score-font {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .pica-badge {
+            background-color: #064e3b;
+            border: 1px solid #10b981;
+        }
+
         .ba-label {
             display: inline;
             font-size: 9px;
             font-weight: 400;
             line-height: 1;
-            vertical-align: middle;
+            vertical-align: baseline;
             margin-left: 4px;
             padding: 0;
             border: 0;
@@ -29,133 +47,404 @@
             position: static;
             transform: none;
         }
-        
-        /* Asegurar que modales y botones táctiles se vean bien en móviles */
-        button { touch-action: manipulation; }
+
+        button {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        input {
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+        }
     </style>
 </head>
+
 <body class="min-h-screen p-4 md:p-8 flex flex-col items-center">
 
-    <div class="max-w-md w-full relative pt-2 pb-24" id="app">
-        <!-- Botón de deshacer rediseñado como botón flotante (FAB) -->
-        <button id="undo-btn" onclick="undo(); vibrar();" class="fixed bottom-6 right-4 sm:right-8 z-[90] flex items-center space-x-1.5 px-4 py-2.5 text-emerald-100 bg-emerald-800/95 backdrop-blur-sm border border-emerald-600 rounded-full hover:bg-emerald-700 transition-all duration-300 opacity-0 pointer-events-none translate-y-4 shadow-2xl" title="Deshacer última acción">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
-            </svg>
-            <span class="text-[11px] font-bold uppercase tracking-wider"> </span>
+<div class="max-w-md w-full relative pt-2 pb-24" id="app">
+
+    <!-- DESHACER -->
+    <button
+        id="undo-btn"
+        onclick="undo(); vibrar();"
+        class="fixed bottom-6 right-4 sm:right-8 z-[90] flex items-center space-x-1.5 px-4 py-2.5 text-emerald-100 bg-emerald-800/95 backdrop-blur-sm border border-emerald-600 rounded-full hover:bg-emerald-700 transition-all duration-300 opacity-0 pointer-events-none translate-y-4 shadow-2xl"
+        title="Deshacer última acción">
+
+        <svg xmlns="http://www.w3.org/2000/svg"
+             width="16"
+             height="16"
+             viewBox="0 0 24 24"
+             fill="none"
+             stroke="currentColor"
+             stroke-width="2.5"
+             stroke-linecap="round"
+             stroke-linejoin="round">
+            <path d="M3 7v6h6"/>
+            <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
+        </svg>
+
+        <span class="text-[11px] font-bold uppercase tracking-wider">
+            Deshacer
+        </span>
+    </button>
+
+
+    <!-- CABECERA -->
+    <header class="text-center mb-6 mt-4 relative">
+        <h1 class="text-4xl font-bold text-amber-500 score-font drop-shadow-md">
+            Noche de Truco
+        </h1>
+
+        <p class="text-emerald-100 opacity-80">
+            Pica Pica Profesional
+        </p>
+    </header>
+
+
+    <!-- TABS -->
+    <div class="flex space-x-2 mb-6 bg-emerald-950 p-1 rounded-xl shadow-inner border border-emerald-800">
+
+        <button
+            onclick="switchTab('play'); vibrar();"
+            id="tab-play"
+            class="flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all">
+            Partidas
         </button>
 
-        <header class="text-center mb-6 mt-4 relative">
-            <h1 class="text-4xl font-bold text-amber-500 score-font drop-shadow-md">Noche de Truco</h1>
-            <p class="text-emerald-100 opacity-80">Pica Pica Profesional</p>
-        </header>
+        <button
+            onclick="switchTab('stats'); vibrar();"
+            id="tab-stats"
+            class="flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all">
+            Ranking
+        </button>
 
-        <div class="flex space-x-2 mb-6 bg-emerald-950 p-1 rounded-xl shadow-inner border border-emerald-800">
-            <button onclick="switchTab('play'); vibrar();" id="tab-play" class="flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all">Partidas</button>
-            <button onclick="switchTab('stats'); vibrar();" id="tab-stats" class="flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all">Ranking</button>
-        </div>
+    </div>
 
-        <div id="section-play" class="space-y-6">
-            <div id="active-matches-container" class="space-y-4"></div>
-            
-            <button onclick="cerrarTodosLosChicos();" class="w-full bg-blue-900/80 text-blue-300 py-3 rounded-xl font-bold border border-blue-700/50 hover:bg-blue-800 transition-all shadow-lg mt-6 mb-2">Cerrar Chico (Todos los enfrentamientos)</button>
 
-            <div class="bg-emerald-800 p-6 rounded-2xl shadow-xl border border-emerald-700 mt-4">
-                <h2 class="text-lg font-bold text-white mb-4">Nueva partida</h2>
-                <div class="grid grid-cols-2 gap-4">
-                    <input list="players-1" type="text" id="p1" placeholder="Jugador 1" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none" oninput="updateDatalists()">
-                    <datalist id="players-1"></datalist>
-                    
-                    <input list="players-2" type="text" id="p2" placeholder="Jugador 2" class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none" oninput="updateDatalists()">
-                    <datalist id="players-2"></datalist>
-                </div>
-                <button onclick="startMatch(); vibrar();" class="w-full mt-4 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50">Empezar Duelo</button>
+    <!-- ========================================================= -->
+    <!-- PARTIDAS -->
+    <!-- ========================================================= -->
+
+    <div id="section-play" class="space-y-6">
+
+        <div id="active-matches-container" class="space-y-4"></div>
+
+
+        <!-- CERRAR CHICO -->
+        <button
+            onclick="cerrarTodosLosChicos();"
+            class="w-full bg-blue-900/80 text-blue-300 py-3 rounded-xl font-bold border border-blue-700/50 hover:bg-blue-800 transition-all shadow-lg mt-6 mb-2">
+
+            Cerrar Chico (Todos los enfrentamientos)
+
+        </button>
+
+
+        <!-- NUEVA PARTIDA -->
+        <div class="bg-emerald-800 p-6 rounded-2xl shadow-xl border border-emerald-700 mt-4">
+
+            <h2 class="text-lg font-bold text-white mb-4">
+                Nueva partida
+            </h2>
+
+            <div class="grid grid-cols-2 gap-4">
+
+                <input
+                    list="players-1"
+                    type="text"
+                    id="p1"
+                    placeholder="Jugador 1"
+                    autocomplete="off"
+                    class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none"
+                    oninput="updateDatalists()">
+
+                <datalist id="players-1"></datalist>
+
+
+                <input
+                    list="players-2"
+                    type="text"
+                    id="p2"
+                    placeholder="Jugador 2"
+                    autocomplete="off"
+                    class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none"
+                    oninput="updateDatalists()">
+
+                <datalist id="players-2"></datalist>
+
             </div>
-            
-            <button onclick="resetEverything(); vibrar();" class="w-full bg-emerald-950 text-emerald-500 py-2 rounded-xl font-bold border border-emerald-900 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest mt-2">Empezar nueva noche de truco</button>
+
+
+            <button
+                onclick="startMatch(); vibrar();"
+                class="w-full mt-4 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50">
+
+                Empezar Duelo
+
+            </button>
+
         </div>
 
-        <div id="section-stats" class="hidden space-y-6">
-            <div id="capture-area" class="bg-emerald-800 p-3 rounded-2xl shadow-xl border border-emerald-700 space-y-2 relative">
-                <h2 class="text-xl font-bold text-amber-400 score-font text-center drop-shadow-md pb-1.5 border-b border-emerald-700/50">Resultados Pica Pica</h2>
-                
+
+        <!-- NUEVA NOCHE -->
+        <button
+            onclick="resetEverything(); vibrar();"
+            class="w-full bg-emerald-950 text-emerald-500 py-2 rounded-xl font-bold border border-emerald-900 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest mt-2">
+
+            Empezar nueva noche de truco
+
+        </button>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- RANKING -->
+    <!-- ========================================================= -->
+
+    <div id="section-stats" class="hidden space-y-6">
+
+        <div
+            id="capture-area"
+            class="bg-emerald-800 p-3 rounded-2xl shadow-xl border border-emerald-700 space-y-2 relative">
+
+            <h2 class="text-xl font-bold text-amber-400 score-font text-center drop-shadow-md pb-1.5 border-b border-emerald-700/50">
+                Resultados Pica Pica
+            </h2>
+
+
+            <!-- PUNTOS DE ESTA NOCHE -->
+            <div class="pt-1">
+
+                <h2 class="text-xs font-bold text-emerald-300 mb-1.5 border-b border-emerald-700 pb-1 text-center uppercase tracking-widest">
+                    PUNTOS DE ESTA NOCHE
+                </h2>
+
+
+                <div class="flex justify-between px-2 mb-1 mt-1 text-[9px] font-bold text-emerald-500 uppercase tracking-wider">
+
+                    <div class="flex-1 ml-6">
+                        Jugador
+                    </div>
+
+                    <div class="flex w-24 justify-between text-center">
+                        <span class="w-6 text-emerald-400">G</span>
+                        <span class="w-6 text-red-400">P</span>
+                        <span class="w-8 text-blue-400">DIF</span>
+                    </div>
+
+                </div>
+
+
+                <div id="stats-list-combined"
+                     class="grid grid-cols-1 gap-1">
+                </div>
+
+            </div>
+
+
+            <!-- ENFRENTAMIENTOS -->
+            <div class="pt-1">
+
+                <h2 class="text-xs font-bold text-emerald-300 mb-1.5 border-b border-emerald-700 pb-1 text-center uppercase tracking-widest">
+                    ENFRENTAMIENTOS
+                </h2>
+
+                <div id="history-list"
+                     class="space-y-1.5 mt-1">
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- COMPARTIR NOCHE -->
+        <button
+            onclick="shareStats(); vibrar();"
+            class="w-full mt-2 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">
+
+            📸 Compartir Noche
+
+        </button>
+
+
+        <!-- ===================================================== -->
+        <!-- HISTÓRICO -->
+        <!-- ===================================================== -->
+
+        <div class="mt-8 pt-6 border-t border-emerald-800/50">
+
+            <button
+                onclick="confirmarRegistroNoche(); vibrar();"
+                class="w-full bg-amber-700 text-amber-100 py-3 rounded-xl font-bold border border-amber-600 hover:bg-amber-600 transition-all shadow-lg mb-6 uppercase tracking-wider text-sm flex items-center justify-center gap-2">
+
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="18"
+                     height="18"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                    <polyline points="7 3 7 8 15 8"></polyline>
+
+                </svg>
+
+                Registrar Noche en Histórico
+
+            </button>
+
+
+            <div
+                id="capture-area-history"
+                class="bg-[#043d2e] p-3 rounded-2xl shadow-xl border border-emerald-900 space-y-2 relative">
+
+                <h2 class="text-xl font-bold text-amber-500 score-font text-center drop-shadow-md pb-1.5 border-b border-emerald-800/80">
+                    Tabla Histórica Anual
+                </h2>
+
+
                 <div class="pt-1">
-                    <h2 class="text-xs font-bold text-emerald-300 mb-1.5 border-b border-emerald-700 pb-1 text-center uppercase tracking-widest">PUNTOS DE ESTA NOCHE</h2>
-                    <div class="flex justify-between px-2 mb-1 mt-1 text-[9px] font-bold text-emerald-500 uppercase tracking-wider">
-                        <div class="flex-1 ml-6">Jugador</div>
+
+                    <h2 class="text-[10px] font-bold text-emerald-400 mb-1.5 border-b border-emerald-800 pb-1 text-center uppercase tracking-widest">
+                        PUNTOS ACUMULADOS EN PICA PICAS
+                    </h2>
+
+
+                    <div class="flex justify-between px-2 mb-1 mt-1 text-[9px] font-bold text-emerald-600 uppercase tracking-wider">
+
+                        <div class="flex-1 ml-6">
+                            Jugador
+                        </div>
+
                         <div class="flex w-24 justify-between text-center">
-                            <span class="w-6 text-emerald-400" title="Ganados">G</span>
-                            <span class="w-6 text-red-400" title="Perdidos">P</span>
-                            <span class="w-8 text-blue-400" title="Diferencia">DIF</span>
+                            <span class="w-6 text-emerald-500">G</span>
+                            <span class="w-6 text-red-500">P</span>
+                            <span class="w-8 text-blue-500">DIF</span>
                         </div>
+
                     </div>
-                    <div id="stats-list-combined" class="grid grid-cols-1 gap-1"></div>
+
+
+                    <div id="historical-stats-list"
+                         class="grid grid-cols-1 gap-1">
+                    </div>
+
                 </div>
 
-                <div class="pt-1">
-                    <h2 class="text-xs font-bold text-emerald-300 mb-1.5 border-b border-emerald-700 pb-1 text-center uppercase tracking-widest">ENFRENTAMIENTOS</h2>
-                    <div id="history-list" class="space-y-1.5 mt-1"></div>
-                </div>
             </div>
 
-            <button onclick="shareStats(); vibrar();" class="w-full mt-2 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">📸 Compartir Noche</button>
 
-            <!-- Nueva Sección: Tabla Histórica -->
-            <div class="mt-8 pt-6 border-t border-emerald-800/50">
-                <button onclick="confirmarRegistroNoche(); vibrar();" class="w-full bg-amber-700 text-amber-100 py-3 rounded-xl font-bold border border-amber-600 hover:bg-amber-600 transition-all shadow-lg mb-6 uppercase tracking-wider text-sm flex items-center justify-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                    Registrar Noche en Histórico
-                </button>
+            <!-- COMPARTIR HISTÓRICO -->
+            <button
+                onclick="shareHistoricalStats(); vibrar();"
+                class="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">
 
-                <div id="capture-area-history" class="bg-[#043d2e] p-3 rounded-2xl shadow-xl border border-emerald-900 space-y-2 relative">
-                    <h2 class="text-xl font-bold text-amber-500 score-font text-center drop-shadow-md pb-1.5 border-b border-emerald-800/80">Tabla Histórica Anual</h2>
-                    
-                    <div class="pt-1">
-                        <h2 class="text-[10px] font-bold text-emerald-400 mb-1.5 border-b border-emerald-800 pb-1 text-center uppercase tracking-widest">PUNTOS ACUMULADOS EN PICA PICAS</h2>
-                        <div class="flex justify-between px-2 mb-1 mt-1 text-[9px] font-bold text-emerald-600 uppercase tracking-wider">
-                            <div class="flex-1 ml-6">Jugador</div>
-                            <div class="flex w-24 justify-between text-center">
-                                <span class="w-6 text-emerald-500" title="Ganados Totales">G</span>
-                                <span class="w-6 text-red-500" title="Perdidos Totales">P</span>
-                                <span class="w-8 text-blue-500" title="Diferencia Total">DIF</span>
-                            </div>
-                        </div>
-                        <div id="historical-stats-list" class="grid grid-cols-1 gap-1"></div>
-                    </div>
-                </div>
-                <button onclick="shareHistoricalStats(); vibrar();" class="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">📸 Compartir Histórico</button>
-            </div>
-        </div>
-        
-        <div class="mt-12 pt-6 border-t border-emerald-900 flex gap-3">
-            <button onclick="exportBackup(); vibrar();" class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                Guardar Backup
+                📸 Compartir Histórico
+
             </button>
-            <button onclick="document.getElementById('backup-input').click(); vibrar();" class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2-2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                Cargar Backup
-            </button>
-            <!-- Input oculto para cargar archivos -->
-            <input type="file" id="backup-input" class="hidden" accept=".json" onchange="importBackup(event)">
+
         </div>
+
     </div>
 
-    <div id="custom-modal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm px-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-emerald-950 border-2 border-emerald-600 rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center transform scale-95 transition-transform duration-300" id="modal-content">
-            <p id="modal-message" class="text-emerald-50 mb-6 text-sm font-semibold leading-relaxed"></p>
-            <div class="flex justify-center gap-3" id="modal-buttons">
-                <!-- Los botones se inyectan dinámicamente -->
-            </div>
-        </div>
+
+    <!-- ========================================================= -->
+    <!-- BACKUP -->
+    <!-- ========================================================= -->
+
+    <div class="mt-12 pt-6 border-t border-emerald-900 flex gap-3">
+
+        <button
+            onclick="exportBackup(); vibrar();"
+            class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-1">
+
+            Guardar Backup
+
+        </button>
+
+
+        <button
+            onclick="document.getElementById('backup-input').click(); vibrar();"
+            class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-1">
+
+            Cargar Backup
+
+        </button>
+
+
+        <input
+            type="file"
+            id="backup-input"
+            class="hidden"
+            accept=".json,application/json"
+            onchange="importBackup(event)">
+
     </div>
 
-    <script>
-        let gameState = { activeMatches: [], knownPlayers: [] };
-        let historyStack = [];
-        let historicalStats = {}; 
-        
-        function vibrar() {
+</div>
+
+
+<!-- ============================================================= -->
+<!-- MODAL -->
+<!-- ============================================================= -->
+
+<div
+    id="custom-modal"
+    class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm px-4 opacity-0 transition-opacity duration-300">
+
+    <div
+        id="modal-content"
+        class="bg-emerald-950 border-2 border-emerald-600 rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center transform scale-95 transition-transform duration-300">
+
+        <p
+            id="modal-message"
+            class="text-emerald-50 mb-6 text-sm font-semibold leading-relaxed">
+        </p>
+
+        <div
+            id="modal-buttons"
+            class="flex justify-center gap-3">
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+/* ================================================================
+   ESTADO
+================================================================ */
+
+let gameState = {
+    activeMatches: [],
+    knownPlayers: []
+};
+
+let historyStack = [];
+let historicalStats = {};
+
+let pressTimer = null;
+
+
+/* ================================================================
+   VIBRACIÓN
+================================================================ */
+
+function vibrar() {
     if (navigator.vibrate) {
         navigator.vibrate(120);
     }
@@ -167,835 +456,2590 @@ function vibrarFuerte() {
     }
 }
 
-        function showModal(message, type, onConfirmCallback = null, customConfirmText = "Confirmar", customCancelText = "Cancelar") {
-            const modal = document.getElementById('custom-modal');
-            const modalContent = document.getElementById('modal-content');
-            const msgEl = document.getElementById('modal-message');
-            const btnsEl = document.getElementById('modal-buttons');
 
-            msgEl.innerHTML = message; // Cambiado a innerHTML para permitir texto rico en custom modals
-            btnsEl.innerHTML = '';
-            btnsEl.className = "flex justify-center gap-3"; // Asegurar que sea flex-row por defecto
+/* ================================================================
+   ESCAPAR HTML
+   Evita problemas si un jugador tiene caracteres especiales.
+================================================================ */
 
-            if (type === 'alert') {
-                const btn = document.createElement('button');
-                btn.className = "bg-amber-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50 w-full";
-                btn.textContent = "Entendido";
-                btn.onclick = closeModal;
-                btnsEl.appendChild(btn);
-            } else if (type === 'confirm') {
-                const cancelBtn = document.createElement('button');
-                cancelBtn.className = "flex-1 bg-emerald-900 text-emerald-200 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-800 transition-colors border border-emerald-700";
-                cancelBtn.textContent = customCancelText;
-                cancelBtn.onclick = closeModal;
+function escapeHtml(value) {
 
-                const confirmBtn = document.createElement('button');
-                confirmBtn.className = "flex-1 bg-amber-600 text-white px-4 py-2.5 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50";
-                confirmBtn.textContent = customConfirmText;
-                confirmBtn.onclick = () => {
-                    closeModal();
-                    if(onConfirmCallback) onConfirmCallback();
-                };
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 
-                btnsEl.appendChild(cancelBtn);
-                btnsEl.appendChild(confirmBtn);
+}
+
+
+/* ================================================================
+   MODALES
+================================================================ */
+
+function showModal(
+    message,
+    type,
+    onConfirmCallback = null,
+    customConfirmText = "Confirmar",
+    customCancelText = "Cancelar"
+) {
+
+    const modal = document.getElementById('custom-modal');
+    const modalContent = document.getElementById('modal-content');
+    const msgEl = document.getElementById('modal-message');
+    const btnsEl = document.getElementById('modal-buttons');
+
+    msgEl.innerHTML = message;
+
+    btnsEl.innerHTML = '';
+    btnsEl.className = "flex justify-center gap-3";
+
+
+    if (type === 'alert') {
+
+        const btn = document.createElement('button');
+
+        btn.className =
+            "bg-amber-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50 w-full";
+
+        btn.textContent = "Entendido";
+
+        btn.onclick = closeModal;
+
+        btnsEl.appendChild(btn);
+
+    }
+
+
+    if (type === 'confirm') {
+
+        const cancelBtn = document.createElement('button');
+
+        cancelBtn.className =
+            "flex-1 bg-emerald-900 text-emerald-200 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-800 transition-colors border border-emerald-700";
+
+        cancelBtn.textContent = customCancelText;
+
+        cancelBtn.onclick = closeModal;
+
+
+        const confirmBtn = document.createElement('button');
+
+        confirmBtn.className =
+            "flex-1 bg-amber-600 text-white px-4 py-2.5 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50";
+
+        confirmBtn.textContent = customConfirmText;
+
+        confirmBtn.onclick = () => {
+
+            closeModal();
+
+            if (onConfirmCallback) {
+                onConfirmCallback();
             }
 
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                modal.classList.add('opacity-100');
-                modalContent.classList.remove('scale-95');
-                modalContent.classList.add('scale-100');
-            }, 10);
-        }
+        };
 
-        function closeModal() {
-            const modal = document.getElementById('custom-modal');
-            const modalContent = document.getElementById('modal-content');
-            
-            modal.classList.remove('opacity-100');
-            modal.classList.add('opacity-0');
-            modalContent.classList.remove('scale-100');
-            modalContent.classList.add('scale-95');
-            
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }, 300);
-        }
-        
-        function saveToLocalStorage() { 
-            localStorage.setItem('truco_pica_pica_state', JSON.stringify(gameState)); 
-            localStorage.setItem('truco_pica_pica_history', JSON.stringify(historyStack)); 
-            localStorage.setItem('truco_pica_pica_historical_stats', JSON.stringify(historicalStats));
-        }
-        
-        function loadFromLocalStorage() {
-            const savedState = localStorage.getItem('truco_pica_pica_state');
-            if (savedState) {
-                gameState = JSON.parse(savedState);
-                if (!gameState.knownPlayers) gameState.knownPlayers = [];
-            }
-            
-            const savedHistory = localStorage.getItem('truco_pica_pica_history');
-            if (savedHistory) historyStack = JSON.parse(savedHistory);
 
-            const savedHistorical = localStorage.getItem('truco_pica_pica_historical_stats');
-            if (savedHistorical) historicalStats = JSON.parse(savedHistorical);
+        btnsEl.appendChild(cancelBtn);
+        btnsEl.appendChild(confirmBtn);
 
-            renderMatches();
-            updateUndoButton();
-            renderHistoricalStats();
-        }
+    }
 
-        // SISTEMA DE BACKUPS (SOLUCIONADO: Uso de Blob y nombre específico)
-        function exportBackup() {
-            const backupData = {
-                version: "1.1",
-                timestamp: new Date().toISOString(),
-                state: gameState,
-                history: historyStack,
-                historicalStats: historicalStats
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    setTimeout(() => {
+
+        modal.classList.remove('opacity-0');
+        modal.classList.add('opacity-100');
+
+        modalContent.classList.remove('scale-95');
+        modalContent.classList.add('scale-100');
+
+    }, 10);
+
+}
+
+
+function closeModal() {
+
+    const modal = document.getElementById('custom-modal');
+    const modalContent = document.getElementById('modal-content');
+
+    modal.classList.remove('opacity-100');
+    modal.classList.add('opacity-0');
+
+    modalContent.classList.remove('scale-100');
+    modalContent.classList.add('scale-95');
+
+    setTimeout(() => {
+
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+
+    }, 300);
+
+}
+
+
+/* ================================================================
+   LOCAL STORAGE
+================================================================ */
+
+function saveToLocalStorage() {
+
+    localStorage.setItem(
+        'truco_pica_pica_state',
+        JSON.stringify(gameState)
+    );
+
+    localStorage.setItem(
+        'truco_pica_pica_history',
+        JSON.stringify(historyStack)
+    );
+
+    localStorage.setItem(
+        'truco_pica_pica_historical_stats',
+        JSON.stringify(historicalStats)
+    );
+
+}
+
+
+/* ================================================================
+   CARGAR DATOS
+================================================================ */
+
+function loadFromLocalStorage() {
+
+    try {
+
+        const savedState =
+            localStorage.getItem('truco_pica_pica_state');
+
+        if (savedState) {
+
+            const parsed = JSON.parse(savedState);
+
+            gameState = {
+                activeMatches: Array.isArray(parsed.activeMatches)
+                    ? parsed.activeMatches
+                    : [],
+
+                knownPlayers: Array.isArray(parsed.knownPlayers)
+                    ? parsed.knownPlayers
+                    : []
             };
-            
-            // Creamos un Blob para que no haya límites de tamaño al guardar el texto JSON
-            const jsonStr = JSON.stringify(backupData);
-            const blob = new Blob([jsonStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", url);
-            
-            // Nombre especificado: PICA PICA
-            downloadAnchorNode.setAttribute("download", "PICA_PICA.json");
-            
-            document.body.appendChild(downloadAnchorNode); // Requerido en Firefox
-            downloadAnchorNode.click();
-            document.body.removeChild(downloadAnchorNode);
-            URL.revokeObjectURL(url); // Liberar memoria
-            
-            showModal("Backup guardado exitosamente. Se ha descargado el archivo PICA_PICA.json", "alert");
+
         }
 
-        function importBackup(event) {
-            const file = event.target.files[0];
-            if (!file) return;
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    
-                    if (importedData.state && importedData.state.activeMatches) {
-                        showModal("¿Estás seguro de cargar este backup? Se sobrescribirán todos los datos actuales y el histórico.", "confirm", () => {
-                            gameState = importedData.state;
-                            historyStack = importedData.history || [];
-                            historicalStats = importedData.historicalStats || {};
-                            
-                            saveToLocalStorage();
-                            renderMatches();
-                            renderStats();
-                            renderHistoricalStats();
-                            updateUndoButton();
-                            
-                            showModal("Backup cargado correctamente.", "alert");
-                        }, "Sí, Cargar", "Cancelar");
-                    } else {
-                        showModal("El archivo seleccionado no parece ser un backup válido de Truco Tracker.", "alert");
-                    }
-                } catch (error) {
-                    showModal("Error al leer el archivo. Asegúrate de que sea un JSON válido.", "alert");
-                }
-            };
-            reader.readAsText(file);
-            
-            // Limpiar el input para permitir volver a cargar el mismo archivo si se desea
-            event.target.value = "";
+        const savedHistory =
+            localStorage.getItem('truco_pica_pica_history');
+
+        if (savedHistory) {
+
+            const parsedHistory = JSON.parse(savedHistory);
+
+            historyStack =
+                Array.isArray(parsedHistory)
+                    ? parsedHistory
+                    : [];
+
         }
 
-        function updateDatalists() {
-            const p1Val = document.getElementById('p1').value.trim();
-            const p2Val = document.getElementById('p2').value.trim();
-            
-            const activePlayers = gameState.activeMatches.flatMap(m => [m.p1, m.p2]);
-            const available = gameState.knownPlayers.filter(p => !activePlayers.includes(p));
-            
-            const dl1 = document.getElementById('players-1');
-            const dl2 = document.getElementById('players-2');
-            
-            dl1.innerHTML = available.filter(p => p !== p2Val).map(p => `<option value="${p}">`).join('');
-            dl2.innerHTML = available.filter(p => p !== p1Val).map(p => `<option value="${p}">`).join('');
+
+        const savedHistorical =
+            localStorage.getItem('truco_pica_pica_historical_stats');
+
+        if (savedHistorical) {
+
+            const parsedHistorical =
+                JSON.parse(savedHistorical);
+
+            historicalStats =
+                parsedHistorical &&
+                typeof parsedHistorical === 'object'
+                    ? parsedHistorical
+                    : {};
+
         }
 
-        function updateUndoButton() {
-            const btn = document.getElementById('undo-btn');
-            if (historyStack.length > 0) {
-                btn.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
-                btn.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
-            } else {
-                btn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
-                btn.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
-            }
+
+    } catch (error) {
+
+        console.error("Error cargando datos:", error);
+
+        gameState = {
+            activeMatches: [],
+            knownPlayers: []
+        };
+
+        historyStack = [];
+        historicalStats = {};
+
+    }
+
+
+    normalizarDatos();
+
+    renderMatches();
+    renderStats();
+    renderHistoricalStats();
+    updateUndoButton();
+    updateDatalists();
+
+}
+
+
+/* ================================================================
+   NORMALIZACIÓN
+================================================================ */
+
+function normalizarDatos() {
+
+    if (!Array.isArray(gameState.activeMatches)) {
+        gameState.activeMatches = [];
+    }
+
+    if (!Array.isArray(gameState.knownPlayers)) {
+        gameState.knownPlayers = [];
+    }
+
+
+    gameState.activeMatches.forEach(match => {
+
+        if (!Array.isArray(match.picas)) {
+            match.picas = [];
         }
 
-        function executeWithUndo(actionFn) {
-            const previousState = JSON.stringify(gameState);
-            
-            actionFn();
-            
-            const newState = JSON.stringify(gameState);
-            
-            if (previousState !== newState) {
-                historyStack.push(previousState);
-                if (historyStack.length > 30) historyStack.shift();
-                updateUndoButton();
-            }
-            
-            saveToLocalStorage();
-            renderMatches();
-            if (!document.getElementById('section-stats').classList.contains('hidden')) {
-                renderStats();
-            }
+        if (!Array.isArray(match.chicos)) {
+            match.chicos = [];
         }
 
-        function undo() {
-            if (historyStack.length === 0) return;
-            const previousState = historyStack.pop();
-            gameState = JSON.parse(previousState);
-            saveToLocalStorage();
-            renderMatches();
-            if (!document.getElementById('section-stats').classList.contains('hidden')) {
-                renderStats();
-            }
-            updateUndoButton();
+        if (typeof match.score1 !== 'number') {
+            match.score1 = 0;
         }
 
-        function switchTab(tab) {
-            document.getElementById('section-play').classList.toggle('hidden', tab !== 'play');
-            document.getElementById('section-stats').classList.toggle('hidden', tab !== 'stats');
-            document.getElementById('tab-play').className = tab === 'play' ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all' : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all';
-            document.getElementById('tab-stats').className = tab === 'stats' ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all' : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all';
-            if (tab === 'stats') {
-                renderStats();
-                renderHistoricalStats();
-            }
+        if (typeof match.score2 !== 'number') {
+            match.score2 = 0;
         }
 
-        function startMatch() {
-            const p1Input = document.getElementById('p1');
-            const p2Input = document.getElementById('p2');
-            const p1 = p1Input.value.trim();
-            const p2 = p2Input.value.trim();
-            
-            // Validación de existencia: check si el nombre es nuevo o está en la lista
-            const esValido = (name) => name.length > 0; // O puedes verificar contra gameState.knownPlayers
-            
-            if (!p1 || !p2) {
-                showModal("Debes ingresar nombres para ambos jugadores.", 'alert');
+        if (typeof match.currentPica1 !== 'number') {
+            match.currentPica1 = 0;
+        }
+
+        if (typeof match.currentPica2 !== 'number') {
+            match.currentPica2 = 0;
+        }
+
+    });
+
+
+    Object.keys(historicalStats).forEach(player => {
+
+        if (!historicalStats[player]) {
+            historicalStats[player] = {};
+        }
+
+        if (typeof historicalStats[player].won !== 'number') {
+            historicalStats[player].won = 0;
+        }
+
+        if (typeof historicalStats[player].lost !== 'number') {
+            historicalStats[player].lost = 0;
+        }
+
+        if (typeof historicalStats[player].isBA !== 'boolean') {
+            historicalStats[player].isBA = false;
+        }
+
+    });
+
+}
+
+
+/* ================================================================
+   BACKUP
+================================================================ */
+
+function exportBackup() {
+
+    const backupData = {
+
+        version: "2.0",
+
+        timestamp: new Date().toISOString(),
+
+        state: gameState,
+
+        history: historyStack,
+
+        historicalStats: historicalStats
+
+    };
+
+
+    const jsonStr =
+        JSON.stringify(backupData, null, 2);
+
+    const blob =
+        new Blob([jsonStr], {
+            type: "application/json"
+        });
+
+    const url =
+        URL.createObjectURL(blob);
+
+    const anchor =
+        document.createElement('a');
+
+    anchor.href = url;
+    anchor.download = "PICA_PICA.json";
+
+    document.body.appendChild(anchor);
+
+    anchor.click();
+
+    document.body.removeChild(anchor);
+
+    setTimeout(() => {
+        URL.revokeObjectURL(url);
+    }, 1000);
+
+
+    showModal(
+        "Backup guardado correctamente.<br><br><strong>PICA_PICA.json</strong>",
+        "alert"
+    );
+
+}
+
+
+function importBackup(event) {
+
+    const file = event.target.files[0];
+
+    if (!file) {
+        return;
+    }
+
+
+    const reader = new FileReader();
+
+
+    reader.onload = function(e) {
+
+        try {
+
+            const importedData =
+                JSON.parse(e.target.result);
+
+
+            if (
+                !importedData ||
+                !importedData.state ||
+                !Array.isArray(importedData.state.activeMatches)
+            ) {
+
+                showModal(
+                    "El archivo seleccionado no parece ser un backup válido de Truco Tracker.",
+                    "alert"
+                );
+
                 return;
             }
 
-            if (p1 === p2) {
-                showModal("Los jugadores deben ser distintos.", 'alert');
-                return;
-            }
 
-            // Lógica para detectar si el usuario escribió algo que NO está en la lista de conocidos
-            const p1Existe = gameState.knownPlayers.includes(p1);
-            const p2Existe = gameState.knownPlayers.includes(p2);
+            showModal(
+                "¿Estás seguro de cargar este backup?<br><br>Se sobrescribirán los datos actuales y el histórico.",
+                "confirm",
 
-            if (!p1Existe || !p2Existe) {
-                const nuevos = [];
-                if (!p1Existe) nuevos.push(p1);
-                if (!p2Existe) nuevos.push(p2);
-                
-                showModal(`¿Confirmar nuevos jugadores? Se añadirán al sistema: ${nuevos.join(' y ')}`, 'confirm', () => {
-                    procesarInicioMatch(p1, p2);
-                }, "Sí, Iniciar", "Cancelar");
-            } else {
+                () => {
+
+                    gameState = importedData.state;
+
+                    historyStack =
+                        Array.isArray(importedData.history)
+                            ? importedData.history
+                            : [];
+
+                    historicalStats =
+                        importedData.historicalStats &&
+                        typeof importedData.historicalStats === 'object'
+                            ? importedData.historicalStats
+                            : {};
+
+
+                    normalizarDatos();
+
+                    saveToLocalStorage();
+
+                    renderMatches();
+                    renderStats();
+                    renderHistoricalStats();
+                    updateUndoButton();
+                    updateDatalists();
+
+
+                    showModal(
+                        "Backup cargado correctamente.",
+                        "alert"
+                    );
+
+                },
+
+                "Sí, Cargar",
+                "Cancelar"
+            );
+
+
+        } catch (error) {
+
+            console.error(error);
+
+            showModal(
+                "Error al leer el archivo.<br><br>Asegúrate de que sea un JSON válido.",
+                "alert"
+            );
+
+        }
+
+    };
+
+
+    reader.readAsText(file);
+
+    event.target.value = "";
+
+}
+
+
+/* ================================================================
+   DATALISTS
+================================================================ */
+
+function updateDatalists() {
+
+    const p1Input = document.getElementById('p1');
+    const p2Input = document.getElementById('p2');
+
+    if (!p1Input || !p2Input) {
+        return;
+    }
+
+
+    const p1Val =
+        p1Input.value.trim();
+
+    const p2Val =
+        p2Input.value.trim();
+
+
+    const activePlayers =
+        gameState.activeMatches.flatMap(match => [
+            match.p1,
+            match.p2
+        ]);
+
+
+    const available =
+        gameState.knownPlayers.filter(
+            player => !activePlayers.includes(player)
+        );
+
+
+    const dl1 =
+        document.getElementById('players-1');
+
+    const dl2 =
+        document.getElementById('players-2');
+
+
+    dl1.innerHTML =
+        available
+            .filter(player => player !== p2Val)
+            .map(player =>
+                `<option value="${escapeHtml(player)}">`
+            )
+            .join('');
+
+
+    dl2.innerHTML =
+        available
+            .filter(player => player !== p1Val)
+            .map(player =>
+                `<option value="${escapeHtml(player)}">`
+            )
+            .join('');
+
+}
+
+
+/* ================================================================
+   DESHACER
+================================================================ */
+
+function updateUndoButton() {
+
+    const btn =
+        document.getElementById('undo-btn');
+
+
+    if (historyStack.length > 0) {
+
+        btn.classList.remove(
+            'opacity-0',
+            'pointer-events-none',
+            'translate-y-4'
+        );
+
+        btn.classList.add(
+            'opacity-100',
+            'pointer-events-auto',
+            'translate-y-0'
+        );
+
+    } else {
+
+        btn.classList.add(
+            'opacity-0',
+            'pointer-events-none',
+            'translate-y-4'
+        );
+
+        btn.classList.remove(
+            'opacity-100',
+            'pointer-events-auto',
+            'translate-y-0'
+        );
+
+    }
+
+}
+
+
+function executeWithUndo(actionFn) {
+
+    const previousState =
+        JSON.stringify(gameState);
+
+
+    actionFn();
+
+
+    const newState =
+        JSON.stringify(gameState);
+
+
+    if (previousState !== newState) {
+
+        historyStack.push(previousState);
+
+        if (historyStack.length > 30) {
+            historyStack.shift();
+        }
+
+    }
+
+
+    saveToLocalStorage();
+
+    renderMatches();
+
+    renderStats();
+
+    renderHistoricalStats();
+
+    updateUndoButton();
+
+}
+
+
+function undo() {
+
+    if (historyStack.length === 0) {
+        return;
+    }
+
+
+    const previousState =
+        historyStack.pop();
+
+
+    try {
+
+        gameState =
+            JSON.parse(previousState);
+
+        normalizarDatos();
+
+    } catch (error) {
+
+        console.error(
+            "Error al restaurar estado:",
+            error
+        );
+
+        return;
+
+    }
+
+
+    saveToLocalStorage();
+
+    renderMatches();
+
+    renderStats();
+
+    renderHistoricalStats();
+
+    updateUndoButton();
+
+    updateDatalists();
+
+}
+
+
+/* ================================================================
+   TABS
+================================================================ */
+
+function switchTab(tab) {
+
+    const play =
+        document.getElementById('section-play');
+
+    const stats =
+        document.getElementById('section-stats');
+
+    const tabPlay =
+        document.getElementById('tab-play');
+
+    const tabStats =
+        document.getElementById('tab-stats');
+
+
+    play.classList.toggle(
+        'hidden',
+        tab !== 'play'
+    );
+
+    stats.classList.toggle(
+        'hidden',
+        tab !== 'stats'
+    );
+
+
+    tabPlay.className =
+        tab === 'play'
+            ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all'
+            : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all';
+
+
+    tabStats.className =
+        tab === 'stats'
+            ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all'
+            : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all';
+
+
+    if (tab === 'stats') {
+
+        renderStats();
+        renderHistoricalStats();
+
+    }
+
+}
+
+
+/* ================================================================
+   NUEVA PARTIDA
+================================================================ */
+
+function startMatch() {
+
+    const p1 =
+        document.getElementById('p1').value.trim();
+
+    const p2 =
+        document.getElementById('p2').value.trim();
+
+
+    if (!p1 || !p2) {
+
+        showModal(
+            "Debes ingresar nombres para ambos jugadores.",
+            "alert"
+        );
+
+        return;
+    }
+
+
+    if (p1.toLowerCase() === p2.toLowerCase()) {
+
+        showModal(
+            "Los jugadores deben ser distintos.",
+            "alert"
+        );
+
+        return;
+    }
+
+
+    const p1Existe =
+        gameState.knownPlayers.includes(p1);
+
+    const p2Existe =
+        gameState.knownPlayers.includes(p2);
+
+
+    if (!p1Existe || !p2Existe) {
+
+        const nuevos = [];
+
+        if (!p1Existe) {
+            nuevos.push(p1);
+        }
+
+        if (!p2Existe) {
+            nuevos.push(p2);
+        }
+
+
+        showModal(
+            `¿Confirmar nuevos jugadores?<br><br>
+             Se añadirán al sistema:<br>
+             <strong>${nuevos.map(escapeHtml).join(" y ")}</strong>`,
+            "confirm",
+
+            () => {
                 procesarInicioMatch(p1, p2);
+            },
+
+            "Sí, Iniciar",
+            "Cancelar"
+        );
+
+    } else {
+
+        procesarInicioMatch(p1, p2);
+
+    }
+
+}
+
+
+function procesarInicioMatch(p1, p2) {
+
+    const activePlayers =
+        gameState.activeMatches.flatMap(match => [
+            match.p1,
+            match.p2
+        ]);
+
+
+    if (
+        activePlayers.includes(p1) ||
+        activePlayers.includes(p2)
+    ) {
+
+        showModal(
+            "Uno o ambos jugadores ya están jugando en una partida activa.",
+            "alert"
+        );
+
+        return;
+    }
+
+
+    executeWithUndo(() => {
+
+        if (!gameState.knownPlayers.includes(p1)) {
+            gameState.knownPlayers.push(p1);
+        }
+
+        if (!gameState.knownPlayers.includes(p2)) {
+            gameState.knownPlayers.push(p2);
+        }
+
+
+        gameState.activeMatches.push({
+
+            id: Date.now() + Math.random(),
+
+            p1,
+            p2,
+
+            score1: 0,
+            score2: 0,
+
+            currentPica1: 0,
+            currentPica2: 0,
+
+            picas: [],
+
+            chicos: []
+
+        });
+
+    });
+
+
+    document.getElementById('p1').value = '';
+    document.getElementById('p2').value = '';
+
+    updateDatalists();
+
+}
+
+
+/* ================================================================
+   PUNTOS
+================================================================ */
+
+function updateScore(matchId, playerIdx, delta) {
+
+    executeWithUndo(() => {
+
+        const match =
+            gameState.activeMatches.find(
+                m => String(m.id) === String(matchId)
+            );
+
+
+        if (!match) {
+            return;
+        }
+
+
+        if (playerIdx === 1) {
+
+            match.score1 =
+                Math.max(
+                    0,
+                    match.score1 + delta
+                );
+
+            match.currentPica1 =
+                Math.max(
+                    0,
+                    match.currentPica1 + delta
+                );
+
+        } else {
+
+            match.score2 =
+                Math.max(
+                    0,
+                    match.score2 + delta
+                );
+
+            match.currentPica2 =
+                Math.max(
+                    0,
+                    match.currentPica2 + delta
+                );
+
+        }
+
+    });
+
+}
+
+
+/* ================================================================
+   REGISTRAR PICA
+================================================================ */
+
+function registrarPica(matchId) {
+
+    vibrarFuerte();
+
+
+    executeWithUndo(() => {
+
+        const match =
+            gameState.activeMatches.find(
+                m => String(m.id) === String(matchId)
+            );
+
+
+        if (!match) {
+            return;
+        }
+
+
+        if (
+            match.currentPica1 === 0 &&
+            match.currentPica2 === 0
+        ) {
+
+            showModal(
+                "No hay puntos para registrar en la pica actual.",
+                "alert"
+            );
+
+            return;
+
+        }
+
+
+        match.picas.push({
+
+            s1: match.currentPica1,
+
+            s2: match.currentPica2
+
+        });
+
+
+        match.currentPica1 = 0;
+
+        match.currentPica2 = 0;
+
+    });
+
+}
+
+
+/* ================================================================
+   CERRAR CHICOS
+================================================================ */
+
+function cerrarTodosLosChicos() {
+
+    vibrarFuerte();
+
+
+    const hayAlgoParaCerrar =
+        gameState.activeMatches.some(match =>
+            Array.isArray(match.picas) &&
+            match.picas.length > 0
+        );
+
+
+    if (!hayAlgoParaCerrar) {
+
+        showModal(
+            "No hay picas pendientes para cerrar.",
+            "alert"
+        );
+
+        return;
+
+    }
+
+
+    executeWithUndo(() => {
+
+        gameState.activeMatches.forEach(match => {
+
+            if (!Array.isArray(match.chicos)) {
+                match.chicos = [];
             }
-        }
 
-        function procesarInicioMatch(p1, p2) {
-            const activePlayers = gameState.activeMatches.flatMap(m => [m.p1, m.p2]);
-            if (activePlayers.includes(p1) || activePlayers.includes(p2)) {
-                showModal("Uno o ambos jugadores ya están jugando en una partida activa.", 'alert');
-                return;
+            if (
+                Array.isArray(match.picas) &&
+                match.picas.length > 0
+            ) {
+
+                match.chicos.push(
+                    [...match.picas]
+                );
+
+                match.picas = [];
+
             }
-            
-            executeWithUndo(() => {
-                if (!gameState.knownPlayers.includes(p1)) gameState.knownPlayers.push(p1);
-                if (!gameState.knownPlayers.includes(p2)) gameState.knownPlayers.push(p2);
 
-                gameState.activeMatches.push({ 
-                    id: Date.now(), p1, p2, 
-                    score1: 0, score2: 0, 
-                    currentPica1: 0, currentPica2: 0,
-                    picas: [],
-                    chicos: []
-                });
+        });
+
+    });
+
+}
+
+
+/* ================================================================
+   BORRAR PARTIDA
+================================================================ */
+
+function deleteMatch(matchId) {
+
+    showModal(
+        "¿Seguro que quieres borrar esta partida de la noche actual?",
+        "confirm",
+
+        () => {
+
+            executeWithUndo(() => {
+
+                gameState.activeMatches =
+                    gameState.activeMatches.filter(
+                        m => String(m.id) !== String(matchId)
+                    );
+
             });
 
-            document.getElementById('p1').value = '';
-            document.getElementById('p2').value = '';
-            updateDatalists();
-        }
+        },
 
-        function updateScore(matchId, playerIdx, delta) {
+        "Borrar",
+        "Cancelar"
+    );
+
+}
+
+
+/* ================================================================
+   NUEVA NOCHE
+================================================================ */
+
+function resetEverything() {
+
+    if (gameState.activeMatches.length === 0) {
+
+        showModal(
+            "No hay partidas activas.",
+            "alert"
+        );
+
+        return;
+
+    }
+
+
+    showModal(
+        "¿Seguro que quieres borrar los resultados actuales para empezar una nueva noche?<br><br>Los nombres y el histórico se conservarán.",
+        "confirm",
+
+        () => {
+
             executeWithUndo(() => {
-                const match = gameState.activeMatches.find(m => m.id === matchId);
-                if (playerIdx === 1) {
-                    match.score1 = Math.max(0, match.score1 + delta);
-                    match.currentPica1 = Math.max(0, match.currentPica1 + delta);
-                } else {
-                    match.score2 = Math.max(0, match.score2 + delta);
-                    match.currentPica2 = Math.max(0, match.currentPica2 + delta);
-                }
+
+                gameState.activeMatches = [];
+
             });
-        }
 
-        function registrarPica(matchId) {
-            vibrarFuerte();
-            executeWithUndo(() => {
-                const match = gameState.activeMatches.find(m => m.id === matchId);
-                match.picas.push({ s1: match.currentPica1, s2: match.currentPica2 });
-                match.currentPica1 = 0;
-                match.currentPica2 = 0;
-            });
-        }
+        },
 
-        function cerrarTodosLosChicos() {
-            vibrarFuerte();
-            executeWithUndo(() => {
-                gameState.activeMatches.forEach(match => {
-                    if (!match.chicos) match.chicos = [];
-                    if (match.picas && match.picas.length > 0) {
-                        match.chicos.push([...match.picas]);
-                        match.picas = [];
-                    }
-                });
-            });
-        }
+        "Sí, Nueva Noche",
+        "Cancelar"
+    );
 
-        function deleteMatch(matchId) {
-            showModal("¿Seguro que quieres borrar esta partida de la noche actual?", 'confirm', () => {
-                executeWithUndo(() => {
-                    gameState.activeMatches = gameState.activeMatches.filter(m => m.id !== matchId);
-                });
-            }, "Borrar", "Cancelar");
-        }
+}
 
-        function resetEverything() {
-            showModal("¿Seguro que quieres borrar los resultados actuales para empezar una nueva noche? (Los nombres y el histórico se guardarán)", 'confirm', () => {
-                executeWithUndo(() => {
-                    gameState.activeMatches = []; 
-                });
-            }, "Sí, Nueva Noche", "Cancelar");
-        }
 
-        function renderMatches() {
-            const container = document.getElementById('active-matches-container');
-            container.innerHTML = gameState.activeMatches.map(m => {
-                
-                let allGroups = [];
-                let picaGlobalCount = 0;
-                
-                if (m.chicos && m.chicos.length > 0) {
-                    m.chicos.forEach((chico) => {
-                        const picasHtml = chico.map((pica) => {
+/* ================================================================
+   RENDER PARTIDAS
+================================================================ */
+
+function renderMatches() {
+
+    const container =
+        document.getElementById(
+            'active-matches-container'
+        );
+
+
+    if (gameState.activeMatches.length === 0) {
+
+        container.innerHTML = `
+            <div class="text-center text-emerald-400/70 text-sm py-8">
+                No hay partidas activas
+            </div>
+        `;
+
+        updateDatalists();
+
+        return;
+    }
+
+
+    container.innerHTML =
+        gameState.activeMatches.map(match => {
+
+            const m = match;
+
+            let allGroups = [];
+
+            let picaGlobalCount = 0;
+
+
+            /* CHICOS CERRADOS */
+
+            if (
+                Array.isArray(m.chicos) &&
+                m.chicos.length > 0
+            ) {
+
+                m.chicos.forEach(chico => {
+
+                    const picasHtml =
+                        chico.map(pica => {
+
                             picaGlobalCount++;
+
                             return `
-                            <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-300/80 font-mono text-center flex flex-col justify-center border-emerald-800 bg-emerald-950/50">
-                                <div class="text-amber-500/70 font-bold pb-0.5">P${picaGlobalCount}</div>
-                                <div>${pica.s1}-${pica.s2}</div>
-                            </div>
+                                <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-300/80 font-mono text-center flex flex-col justify-center border-emerald-800 bg-emerald-950/50">
+
+                                    <div class="text-amber-500/70 font-bold pb-0.5">
+                                        P${picaGlobalCount}
+                                    </div>
+
+                                    <div>
+                                        ${pica.s1}-${pica.s2}
+                                    </div>
+
+                                </div>
                             `;
+
                         }).join('');
+
+
+                    if (picasHtml) {
                         allGroups.push(picasHtml);
-                    });
-                }
+                    }
 
-                if (m.picas && m.picas.length > 0) {
-                    const currentPicasHtml = m.picas.map((pica) => {
+                });
+
+            }
+
+
+            /* PICAS ACTUALES */
+
+            if (
+                Array.isArray(m.picas) &&
+                m.picas.length > 0
+            ) {
+
+                const currentPicasHtml =
+                    m.picas.map(pica => {
+
                         picaGlobalCount++;
-                        return `
-                        <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-200 font-mono text-center flex flex-col justify-center shadow-md">
-                            <div class="text-amber-500 font-bold pb-0.5">P${picaGlobalCount}</div>
-                            <div>${pica.s1}-${pica.s2}</div>
-                        </div>
-                        `;
-                    }).join('');
-                    allGroups.push(currentPicasHtml);
-                }
 
-                const groupedPicasHtml = allGroups.join(`
+                        return `
+                            <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-200 font-mono text-center flex flex-col justify-center shadow-md">
+
+                                <div class="text-amber-500 font-bold pb-0.5">
+                                    P${picaGlobalCount}
+                                </div>
+
+                                <div>
+                                    ${pica.s1}-${pica.s2}
+                                </div>
+
+                            </div>
+                        `;
+
+                    }).join('');
+
+
+                allGroups.push(currentPicasHtml);
+
+            }
+
+
+            const groupedPicasHtml =
+                allGroups.join(`
                     <div class="flex items-center justify-center px-1.5">
                         <div class="w-[3.5px] h-8 bg-[#451a03] rounded-full shadow-sm"></div>
                     </div>
                 `);
 
-                return `
-                <div class="truco-table p-4 rounded-xl shadow-lg text-white" id="match-${m.id}">
+
+            return `
+
+                <div
+                    class="truco-table p-4 rounded-xl shadow-lg text-white"
+                    id="match-${m.id}">
+
+
+                    <!-- CABECERA PARTIDA -->
+
                     <div class="flex justify-between items-start mb-4">
+
                         <div class="w-[45%] text-center">
-                            <div class="font-bold text-xl text-amber-300 break-words pb-1.5">${m.p1}</div>
-                            <div class="score-font text-4xl font-bold text-amber-500 py-1">${m.currentPica1}</div>
+
+                            <div class="font-bold text-xl text-amber-300 break-words pb-1.5">
+                                ${escapeHtml(m.p1)}
+                            </div>
+
+                            <div class="score-font text-4xl font-bold text-amber-500 py-1">
+                                ${m.currentPica1}
+                            </div>
+
                         </div>
-                        <div class="text-emerald-500 font-bold text-sm mt-3">VS</div>
+
+
+                        <div class="text-emerald-500 font-bold text-sm mt-3">
+                            VS
+                        </div>
+
+
                         <div class="w-[45%] text-center">
-                            <div class="font-bold text-xl text-amber-300 break-words pb-1.5">${m.p2}</div>
-                            <div class="score-font text-4xl font-bold text-amber-500 py-1">${m.currentPica2}</div>
+
+                            <div class="font-bold text-xl text-amber-300 break-words pb-1.5">
+                                ${escapeHtml(m.p2)}
+                            </div>
+
+                            <div class="score-font text-4xl font-bold text-amber-500 py-1">
+                                ${m.currentPica2}
+                            </div>
+
                         </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-                        <div class="flex bg-emerald-900 rounded-lg p-1">
-                            <button onclick="updateScore(${m.id}, 1, -1); vibrar();" class="flex-1 text-2xl py-1 hover:bg-emerald-800 rounded-md transition-colors">-</button>
-                            <button onclick="updateScore(${m.id}, 1, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md text-2xl py-1 hover:bg-amber-500 transition-colors shadow-inner">+</button>
-                        </div>
-                        <div class="flex bg-emerald-900 rounded-lg p-1">
-                            <button onclick="updateScore(${m.id}, 2, -1); vibrar();" class="flex-1 text-2xl py-1 hover:bg-emerald-800 rounded-md transition-colors">-</button>
-                            <button onclick="updateScore(${m.id}, 2, 1); vibrar();" class="flex-1 bg-amber-600 rounded-md text-2xl py-1 hover:bg-amber-500 transition-colors shadow-inner">+</button>
-                        </div>
+
                     </div>
 
-                    <button onclick="registrarPica(${m.id});" class="w-full mb-4 bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 py-2.5 rounded-lg text-sm font-bold transition-colors shadow-sm">
+
+                    <!-- BOTONES -->
+
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+
+
+                        <div class="flex bg-emerald-900 rounded-lg p-1">
+
+                            <button
+                                onclick="updateScore('${m.id}', 1, -1); vibrar();"
+                                class="flex-1 text-2xl py-1 hover:bg-emerald-800 rounded-md transition-colors">
+
+                                -
+
+                            </button>
+
+
+                            <button
+                                onclick="updateScore('${m.id}', 1, 1); vibrar();"
+                                class="flex-1 bg-amber-600 rounded-md text-2xl py-1 hover:bg-amber-500 transition-colors shadow-inner">
+
+                                +
+
+                            </button>
+
+                        </div>
+
+
+                        <div class="flex bg-emerald-900 rounded-lg p-1">
+
+                            <button
+                                onclick="updateScore('${m.id}', 2, -1); vibrar();"
+                                class="flex-1 text-2xl py-1 hover:bg-emerald-800 rounded-md transition-colors">
+
+                                -
+
+                            </button>
+
+
+                            <button
+                                onclick="updateScore('${m.id}', 2, 1); vibrar();"
+                                class="flex-1 bg-amber-600 rounded-md text-2xl py-1 hover:bg-amber-500 transition-colors shadow-inner">
+
+                                +
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- REGISTRAR PICA -->
+
+                    <button
+                        onclick="registrarPica('${m.id}');"
+                        class="w-full mb-4 bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 py-2.5 rounded-lg text-sm font-bold transition-colors shadow-sm">
+
                         Registrar Pica Actual
+
                     </button>
 
-                    ${allGroups.length > 0 ? `
-                        <div class="flex flex-wrap gap-1.5 mb-4 mt-3 justify-center items-center border-t border-emerald-800 pt-4">
-                            <div class="w-full text-xs font-bold text-emerald-400 mb-2 uppercase tracking-widest text-center opacity-80">Picas</div>
-                            ${groupedPicasHtml}
-                        </div>
-                    ` : ''}
+
+                    <!-- PICAS -->
+
+                    ${
+                        allGroups.length > 0
+
+                        ? `
+
+                            <div class="flex flex-wrap gap-1.5 mb-4 mt-3 justify-center items-center border-t border-emerald-800 pt-4">
+
+                                <div class="w-full text-xs font-bold text-emerald-400 mb-2 uppercase tracking-widest text-center opacity-80">
+                                    Picas
+                                </div>
+
+                                ${groupedPicasHtml}
+
+                            </div>
+
+                          `
+
+                        : ''
+                    }
+
+
+                    <!-- TOTAL -->
 
                     <div class="flex justify-between items-center mt-3 border-t border-emerald-800/50 pt-4">
+
                         <div class="text-sm font-bold text-amber-200">
-                            Total: <span class="text-amber-400">${m.score1} - ${m.score2}</span>
+
+                            Total:
+
+                            <span class="text-amber-400">
+                                ${m.score1} - ${m.score2}
+                            </span>
+
                         </div>
-                        <div class="flex space-x-2">
-                            <button onclick="deleteMatch(${m.id}); vibrar();" class="bg-red-950/80 hover:bg-red-900/80 text-red-400 text-[10px] uppercase font-bold px-3 py-1.5 rounded border border-red-900/50 transition-all">Borrar</button>
-                        </div>
+
+
+                        <button
+                            onclick="deleteMatch('${m.id}'); vibrar();"
+                            class="bg-red-950/80 hover:bg-red-900/80 text-red-400 text-[10px] uppercase font-bold px-3 py-1.5 rounded border border-red-900/50 transition-all">
+
+                            Borrar
+
+                        </button>
+
                     </div>
+
                 </div>
-            `}).join('');
-            
-            updateDatalists();
-        }
 
-        function getTotals() {
-            const totals = {};
-            gameState.activeMatches.forEach(m => {
-                if (!totals[m.p1]) totals[m.p1] = { won: 0, lost: 0 };
-                if (!totals[m.p2]) totals[m.p2] = { won: 0, lost: 0 };
-                totals[m.p1].won += m.score1;
-                totals[m.p1].lost += m.score2;
-                totals[m.p2].won += m.score2;
-                totals[m.p2].lost += m.score1;
-            });
-            return totals;
-        }
+            `;
 
-        function renderStats() {
-            const totals = getTotals();
-            const listCombined = document.getElementById('stats-list-combined');
-            
-            const sortedPlayers = Object.keys(totals).sort((a, b) => {
-                const diffA = totals[a].won - totals[a].lost;
-                const diffB = totals[b].won - totals[b].lost;
-                return diffB - diffA || totals[b].won - totals[a].won || a.localeCompare(b);
-            });
-            
-            if(sortedPlayers.length === 0) {
-                listCombined.innerHTML = `<div class="text-center text-emerald-500/70 text-xs py-4">No hay datos esta noche</div>`;
-            } else {
-                listCombined.innerHTML = sortedPlayers.map((name, index) => {
-                    const won = totals[name].won;
-                    const lost = totals[name].lost;
-                    const diff = won - lost;
-                    const diffColor = diff > 0 ? 'text-emerald-400' : (diff < 0 ? 'text-red-400' : 'text-gray-400');
-                    const diffSign = diff > 0 ? '+' : '';
+        }).join('');
 
-                    return `
-                    <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-2 py-1 mb-1">
-                        <div class="flex items-center flex-1 min-w-0">
-                            <span class="text-amber-500 font-bold text-xs w-5 shrink-0 py-1">${index + 1}.</span>
-                            <span class="text-white font-bold text-xs break-words pr-1 py-1">${name}</span>
-                        </div>
-                        <div class="flex w-24 justify-between items-center text-center shrink-0">
-                            <span class="text-amber-500 font-bold text-xs w-6 py-1">${won}</span>
-                            <span class="text-red-400 font-bold text-xs w-6 py-1">${lost}</span>
-                            <span class="${diffColor} font-bold text-xs w-8 py-1">${diffSign}${diff}</span>
-                        </div>
-                    </div>
-                    `;
-                }).join('');
-            }
 
-            const history = document.getElementById('history-list');
-            if(gameState.activeMatches.length === 0){
-                history.innerHTML = `<div class="text-center text-emerald-500/70 text-xs py-4">No hay enfrentamientos activos</div>`;
-            } else {
-                history.innerHTML = gameState.activeMatches.map(m => {
-                    
-                    let allGroups = [];
-                    let picaGlobalCount = 0;
-                    
-                    if (m.chicos && m.chicos.length > 0) {
-                        m.chicos.forEach((chico) => {
-                            const picasHtml = chico.map((pica) => {
-                                picaGlobalCount++;
-                                return `
-                                <div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center leading-normal">
-                                    <div class="text-amber-500 font-bold">P${picaGlobalCount}</div>
-                                    <div>${pica.s1}-${pica.s2}</div>
-                                </div>
-                                `;
-                            }).join('');
-                            allGroups.push(picasHtml);
-                        });
-                    }
+    updateDatalists();
 
-                    if (m.picas && m.picas.length > 0) {
-                        const currentPicasHtml = m.picas.map((pica) => {
-                            picaGlobalCount++;
-                            return `
-                            <div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center border-amber-600/50 leading-normal">
-                                <div class="text-amber-500 font-bold">P${picaGlobalCount}</div>
-                                <div>${pica.s1}-${pica.s2}</div>
-                            </div>
-                            `;
-                        }).join('');
-                        allGroups.push(currentPicasHtml);
-                    }
+}
 
-                    const finalPicasHtml = allGroups.join(`
-                        <div class="flex items-center justify-center px-1">
-                            <div class="w-[3.5px] h-6 bg-[#451a03] rounded-full shadow-sm"></div>
-                        </div>
-                    `);
 
-                    return `
-                    <div class="truco-table p-2.5 rounded-xl shadow-lg text-white mb-2" style="border-width: 3px;">
-                        <div class="flex justify-between items-center">
-                            <div class="w-[42%] text-center">
-                                <div class="font-bold text-xs text-amber-300 break-words py-1">${m.p1}</div>
-                                <div class="score-font text-lg font-bold text-amber-500 py-0.5">${m.score1}</div>
-                            </div>
-                            <div class="text-emerald-500 font-bold text-[9px]">VS</div>
-                            <div class="w-[42%] text-center">
-                                <div class="font-bold text-xs text-amber-300 break-words py-1">${m.p2}</div>
-                                <div class="score-font text-lg font-bold text-amber-500 py-0.5">${m.score2}</div>
-                            </div>
-                        </div>
-                        ${allGroups.length > 0 ? `
-                            <div class="flex flex-wrap justify-center items-center gap-1 mt-1 border-t border-emerald-800/60 pt-2">
-                                ${finalPicasHtml}
-                            </div>
-                        ` : ''}
-                    </div>
-                `}).join('');
-            }
-        }
+/* ================================================================
+   TOTALES
+================================================================ */
 
-        let pressTimer = null;
-        
-        function startPress(event, playerName) {
-            pressTimer = setTimeout(() => {
-                vibrar();
-                showPlayerOptionsModal(playerName);
-            }, 3000); // 3 Segundos
-        }
+function getTotals() {
 
-        function cancelPress() {
-            if (pressTimer !== null) {
-                clearTimeout(pressTimer);
-                pressTimer = null;
-            }
-        }
+    const totals = {};
 
-        function showPlayerOptionsModal(playerName) {
-            const modal = document.getElementById('custom-modal');
-            const modalContent = document.getElementById('modal-content');
-            const msgEl = document.getElementById('modal-message');
-            const btnsEl = document.getElementById('modal-buttons');
 
-            const isBA = historicalStats[playerName] && historicalStats[playerName].isBA;
+    gameState.activeMatches.forEach(m => {
 
-            msgEl.innerHTML = `Opciones para <span class="text-amber-400 font-bold break-words">${playerName}</span>`;
-            
-            // Cambiamos el flex a columna para este modal específico debido a los textos largos
-            btnsEl.className = "flex flex-col gap-3";
-            btnsEl.innerHTML = '';
-
-            const btnBA = document.createElement('button');
-            btnBA.className = "w-full bg-gray-700 text-white px-4 py-3 rounded-xl font-bold hover:bg-gray-600 transition-colors shadow-lg border border-gray-500";
-            btnBA.textContent = isBA ? "Quitar Baja Asistencia (BA)" : "Marcar como Baja Asistencia (BA)";
-            btnBA.onclick = () => {
-                historicalStats[playerName].isBA = !isBA;
-                saveToLocalStorage();
-                renderHistoricalStats();
-                closePlayerOptionsModal();
-                vibrar();
+        if (!totals[m.p1]) {
+            totals[m.p1] = {
+                won: 0,
+                lost: 0
             };
+        }
 
-            const btnDelete = document.createElement('button');
-            btnDelete.className = "w-full bg-red-900/80 text-red-100 px-4 py-3 rounded-xl font-bold hover:bg-red-800 transition-colors shadow-lg border border-red-700";
-            btnDelete.textContent = "Eliminar Jugador";
-            btnDelete.onclick = () => {
-                delete historicalStats[playerName];
-                saveToLocalStorage();
-                renderHistoricalStats();
-                closePlayerOptionsModal();
-                vibrar();
+
+        if (!totals[m.p2]) {
+            totals[m.p2] = {
+                won: 0,
+                lost: 0
             };
-
-            const btnCancel = document.createElement('button');
-            btnCancel.className = "w-full bg-emerald-900 text-emerald-200 px-4 py-3 rounded-xl font-bold hover:bg-emerald-800 transition-colors border border-emerald-700 mt-2";
-            btnCancel.textContent = "Cancelar";
-            btnCancel.onclick = closePlayerOptionsModal;
-
-            btnsEl.appendChild(btnBA);
-            btnsEl.appendChild(btnDelete);
-            btnsEl.appendChild(btnCancel);
-
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            
-            setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                modal.classList.add('opacity-100');
-                modalContent.classList.remove('scale-95');
-                modalContent.classList.add('scale-100');
-            }, 10);
         }
 
-        function closePlayerOptionsModal() {
-            closeModal();
-            // Restaurar la clase original del contenedor de botones tras la animación
-            setTimeout(() => {
-                document.getElementById('modal-buttons').className = "flex justify-center gap-3";
-            }, 300);
-        }
 
-        function confirmarRegistroNoche() {
-            const currentTotals = getTotals();
-            if (Object.keys(currentTotals).length === 0) {
-                showModal("No hay datos en la noche actual para registrar.", "alert");
-                return;
-            }
+        totals[m.p1].won += m.score1;
+        totals[m.p1].lost += m.score2;
 
-            showModal("¿Seguro que quieres sumar los puntos actuales a la Tabla Histórica Anual? Asegúrate de hacerlo solo al finalizar la noche.", "confirm", () => {
-                
-                for (const player in currentTotals) {
-                    if (!historicalStats[player]) {
-                        historicalStats[player] = { won: 0, lost: 0, isBA: false };
-                    }
-                    historicalStats[player].won += currentTotals[player].won;
-                    historicalStats[player].lost += currentTotals[player].lost;
-                }
-                
-                saveToLocalStorage();
-                renderHistoricalStats();
-                
-                showModal("¡Noche registrada exitosamente en el histórico!", "alert");
-                
-            }, "Sí, Registrar Noche", "Cancelar");
-        }
 
-        function renderHistoricalStats() {
-            const listCombined = document.getElementById('historical-stats-list');
-            
-            const sortedPlayers = Object.keys(historicalStats).sort((a, b) => {
-                // Primero ordenamos por Baja Asistencia (los BA van al fondo)
-                const isBaA = historicalStats[a].isBA ? 1 : 0;
-                const isBaB = historicalStats[b].isBA ? 1 : 0;
-                if (isBaA !== isBaB) return isBaA - isBaB;
+        totals[m.p2].won += m.score2;
+        totals[m.p2].lost += m.score1;
 
-                // Luego ordenamos por puntaje normal
-                const diffA = historicalStats[a].won - historicalStats[a].lost;
-                const diffB = historicalStats[b].won - historicalStats[b].lost;
-                return diffB - diffA || historicalStats[b].won - historicalStats[a].won || a.localeCompare(b);
-            });
-            
-            if(sortedPlayers.length === 0) {
-                listCombined.innerHTML = `<div class="text-center text-emerald-500/50 text-xs py-4">Aún no hay noches registradas</div>`;
-                return;
-            }
+    });
 
-            listCombined.innerHTML = sortedPlayers.map((name, index) => {
-                const won = historicalStats[name].won;
-                const lost = historicalStats[name].lost;
-                const isBA = historicalStats[name].isBA;
-                const diff = won - lost;
-                
-                const diffSign = diff > 0 ? '+' : '';
-                
-                // Estilos que varían si el jugador es Baja Asistencia (BA)
-                const bgClass = isBA ? 'bg-gray-800/80 border-gray-700/50 opacity-80' : 'bg-[#022c22] border-emerald-800/70';
-                const rankColor = isBA ? 'text-gray-500' : 'text-amber-600';
-                const nameColor = isBA ? 'text-gray-400' : 'text-emerald-50';
-                const numColorWON = isBA ? 'text-gray-500' : 'text-amber-500/90';
-                const numColorLOST = isBA ? 'text-gray-500' : 'text-red-500/90';
-                const diffColor = isBA ? 'text-gray-400' : (diff > 0 ? 'text-emerald-400' : (diff < 0 ? 'text-red-400' : 'text-gray-500'));
-                
-                // BA se mantiene como texto inline, sin borde, padding, position ni transform.
-                // De esta forma html2canvas lo trata como parte de la misma línea del nombre.
-                const nameDisplay = isBA
-                    ? `${name} <span class="ba-label">(BA)</span>`
-                    : name;
-                
-                // Escapar comillas para los eventos inline
-                const safeName = name.replace(/'/g, "\\'");
+
+    return totals;
+
+}
+
+
+/* ================================================================
+   RANKING
+================================================================ */
+
+function renderStats() {
+
+    const totals =
+        getTotals();
+
+
+    const listCombined =
+        document.getElementById(
+            'stats-list-combined'
+        );
+
+
+    const sortedPlayers =
+        Object.keys(totals).sort((a, b) => {
+
+            const diffA =
+                totals[a].won -
+                totals[a].lost;
+
+            const diffB =
+                totals[b].won -
+                totals[b].lost;
+
+
+            return (
+
+                diffB - diffA
+
+                ||
+
+                totals[b].won -
+                totals[a].won
+
+                ||
+
+                a.localeCompare(b)
+
+            );
+
+        });
+
+
+    if (sortedPlayers.length === 0) {
+
+        listCombined.innerHTML = `
+            <div class="text-center text-emerald-500/70 text-xs py-4">
+                No hay datos esta noche
+            </div>
+        `;
+
+    } else {
+
+        listCombined.innerHTML =
+            sortedPlayers.map((name, index) => {
+
+                const won =
+                    totals[name].won;
+
+                const lost =
+                    totals[name].lost;
+
+                const diff =
+                    won - lost;
+
+
+                const diffColor =
+                    diff > 0
+                        ? 'text-emerald-400'
+                        : diff < 0
+                            ? 'text-red-400'
+                            : 'text-gray-400';
+
+
+                const diffSign =
+                    diff > 0
+                        ? '+'
+                        : '';
+
 
                 return `
-                <div onmousedown="startPress(event, '${safeName}')" 
-                     onmouseup="cancelPress()" 
-                     onmouseleave="cancelPress()" 
-                     ontouchstart="startPress(event, '${safeName}')" 
-                     ontouchend="cancelPress()" 
-                     ontouchmove="cancelPress()"
-                     oncontextmenu="event.preventDefault();"
-                     style="-webkit-touch-callout: none;"
-                     class="historical-row flex justify-between items-center ${bgClass} border rounded-md px-2 py-1.5 mb-1 shadow-sm select-none cursor-pointer transition-all duration-300">
-                    <div class="flex items-center flex-1 min-w-0">
-                        <span class="${rankColor} font-black text-xs w-5 shrink-0">${index + 1}.</span>
-                        <span class="${nameColor} font-bold text-xs break-words pr-1">${nameDisplay}</span>
+
+                    <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-2 py-1 mb-1">
+
+                        <div class="flex items-center flex-1 min-w-0">
+
+                            <span class="text-amber-500 font-bold text-xs w-5 shrink-0 py-1">
+                                ${index + 1}.
+                            </span>
+
+                            <span class="text-white font-bold text-xs break-words pr-1 py-1">
+                                ${escapeHtml(name)}
+                            </span>
+
+                        </div>
+
+
+                        <div class="flex w-24 justify-between items-center text-center shrink-0">
+
+                            <span class="text-amber-500 font-bold text-xs w-6 py-1">
+                                ${won}
+                            </span>
+
+                            <span class="text-red-400 font-bold text-xs w-6 py-1">
+                                ${lost}
+                            </span>
+
+                            <span class="${diffColor} font-bold text-xs w-8 py-1">
+                                ${diffSign}${diff}
+                            </span>
+
+                        </div>
+
                     </div>
-                    <div class="flex w-24 justify-between items-center text-center shrink-0">
-                        <span class="${numColorWON} font-bold text-xs w-6">${won}</span>
-                        <span class="${numColorLOST} font-bold text-xs w-6">${lost}</span>
-                        <span class="${diffColor} font-black text-xs w-8 bg-black/20 rounded py-0.5">${diffSign}${diff}</span>
-                    </div>
-                </div>
+
                 `;
+
             }).join('');
-        }
 
-        function shareStats() {
-            renderStats(); 
-            setTimeout(() => {
-                html2canvas(document.getElementById("capture-area"), {
-                    backgroundColor: "#064e3b", 
-                    scale: 2,
-                    useCORS: true
-                }).then(canvas => {
-                    canvas.toBlob(blob => {
-                        const file = new File([blob], 'resultados_pica_pica.png', { type: 'image/png' });
-                        const shareData = { title: 'Resultados Pica Pica', files: [file] };
-                        
-                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                            navigator.share(shareData).catch(console.error);
-                        } else {
-                            const link = document.createElement('a');
-                            link.download = 'resultados_pica_pica.png';
-                            link.href = canvas.toDataURL("image/png");
-                            link.click();
-                        }
-                    }, 'image/png');
-                });
-            }, 50);
-        }
+    }
 
-        function shareHistoricalStats() {
-            renderHistoricalStats();
-            setTimeout(() => {
-                html2canvas(document.getElementById("capture-area-history"), {
-                    backgroundColor: "#064e3b",
-                    scale: 2,
-                    useCORS: true,
-                    onclone: (clonedDoc) => {
-                        // Corrección EXCLUSIVA para la imagen compartida.
-                        // En la app no modificamos el diseño. html2canvas estaba
-                        // dibujando el contenido de las filas demasiado abajo.
-                        const rows = clonedDoc.querySelectorAll('#historical-stats-list .historical-row');
 
-                        rows.forEach(row => {
-                            row.style.height = '40px';
-                            row.style.minHeight = '40px';
-                            row.style.boxSizing = 'border-box';
-                            row.style.paddingTop = '0';
-                            row.style.paddingBottom = '0';
-                            row.style.display = 'flex';
-                            row.style.alignItems = 'center';
+    renderMatchHistory();
 
-                            const left = row.children[0];
-                            const stats = row.children[1];
+}
 
-                            if (left) {
-                                left.style.height = '40px';
-                                left.style.display = 'flex';
-                                left.style.alignItems = 'center';
-                            }
 
-                            if (stats) {
-                                stats.style.height = '40px';
-                                stats.style.display = 'flex';
-                                stats.style.alignItems = 'center';
-                            }
+/* ================================================================
+   HISTORIAL DE PARTIDAS
+================================================================ */
 
-                            row.querySelectorAll(':scope > div:first-child > span').forEach(el => {
-                                el.style.display = 'flex';
-                                el.style.alignItems = 'center';
-                                el.style.height = '40px';
-                                el.style.lineHeight = '1';
-                            });
+function renderMatchHistory() {
 
-                            row.querySelectorAll(':scope > div:last-child > span').forEach(el => {
-                                el.style.display = 'flex';
-                                el.style.alignItems = 'center';
-                                el.style.justifyContent = 'center';
-                                el.style.height = '40px';
-                                el.style.lineHeight = '1';
-                            });
+    const history =
+        document.getElementById(
+            'history-list'
+        );
 
-                            const diff = row.querySelector(':scope > div:last-child > span:last-child');
-                            if (diff) {
-                                diff.style.height = '32px';
-                                diff.style.alignSelf = 'center';
-                            }
 
-                            const ba = row.querySelector('.ba-label');
-                            if (ba) {
-                                ba.style.display = 'inline';
-                                ba.style.position = 'static';
-                                ba.style.transform = 'none';
-                                ba.style.top = 'auto';
-                                ba.style.bottom = 'auto';
-                                ba.style.marginTop = '0';
-                                ba.style.marginBottom = '0';
-                                ba.style.padding = '0';
-                                ba.style.border = '0';
-                                ba.style.lineHeight = '1';
-                                ba.style.verticalAlign = 'baseline';
-                            }
-                        });
+    if (gameState.activeMatches.length === 0) {
+
+        history.innerHTML = `
+            <div class="text-center text-emerald-500/70 text-xs py-4">
+                No hay enfrentamientos activos
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    history.innerHTML =
+        gameState.activeMatches.map(m => {
+
+            let allGroups = [];
+
+            let picaGlobalCount = 0;
+
+
+            if (
+                Array.isArray(m.chicos) &&
+                m.chicos.length > 0
+            ) {
+
+                m.chicos.forEach(chico => {
+
+                    const html =
+                        chico.map(pica => {
+
+                            picaGlobalCount++;
+
+                            return `
+
+                                <div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center leading-normal">
+
+                                    <div class="text-amber-500 font-bold">
+                                        P${picaGlobalCount}
+                                    </div>
+
+                                    <div>
+                                        ${pica.s1}-${pica.s2}
+                                    </div>
+
+                                </div>
+
+                            `;
+
+                        }).join('');
+
+
+                    if (html) {
+                        allGroups.push(html);
                     }
-                }).then(canvas => {
-                    canvas.toBlob(blob => {
-                        const file = new File([blob], 'historico_pica_pica.png', { type: 'image/png' });
-                        const shareData = { title: 'Histórico Pica Pica', files: [file] };
 
-                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                            navigator.share(shareData).catch(console.error);
-                        } else {
-                            const link = document.createElement('a');
-                            link.download = 'historico_pica_pica.png';
-                            link.href = canvas.toDataURL("image/png");
-                            link.click();
-                        }
-                    }, 'image/png');
                 });
-            }, 50);
+
+            }
+
+
+            if (
+                Array.isArray(m.picas) &&
+                m.picas.length > 0
+            ) {
+
+                const html =
+                    m.picas.map(pica => {
+
+                        picaGlobalCount++;
+
+                        return `
+
+                            <div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center leading-normal">
+
+                                <div class="text-amber-500 font-bold">
+                                    P${picaGlobalCount}
+                                </div>
+
+                                <div>
+                                    ${pica.s1}-${pica.s2}
+                                </div>
+
+                            </div>
+
+                        `;
+
+                    }).join('');
+
+
+                allGroups.push(html);
+
+            }
+
+
+            const finalPicasHtml =
+                allGroups.join(`
+                    <div class="flex items-center justify-center px-1">
+                        <div class="w-[3.5px] h-6 bg-[#451a03] rounded-full shadow-sm"></div>
+                    </div>
+                `);
+
+
+            return `
+
+                <div
+                    class="truco-table p-2.5 rounded-xl shadow-lg text-white mb-2"
+                    style="border-width:3px;">
+
+                    <div class="flex justify-between items-center">
+
+                        <div class="w-[42%] text-center">
+
+                            <div class="font-bold text-xs text-amber-300 break-words py-1">
+                                ${escapeHtml(m.p1)}
+                            </div>
+
+                            <div class="score-font text-lg font-bold text-amber-500 py-0.5">
+                                ${m.score1}
+                            </div>
+
+                        </div>
+
+
+                        <div class="text-emerald-500 font-bold text-[9px]">
+                            VS
+                        </div>
+
+
+                        <div class="w-[42%] text-center">
+
+                            <div class="font-bold text-xs text-amber-300 break-words py-1">
+                                ${escapeHtml(m.p2)}
+                            </div>
+
+                            <div class="score-font text-lg font-bold text-amber-500 py-0.5">
+                                ${m.score2}
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    ${
+                        allGroups.length > 0
+
+                        ? `
+
+                            <div class="flex flex-wrap justify-center items-center gap-1 mt-1 border-t border-emerald-800/60 pt-2">
+
+                                ${finalPicasHtml}
+
+                            </div>
+
+                          `
+
+                        : ''
+                    }
+
+                </div>
+
+            `;
+
+        }).join('');
+
+}
+
+
+/* ================================================================
+   PULSACIÓN LARGA PARA JUGADORES
+================================================================ */
+
+function startPress(event, playerName) {
+
+    cancelPress();
+
+
+    pressTimer =
+        setTimeout(() => {
+
+            pressTimer = null;
+
+            vibrar();
+
+            showPlayerOptionsModal(playerName);
+
+        }, 1000);
+
+}
+
+
+function cancelPress() {
+
+    if (pressTimer !== null) {
+
+        clearTimeout(pressTimer);
+
+        pressTimer = null;
+
+    }
+
+}
+
+
+/* ================================================================
+   OPCIONES JUGADOR
+================================================================ */
+
+function showPlayerOptionsModal(playerName) {
+
+    const modal =
+        document.getElementById(
+            'custom-modal'
+        );
+
+    const modalContent =
+        document.getElementById(
+            'modal-content'
+        );
+
+    const msgEl =
+        document.getElementById(
+            'modal-message'
+        );
+
+    const btnsEl =
+        document.getElementById(
+            'modal-buttons'
+        );
+
+
+    if (!historicalStats[playerName]) {
+
+        historicalStats[playerName] = {
+            won: 0,
+            lost: 0,
+            isBA: false
+        };
+
+    }
+
+
+    const isBA =
+        historicalStats[playerName].isBA === true;
+
+
+    msgEl.innerHTML =
+        `Opciones para <span class="text-amber-400 font-bold break-words">${escapeHtml(playerName)}</span>`;
+
+
+    btnsEl.className =
+        "flex flex-col gap-3";
+
+    btnsEl.innerHTML = '';
+
+
+    /* BA */
+
+    const btnBA =
+        document.createElement('button');
+
+
+    btnBA.className =
+        "w-full bg-gray-700 text-white px-4 py-3 rounded-xl font-bold hover:bg-gray-600 transition-colors shadow-lg border border-gray-500";
+
+
+    btnBA.textContent =
+        isBA
+            ? "Quitar Baja Asistencia (BA)"
+            : "Marcar como Baja Asistencia (BA)";
+
+
+    btnBA.onclick = () => {
+
+        historicalStats[playerName].isBA =
+            !isBA;
+
+
+        saveToLocalStorage();
+
+        renderHistoricalStats();
+
+        closePlayerOptionsModal();
+
+        vibrar();
+
+    };
+
+
+    /* ELIMINAR */
+
+    const btnDelete =
+        document.createElement('button');
+
+
+    btnDelete.className =
+        "w-full bg-red-900/80 text-red-100 px-4 py-3 rounded-xl font-bold hover:bg-red-800 transition-colors shadow-lg border border-red-700";
+
+
+    btnDelete.textContent =
+        "Eliminar Jugador";
+
+
+    btnDelete.onclick = () => {
+
+        showModal(
+            `¿Eliminar a <strong>${escapeHtml(playerName)}</strong> del histórico?`,
+            "confirm",
+
+            () => {
+
+                delete historicalStats[playerName];
+
+                saveToLocalStorage();
+
+                renderHistoricalStats();
+
+                closePlayerOptionsModal();
+
+            },
+
+            "Eliminar",
+            "Cancelar"
+        );
+
+    };
+
+
+    /* CANCELAR */
+
+    const btnCancel =
+        document.createElement('button');
+
+
+    btnCancel.className =
+        "w-full bg-emerald-900 text-emerald-200 px-4 py-3 rounded-xl font-bold hover:bg-emerald-800 transition-colors border border-emerald-700";
+
+
+    btnCancel.textContent =
+        "Cancelar";
+
+
+    btnCancel.onclick =
+        closePlayerOptionsModal;
+
+
+    btnsEl.appendChild(btnBA);
+    btnsEl.appendChild(btnDelete);
+    btnsEl.appendChild(btnCancel);
+
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+
+    setTimeout(() => {
+
+        modal.classList.remove('opacity-0');
+        modal.classList.add('opacity-100');
+
+        modalContent.classList.remove('scale-95');
+        modalContent.classList.add('scale-100');
+
+    }, 10);
+
+}
+
+
+function closePlayerOptionsModal() {
+
+    closeModal();
+
+
+    setTimeout(() => {
+
+        document.getElementById(
+            'modal-buttons'
+        ).className =
+            "flex justify-center gap-3";
+
+    }, 300);
+
+}
+
+
+/* ================================================================
+   REGISTRAR NOCHE
+================================================================ */
+
+function confirmarRegistroNoche() {
+
+    const currentTotals =
+        getTotals();
+
+
+    if (
+        Object.keys(currentTotals).length === 0
+    ) {
+
+        showModal(
+            "No hay datos en la noche actual para registrar.",
+            "alert"
+        );
+
+        return;
+
+    }
+
+
+    showModal(
+
+        "¿Seguro que quieres sumar los puntos actuales a la Tabla Histórica Anual?<br><br><strong>Asegúrate de hacerlo solo una vez al finalizar la noche.</strong>",
+
+        "confirm",
+
+        () => {
+
+            Object.keys(currentTotals).forEach(player => {
+
+                if (!historicalStats[player]) {
+
+                    historicalStats[player] = {
+
+                        won: 0,
+
+                        lost: 0,
+
+                        isBA: false
+
+                    };
+
+                }
+
+
+                historicalStats[player].won +=
+                    currentTotals[player].won;
+
+                historicalStats[player].lost +=
+                    currentTotals[player].lost;
+
+            });
+
+
+            saveToLocalStorage();
+
+            renderHistoricalStats();
+
+
+            showModal(
+                "¡Noche registrada correctamente en el histórico!",
+                "alert"
+            );
+
+        },
+
+        "Sí, Registrar Noche",
+
+        "Cancelar"
+
+    );
+
+}
+
+
+/* ================================================================
+   HISTÓRICO
+================================================================ */
+
+function renderHistoricalStats() {
+
+    const listCombined =
+        document.getElementById(
+            'historical-stats-list'
+        );
+
+
+    const sortedPlayers =
+        Object.keys(historicalStats).sort((a, b) => {
+
+            const isBaA =
+                historicalStats[a].isBA ? 1 : 0;
+
+            const isBaB =
+                historicalStats[b].isBA ? 1 : 0;
+
+
+            /* BA SIEMPRE ABAJO */
+
+            if (isBaA !== isBaB) {
+                return isBaA - isBaB;
+            }
+
+
+            const diffA =
+                historicalStats[a].won -
+                historicalStats[a].lost;
+
+            const diffB =
+                historicalStats[b].won -
+                historicalStats[b].lost;
+
+
+            return (
+
+                diffB - diffA
+
+                ||
+
+                historicalStats[b].won -
+                historicalStats[a].won
+
+                ||
+
+                a.localeCompare(b)
+
+            );
+
+        });
+
+
+    if (sortedPlayers.length === 0) {
+
+        listCombined.innerHTML = `
+            <div class="text-center text-emerald-500/50 text-xs py-4">
+                Aún no hay noches registradas
+            </div>
+        `;
+
+        return;
+
+    }
+
+
+    listCombined.innerHTML =
+        sortedPlayers.map((name, index) => {
+
+            const player =
+                historicalStats[name];
+
+
+            const won =
+                Number(player.won) || 0;
+
+            const lost =
+                Number(player.lost) || 0;
+
+
+            const isBA =
+                player.isBA === true;
+
+
+            const diff =
+                won - lost;
+
+
+            const diffSign =
+                diff > 0
+                    ? '+'
+                    : '';
+
+
+            const bgClass =
+                isBA
+                    ? 'bg-gray-800/80 border-gray-700/50 opacity-80'
+                    : 'bg-[#022c22] border-emerald-800/70';
+
+
+            const rankColor =
+                isBA
+                    ? 'text-gray-500'
+                    : 'text-amber-600';
+
+
+            const nameColor =
+                isBA
+                    ? 'text-gray-400'
+                    : 'text-emerald-50';
+
+
+            const numColorWon =
+                isBA
+                    ? 'text-gray-500'
+                    : 'text-amber-500/90';
+
+
+            const numColorLost =
+                isBA
+                    ? 'text-gray-500'
+                    : 'text-red-500/90';
+
+
+            const diffColor =
+                isBA
+                    ? 'text-gray-400'
+                    : diff > 0
+                        ? 'text-emerald-400'
+                        : diff < 0
+                            ? 'text-red-400'
+                            : 'text-gray-500';
+
+
+            const nameDisplay =
+                isBA
+                    ? `${escapeHtml(name)} <span class="ba-label">(BA)</span>`
+                    : escapeHtml(name);
+
+
+            return `
+
+                <div
+
+                    onmousedown="startPress(event, ${JSON.stringify(name)})"
+                    onmouseup="cancelPress()"
+                    onmouseleave="cancelPress()"
+
+                    ontouchstart="startPress(event, ${JSON.stringify(name)})"
+                    ontouchend="cancelPress()"
+                    ontouchcancel="cancelPress()"
+                    ontouchmove="cancelPress()"
+
+                    oncontextmenu="event.preventDefault();"
+
+                    style="-webkit-touch-callout:none;"
+
+                    class="historical-row no-select flex justify-between items-center ${bgClass} border rounded-md px-2 py-1.5 mb-1 shadow-sm cursor-pointer transition-all duration-300">
+
+
+                    <div class="flex items-center flex-1 min-w-0">
+
+                        <span class="${rankColor} font-black text-xs w-5 shrink-0">
+                            ${index + 1}.
+                        </span>
+
+
+                        <span class="${nameColor} font-bold text-xs break-words pr-1">
+                            ${nameDisplay}
+                        </span>
+
+                    </div>
+
+
+                    <div class="flex w-24 justify-between items-center text-center shrink-0">
+
+                        <span class="${numColorWon} font-bold text-xs w-6">
+                            ${won}
+                        </span>
+
+                        <span class="${numColorLost} font-bold text-xs w-6">
+                            ${lost}
+                        </span>
+
+                        <span class="${diffColor} font-black text-xs w-8 bg-black/20 rounded py-0.5">
+                            ${diffSign}${diff}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }).join('');
+
+}
+
+
+/* ================================================================
+   COMPARTIR
+================================================================ */
+
+async function shareCanvas(canvas, filename, title) {
+
+    canvas.toBlob(async blob => {
+
+        if (!blob) {
+
+            showModal(
+                "No se pudo generar la imagen.",
+                "alert"
+            );
+
+            return;
+
         }
 
-        
-        loadFromLocalStorage();
-    </script>
+
+        const file =
+            new File(
+                [blob],
+                filename,
+                {
+                    type: "image/png"
+                }
+            );
+
+
+        const shareData = {
+
+            title: title,
+
+            files: [file]
+
+        };
+
+
+        try {
+
+            if (
+                navigator.share &&
+                navigator.canShare &&
+                navigator.canShare({
+                    files: [file]
+                })
+            ) {
+
+                await navigator.share(
+                    shareData
+                );
+
+            } else {
+
+                const link =
+                    document.createElement('a');
+
+                link.download =
+                    filename;
+
+                link.href =
+                    URL.createObjectURL(blob);
+
+                document.body.appendChild(link);
+
+                link.click();
+
+                document.body.removeChild(link);
+
+            }
+
+        } catch (error) {
+
+            if (
+                error &&
+                error.name !== 'AbortError'
+            ) {
+
+                console.error(
+                    "Error compartiendo:",
+                    error
+                );
+
+            }
+
+        }
+
+    }, 'image/png');
+
+}
+
+
+/* ================================================================
+   COMPARTIR NOCHE
+================================================================ */
+
+function shareStats() {
+
+    renderStats();
+
+
+    setTimeout(() => {
+
+        html2canvas(
+            document.getElementById(
+                "capture-area"
+            ),
+            {
+
+                backgroundColor: "#064e3b",
+
+                scale: 2,
+
+                useCORS: true
+
+            }
+
+        ).then(canvas => {
+
+            shareCanvas(
+                canvas,
+                "resultados_pica_pica.png",
+                "Resultados Pica Pica"
+            );
+
+        }).catch(error => {
+
+            console.error(error);
+
+            showModal(
+                "No se pudo generar la imagen.",
+                "alert"
+            );
+
+        });
+
+    }, 100);
+
+}
+
+
+/* ================================================================
+   COMPARTIR HISTÓRICO
+================================================================ */
+
+function shareHistoricalStats() {
+
+    renderHistoricalStats();
+
+
+    setTimeout(() => {
+
+        html2canvas(
+
+            document.getElementById(
+                "capture-area-history"
+            ),
+
+            {
+
+                backgroundColor: "#064e3b",
+
+                scale: 2,
+
+                useCORS: true,
+
+
+                onclone: clonedDoc => {
+
+                    const rows =
+                        clonedDoc.querySelectorAll(
+                            '#historical-stats-list .historical-row'
+                        );
+
+
+                    rows.forEach(row => {
+
+                        row.style.height = '40px';
+
+                        row.style.minHeight = '40px';
+
+                        row.style.boxSizing =
+                            'border-box';
+
+                        row.style.paddingTop = '0';
+
+                        row.style.paddingBottom = '0';
+
+                        row.style.display = 'flex';
+
+                        row.style.alignItems =
+                            'center';
+
+
+                        const left =
+                            row.children[0];
+
+                        const stats =
+                            row.children[1];
+
+
+                        if (left) {
+
+                            left.style.height =
+                                '40px';
+
+                            left.style.display =
+                                'flex';
+
+                            left.style.alignItems =
+                                'center';
+
+                        }
+
+
+                        if (stats) {
+
+                            stats.style.height =
+                                '40px';
+
+                            stats.style.display =
+                                'flex';
+
+                            stats.style.alignItems =
+                                'center';
+
+                        }
+
+
+                        row
+                            .querySelectorAll(
+                                ':scope > div:first-child > span'
+                            )
+                            .forEach(el => {
+
+                                el.style.display =
+                                    'flex';
+
+                                el.style.alignItems =
+                                    'center';
+
+                                el.style.height =
+                                    '40px';
+
+                                el.style.lineHeight =
+                                    '1';
+
+                            });
+
+
+                        row
+                            .querySelectorAll(
+                                ':scope > div:last-child > span'
+                            )
+                            .forEach(el => {
+
+                                el.style.display =
+                                    'flex';
+
+                                el.style.alignItems =
+                                    'center';
+
+                                el.style.justifyContent =
+                                    'center';
+
+                                el.style.height =
+                                    '40px';
+
+                                el.style.lineHeight =
+                                    '1';
+
+                            });
+
+
+                        const diff =
+                            row.querySelector(
+                                ':scope > div:last-child > span:last-child'
+                            );
+
+
+                        if (diff) {
+
+                            diff.style.height =
+                                '32px';
+
+                            diff.style.alignSelf =
+                                'center';
+
+                        }
+
+
+                        const ba =
+                            row.querySelector(
+                                '.ba-label'
+                            );
+
+
+                        if (ba) {
+
+                            ba.style.display =
+                                'inline';
+
+                            ba.style.position =
+                                'static';
+
+                            ba.style.transform =
+                                'none';
+
+                            ba.style.top =
+                                'auto';
+
+                            ba.style.bottom =
+                                'auto';
+
+                            ba.style.marginTop =
+                                '0';
+
+                            ba.style.marginBottom =
+                                '0';
+
+                            ba.style.padding =
+                                '0';
+
+                            ba.style.border =
+                                '0';
+
+                            ba.style.lineHeight =
+                                '1';
+
+                            ba.style.verticalAlign =
+                                'baseline';
+
+                        }
+
+                    });
+
+                }
+
+            }
+
+        ).then(canvas => {
+
+            shareCanvas(
+                canvas,
+                "historico_pica_pica.png",
+                "Histórico Pica Pica"
+            );
+
+        }).catch(error => {
+
+            console.error(error);
+
+            showModal(
+                "No se pudo generar la imagen del histórico.",
+                "alert"
+            );
+
+        });
+
+    }, 100);
+
+}
+
+
+/* ================================================================
+   INICIO
+================================================================ */
+
+loadFromLocalStorage();
+
+</script>
+
 </body>
 </html>
