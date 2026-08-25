@@ -52,41 +52,43 @@
             touch-action: manipulation;
         }
 
-        /* =========================
+        /* ============================
            MODO EDICIÓN
-        ========================= */
+           ============================ */
 
         .edit-mode {
             outline: 2px dashed #f59e0b !important;
-            outline-offset: 3px;
+            outline-offset: 2px;
             cursor: text !important;
         }
 
         .editable-field {
             cursor: text;
             border-radius: 4px;
-            transition: all 0.15s;
+            transition: all 0.15s ease;
         }
 
         .editable-field:hover {
-            background: rgba(245,158,11,0.15);
+            background: rgba(245, 158, 11, 0.12);
         }
 
         .editable-field:focus {
             outline: 2px solid #f59e0b;
-            background: rgba(0,0,0,0.25);
+            background: rgba(245, 158, 11, 0.15);
         }
 
-        .edit-only {
-            display: none;
+        #edit-indicator {
+            transition: all 0.2s ease;
         }
 
-        body.editing .edit-only {
-            display: block;
+        /* Evita selección accidental durante pulsación larga */
+        .historical-row {
+            -webkit-touch-callout: none;
+            user-select: none;
         }
 
-        body.editing .normal-only {
-            display: none;
+        .editing-active .historical-row {
+            user-select: text;
         }
     </style>
 </head>
@@ -95,16 +97,16 @@
 
 <div class="max-w-md w-full relative pt-2 pb-24" id="app">
 
-    <!-- =========================
+    <!-- ============================
          BOTÓN DESHACER
-    ========================== -->
+         ============================ -->
 
     <button
         id="undo-btn"
         onclick="undo(); vibrar();"
         class="fixed bottom-6 right-4 sm:right-8 z-[90] flex items-center space-x-1.5 px-4 py-2.5 text-emerald-100 bg-emerald-800/95 backdrop-blur-sm border border-emerald-600 rounded-full hover:bg-emerald-700 transition-all duration-300 opacity-0 pointer-events-none translate-y-4 shadow-2xl"
-        title="Deshacer última acción"
-    >
+        title="Deshacer última acción">
+
         <svg xmlns="http://www.w3.org/2000/svg"
              width="16"
              height="16"
@@ -114,17 +116,24 @@
              stroke-width="2.5"
              stroke-linecap="round"
              stroke-linejoin="round">
+
             <path d="M3 7v6h6"/>
             <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
+
         </svg>
-        <span class="text-[11px] font-bold uppercase tracking-wider">Deshacer</span>
+
+        <span class="text-[11px] font-bold uppercase tracking-wider">
+            Deshacer
+        </span>
     </button>
 
-    <!-- =========================
-         HEADER
-    ========================== -->
+
+    <!-- ============================
+         CABECERA
+         ============================ -->
 
     <header class="text-center mb-6 mt-4 relative">
+
         <h1 class="text-4xl font-bold text-amber-500 score-font drop-shadow-md">
             Noche de Truco
         </h1>
@@ -132,35 +141,40 @@
         <p class="text-emerald-100 opacity-80">
             Pica Pica Profesional
         </p>
+
     </header>
 
-    <!-- =========================
+
+    <!-- ============================
          TABS
-    ========================== -->
+         ============================ -->
 
     <div class="flex space-x-2 mb-6 bg-emerald-950 p-1 rounded-xl shadow-inner border border-emerald-800">
 
         <button
             onclick="switchTab('play'); vibrar();"
             id="tab-play"
-            class="flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all"
-        >
+            class="flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all">
+
             Partidas
+
         </button>
 
         <button
             onclick="switchTab('stats'); vibrar();"
             id="tab-stats"
-            class="flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all"
-        >
+            class="flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all">
+
             Ranking
+
         </button>
 
     </div>
 
+
     <!-- =========================================================
          PARTIDAS
-    ========================================================== -->
+         ========================================================= -->
 
     <div id="section-play" class="space-y-6">
 
@@ -168,12 +182,12 @@
 
         <button
             onclick="cerrarTodosLosChicos();"
-            class="w-full bg-blue-900/80 text-blue-300 py-3 rounded-xl font-bold border border-blue-700/50 hover:bg-blue-800 transition-all shadow-lg mt-6 mb-2"
-        >
+            class="w-full bg-blue-900/80 text-blue-300 py-3 rounded-xl font-bold border border-blue-700/50 hover:bg-blue-800 transition-all shadow-lg mt-6 mb-2">
+
             Cerrar Chico (Todos los enfrentamientos)
+
         </button>
 
-        <!-- NUEVA PARTIDA -->
 
         <div class="bg-emerald-800 p-6 rounded-2xl shadow-xl border border-emerald-700 mt-4">
 
@@ -189,10 +203,10 @@
                     id="p1"
                     placeholder="Jugador 1"
                     class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none"
-                    oninput="updateDatalists()"
-                >
+                    oninput="updateDatalists()">
 
                 <datalist id="players-1"></datalist>
+
 
                 <input
                     list="players-2"
@@ -200,1073 +214,2218 @@
                     id="p2"
                     placeholder="Jugador 2"
                     class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none"
-                    oninput="updateDatalists()"
-                >
+                    oninput="updateDatalists()">
 
                 <datalist id="players-2"></datalist>
 
             </div>
 
+
             <button
                 onclick="startMatch(); vibrar();"
-                class="w-full mt-4 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50"
-            >
+                class="w-full mt-4 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50">
+
                 Empezar Duelo
+
             </button>
 
         </div>
 
+
         <button
             onclick="resetEverything(); vibrar();"
-            class="w-full bg-emerald-950 text-emerald-500 py-2 rounded-xl font-bold border border-emerald-900 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest mt-2"
-        >
+            class="w-full bg-emerald-950 text-emerald-500 py-2 rounded-xl font-bold border border-emerald-900 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest mt-2">
+
             Empezar nueva noche de truco
+
         </button>
 
     </div>
 
+
     <!-- =========================================================
          ESTADÍSTICAS
-    ========================================================== -->
+         ========================================================= -->
 
     <div id="section-stats" class="hidden space-y-6">
 
-        <!-- =========================
+        <!-- ============================
              BOTÓN EDIT ON/OFF
-        ========================== -->
+             ============================ -->
 
-        <div class="flex gap-2">
+        <div class="flex items-center justify-between bg-emerald-950 border border-emerald-800 rounded-xl p-2">
+
+            <div class="flex items-center gap-2 px-2">
+
+                <span
+                    id="edit-indicator-dot"
+                    class="w-2.5 h-2.5 rounded-full bg-gray-500">
+                </span>
+
+                <span
+                    id="edit-indicator"
+                    class="text-xs font-bold text-emerald-300 uppercase tracking-wider">
+
+                    Edición OFF
+
+                </span>
+
+            </div>
+
 
             <button
                 id="edit-toggle-btn"
                 onclick="toggleEditMode(); vibrar();"
-                class="flex-1 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-700 transition-all shadow-lg"
-            >
-                ✏️ EDIT ON
-            </button>
+                class="px-5 py-2 rounded-lg text-xs font-black uppercase tracking-wider bg-emerald-800 text-emerald-200 border border-emerald-700 hover:bg-emerald-700 transition-all">
 
-            <button
-                id="save-edit-btn"
-                onclick="finishEditMode(); vibrar();"
-                class="hidden flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-500 transition-all shadow-lg"
-            >
-                ✓ EDIT OFF
+                EDIT OFF
+
             </button>
 
         </div>
 
-        <div
-            id="edit-help"
-            class="hidden bg-amber-950/70 border border-amber-700 text-amber-200 rounded-xl p-3 text-xs text-center"
-        >
-            Modo edición activo. Pulsa sobre cualquier dato para modificarlo.
-        </div>
 
-        <!-- =========================
-             RESULTADOS DE ESTA NOCHE
-        ========================== -->
+        <!-- ============================
+             RESULTADOS DE LA NOCHE
+             ============================ -->
 
         <div
             id="capture-area"
-            class="bg-emerald-800 p-3 rounded-2xl shadow-xl border border-emerald-700 space-y-2 relative"
-        >
+            class="bg-emerald-800 p-3 rounded-2xl shadow-xl border border-emerald-700 space-y-2 relative">
 
-            <h2 class="text-xl font-bold text-amber-400 score-font text-center drop-shadow-md pb-1.5 border-b border-emerald-700/50">
+            <h2
+                id="label-results-title"
+                class="text-xl font-bold text-amber-400 score-font text-center drop-shadow-md pb-1.5 border-b border-emerald-700/50">
+
                 Resultados Pica Pica
+
             </h2>
+
 
             <div class="pt-1">
 
-                <h2 class="text-xs font-bold text-emerald-300 mb-1.5 border-b border-emerald-700 pb-1 text-center uppercase tracking-widest">
+                <h2
+                    id="label-tonight-title"
+                    class="text-xs font-bold text-emerald-300 mb-1.5 border-b border-emerald-700 pb-1 text-center uppercase tracking-widest">
+
                     PUNTOS DE ESTA NOCHE
+
                 </h2>
+
 
                 <div class="flex justify-between px-2 mb-1 mt-1 text-[9px] font-bold text-emerald-500 uppercase tracking-wider">
 
-                    <div class="flex-1 ml-6">
+                    <div
+                        id="label-player"
+                        class="flex-1 ml-6">
+
                         Jugador
+
                     </div>
 
                     <div class="flex w-24 justify-between text-center">
-                        <span class="w-6 text-emerald-400">G</span>
-                        <span class="w-6 text-red-400">P</span>
-                        <span class="w-8 text-blue-400">DIF</span>
+
+                        <span
+                            id="label-win"
+                            class="w-6 text-emerald-400"
+                            title="Ganados">
+
+                            G
+
+                        </span>
+
+                        <span
+                            id="label-loss"
+                            class="w-6 text-red-400"
+                            title="Perdidos">
+
+                            P
+
+                        </span>
+
+                        <span
+                            id="label-diff"
+                            class="w-8 text-blue-400"
+                            title="Diferencia">
+
+                            DIF
+
+                        </span>
+
                     </div>
 
                 </div>
 
+
                 <div
                     id="stats-list-combined"
-                    class="grid grid-cols-1 gap-1"
-                ></div>
+                    class="grid grid-cols-1 gap-1">
+                </div>
 
             </div>
 
-            <!-- ENFRENTAMIENTOS -->
+
+            <!-- ============================
+                 ENFRENTAMIENTOS
+                 ============================ -->
 
             <div class="pt-1">
 
-                <h2 class="text-xs font-bold text-emerald-300 mb-1.5 border-b border-emerald-700 pb-1 text-center uppercase tracking-widest">
+                <h2
+                    id="label-matches-title"
+                    class="text-xs font-bold text-emerald-300 mb-1.5 border-b border-emerald-700 pb-1 text-center uppercase tracking-widest">
+
                     ENFRENTAMIENTOS
+
                 </h2>
+
 
                 <div
                     id="history-list"
-                    class="space-y-1.5 mt-1"
-                ></div>
+                    class="space-y-1.5 mt-1">
+                </div>
 
             </div>
 
         </div>
 
+
+        <!-- COMPARTIR -->
+
         <button
             onclick="shareStats(); vibrar();"
-            class="w-full mt-2 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg"
-        >
+            class="w-full mt-2 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">
+
             📸 Compartir Noche
+
         </button>
 
-        <!-- =========================
+
+        <!-- =====================================================
              HISTÓRICO
-        ========================== -->
+             ===================================================== -->
 
         <div class="mt-8 pt-6 border-t border-emerald-800/50">
 
             <button
                 onclick="confirmarRegistroNoche(); vibrar();"
-                class="w-full bg-amber-700 text-amber-100 py-3 rounded-xl font-bold border border-amber-600 hover:bg-amber-600 transition-all shadow-lg mb-6 uppercase tracking-wider text-sm flex items-center justify-center gap-2"
-            >
+                class="w-full bg-amber-700 text-amber-100 py-3 rounded-xl font-bold border border-amber-600 hover:bg-amber-600 transition-all shadow-lg mb-6 uppercase tracking-wider text-sm flex items-center justify-center gap-2">
+
+                <svg xmlns="http://www.w3.org/2000/svg"
+                     width="18"
+                     height="18"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+
+                </svg>
+
                 Registrar Noche en Histórico
+
             </button>
+
 
             <div
                 id="capture-area-history"
-                class="bg-[#043d2e] p-3 rounded-2xl shadow-xl border border-emerald-900 space-y-2 relative"
-            >
+                class="bg-[#043d2e] p-3 rounded-2xl shadow-xl border border-emerald-900 space-y-2 relative">
 
-                <h2 class="text-xl font-bold text-amber-500 score-font text-center drop-shadow-md pb-1.5 border-b border-emerald-800/80">
+                <h2
+                    id="label-history-title"
+                    class="text-xl font-bold text-amber-500 score-font text-center drop-shadow-md pb-1.5 border-b border-emerald-800/80">
+
                     Tabla Histórica Anual
+
                 </h2>
+
 
                 <div class="pt-1">
 
-                    <h2 class="text-[10px] font-bold text-emerald-400 mb-1.5 border-b border-emerald-800 pb-1 text-center uppercase tracking-widest">
+                    <h2
+                        id="label-history-points"
+                        class="text-[10px] font-bold text-emerald-400 mb-1.5 border-b border-emerald-800 pb-1 text-center uppercase tracking-widest">
+
                         PUNTOS ACUMULADOS EN PICA PICAS
+
                     </h2>
+
 
                     <div class="flex justify-between px-2 mb-1 mt-1 text-[9px] font-bold text-emerald-600 uppercase tracking-wider">
 
-                        <div class="flex-1 ml-6">
+                        <div
+                            id="label-history-player"
+                            class="flex-1 ml-6">
+
                             Jugador
+
                         </div>
 
                         <div class="flex w-24 justify-between text-center">
-                            <span class="w-6">G</span>
-                            <span class="w-6">P</span>
-                            <span class="w-8">DIF</span>
+
+                            <span
+                                id="label-history-win"
+                                class="w-6 text-emerald-500"
+                                title="Ganados Totales">
+
+                                G
+
+                            </span>
+
+                            <span
+                                id="label-history-loss"
+                                class="w-6 text-red-500"
+                                title="Perdidos Totales">
+
+                                P
+
+                            </span>
+
+                            <span
+                                id="label-history-diff"
+                                class="w-8 text-blue-500"
+                                title="Diferencia Total">
+
+                                DIF
+
+                            </span>
+
                         </div>
 
                     </div>
 
+
                     <div
                         id="historical-stats-list"
-                        class="grid grid-cols-1 gap-1"
-                    ></div>
+                        class="grid grid-cols-1 gap-1">
+                    </div>
 
                 </div>
 
             </div>
 
+
             <button
                 onclick="shareHistoricalStats(); vibrar();"
-                class="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg"
-            >
+                class="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">
+
                 📸 Compartir Histórico
+
             </button>
 
         </div>
 
     </div>
 
-    <!-- =========================
+
+    <!-- ============================
          BACKUP
-    ========================== -->
+         ============================ -->
 
     <div class="mt-12 pt-6 border-t border-emerald-900 flex gap-3">
 
         <button
             onclick="exportBackup(); vibrar();"
-            class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest"
-        >
+            class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-1">
+
             Guardar Backup
+
         </button>
+
 
         <button
             onclick="document.getElementById('backup-input').click(); vibrar();"
-            class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest"
-        >
+            class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-1">
+
             Cargar Backup
+
         </button>
+
 
         <input
             type="file"
             id="backup-input"
             class="hidden"
             accept=".json"
-            onchange="importBackup(event)"
-        >
+            onchange="importBackup(event)">
 
     </div>
 
 </div>
+
 
 <!-- =========================================================
      MODAL
-========================================================== -->
+     ========================================================= -->
 
 <div
     id="custom-modal"
-    class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm px-4 opacity-0 transition-opacity duration-300"
->
+    class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm px-4 opacity-0 transition-opacity duration-300">
 
     <div
         class="bg-emerald-950 border-2 border-emerald-600 rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center transform scale-95 transition-transform duration-300"
-        id="modal-content"
-    >
+        id="modal-content">
 
         <p
             id="modal-message"
-            class="text-emerald-50 mb-6 text-sm font-semibold leading-relaxed"
-        ></p>
+            class="text-emerald-50 mb-6 text-sm font-semibold leading-relaxed">
+        </p>
 
         <div
             class="flex justify-center gap-3"
-            id="modal-buttons"
-        ></div>
+            id="modal-buttons">
+        </div>
 
     </div>
 
 </div>
 
+
 <script>
 
-    /* =========================================================
-       ESTADO
-    ========================================================== */
+/* =========================================================
+   ESTADO
+   ========================================================= */
 
-    let gameState = {
-        activeMatches: [],
-        knownPlayers: []
-    };
+let gameState = {
+    activeMatches: [],
+    knownPlayers: []
+};
 
-    let historyStack = [];
+let historyStack = [];
 
-    let historicalStats = {};
-
-    let editMode = false;
+let historicalStats = {};
 
 
-    /* =========================================================
-       VIBRACIÓN
-    ========================================================== */
+/* =========================================================
+   MODO EDICIÓN
+   ========================================================= */
 
-    function vibrar() {
-        if (navigator.vibrate) {
-            navigator.vibrate(120);
-        }
+let editMode = false;
+
+
+/*
+    Textos editables de la pantalla.
+    Se guardan independientemente de los resultados.
+*/
+
+let statsLabels = {
+    resultsTitle: "Resultados Pica Pica",
+    tonightTitle: "PUNTOS DE ESTA NOCHE",
+    player: "Jugador",
+    win: "G",
+    loss: "P",
+    diff: "DIF",
+    matchesTitle: "ENFRENTAMIENTOS",
+    historyTitle: "Tabla Histórica Anual",
+    historyPoints: "PUNTOS ACUMULADOS EN PICA PICAS",
+    historyPlayer: "Jugador",
+    historyWin: "G",
+    historyLoss: "P",
+    historyDiff: "DIF"
+};
+
+
+/* =========================================================
+   VIBRACIÓN
+   ========================================================= */
+
+function vibrar() {
+
+    if (navigator.vibrate) {
+        navigator.vibrate(120);
     }
 
-    function vibrarFuerte() {
-        if (navigator.vibrate) {
-            navigator.vibrate([180, 70, 180]);
-        }
+}
+
+
+function vibrarFuerte() {
+
+    if (navigator.vibrate) {
+        navigator.vibrate([180, 70, 180]);
     }
 
-
-    /* =========================================================
-       MODAL
-    ========================================================== */
-
-    function showModal(
-        message,
-        type,
-        onConfirmCallback = null,
-        customConfirmText = "Confirmar",
-        customCancelText = "Cancelar"
-    ) {
-
-        const modal = document.getElementById('custom-modal');
-        const modalContent = document.getElementById('modal-content');
-        const msgEl = document.getElementById('modal-message');
-        const btnsEl = document.getElementById('modal-buttons');
-
-        msgEl.innerHTML = message;
-
-        btnsEl.innerHTML = '';
-
-        btnsEl.className = "flex justify-center gap-3";
-
-        if (type === 'alert') {
-
-            const btn = document.createElement('button');
-
-            btn.className =
-                "bg-amber-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50 w-full";
-
-            btn.textContent = "Entendido";
-
-            btn.onclick = closeModal;
-
-            btnsEl.appendChild(btn);
-
-        } else if (type === 'confirm') {
-
-            const cancelBtn = document.createElement('button');
-
-            cancelBtn.className =
-                "flex-1 bg-emerald-900 text-emerald-200 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-800 transition-colors border border-emerald-700";
-
-            cancelBtn.textContent = customCancelText;
-
-            cancelBtn.onclick = closeModal;
+}
 
 
-            const confirmBtn = document.createElement('button');
+/* =========================================================
+   MODAL
+   ========================================================= */
 
-            confirmBtn.className =
-                "flex-1 bg-amber-600 text-white px-4 py-2.5 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50";
+function showModal(
+    message,
+    type,
+    onConfirmCallback = null,
+    customConfirmText = "Confirmar",
+    customCancelText = "Cancelar"
+) {
 
-            confirmBtn.textContent = customConfirmText;
+    const modal = document.getElementById('custom-modal');
+    const modalContent = document.getElementById('modal-content');
+    const msgEl = document.getElementById('modal-message');
+    const btnsEl = document.getElementById('modal-buttons');
 
-            confirmBtn.onclick = () => {
+    msgEl.innerHTML = message;
 
-                closeModal();
+    btnsEl.innerHTML = '';
 
-                if (onConfirmCallback) {
-                    onConfirmCallback();
-                }
+    btnsEl.className = "flex justify-center gap-3";
 
-            };
 
-            btnsEl.appendChild(cancelBtn);
-            btnsEl.appendChild(confirmBtn);
-        }
+    if (type === 'alert') {
 
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        const btn = document.createElement('button');
 
-        setTimeout(() => {
+        btn.className =
+            "bg-amber-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50 w-full";
 
-            modal.classList.remove('opacity-0');
-            modal.classList.add('opacity-100');
+        btn.textContent = "Entendido";
 
-            modalContent.classList.remove('scale-95');
-            modalContent.classList.add('scale-100');
+        btn.onclick = closeModal;
 
-        }, 10);
+        btnsEl.appendChild(btn);
+
     }
 
 
-    function closeModal() {
+    else if (type === 'confirm') {
 
-        const modal = document.getElementById('custom-modal');
+        const cancelBtn = document.createElement('button');
 
-        const modalContent =
-            document.getElementById('modal-content');
+        cancelBtn.className =
+            "flex-1 bg-emerald-900 text-emerald-200 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-800 transition-colors border border-emerald-700";
 
-        modal.classList.remove('opacity-100');
-        modal.classList.add('opacity-0');
+        cancelBtn.textContent = customCancelText;
 
-        modalContent.classList.remove('scale-100');
-        modalContent.classList.add('scale-95');
+        cancelBtn.onclick = closeModal;
 
-        setTimeout(() => {
 
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+        const confirmBtn = document.createElement('button');
 
-        }, 300);
+        confirmBtn.className =
+            "flex-1 bg-amber-600 text-white px-4 py-2.5 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50";
+
+        confirmBtn.textContent = customConfirmText;
+
+        confirmBtn.onclick = () => {
+
+            closeModal();
+
+            if (onConfirmCallback) {
+                onConfirmCallback();
+            }
+
+        };
+
+
+        btnsEl.appendChild(cancelBtn);
+        btnsEl.appendChild(confirmBtn);
+
     }
 
 
-    /* =========================================================
-       LOCAL STORAGE
-    ========================================================== */
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
 
-    function saveToLocalStorage() {
+    setTimeout(() => {
 
-        localStorage.setItem(
-            'truco_pica_pica_state',
-            JSON.stringify(gameState)
-        );
+        modal.classList.remove('opacity-0');
+        modal.classList.add('opacity-100');
 
-        localStorage.setItem(
-            'truco_pica_pica_history',
-            JSON.stringify(historyStack)
-        );
+        modalContent.classList.remove('scale-95');
+        modalContent.classList.add('scale-100');
 
-        localStorage.setItem(
-            'truco_pica_pica_historical_stats',
-            JSON.stringify(historicalStats)
-        );
-    }
+    }, 10);
+
+}
 
 
-    function loadFromLocalStorage() {
+function closeModal() {
+
+    const modal = document.getElementById('custom-modal');
+    const modalContent = document.getElementById('modal-content');
+
+    modal.classList.remove('opacity-100');
+    modal.classList.add('opacity-0');
+
+    modalContent.classList.remove('scale-100');
+    modalContent.classList.add('scale-95');
+
+    setTimeout(() => {
+
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+
+    }, 300);
+
+}
+
+
+/* =========================================================
+   LOCAL STORAGE
+   ========================================================= */
+
+function saveToLocalStorage() {
+
+    localStorage.setItem(
+        'truco_pica_pica_state',
+        JSON.stringify(gameState)
+    );
+
+    localStorage.setItem(
+        'truco_pica_pica_history',
+        JSON.stringify(historyStack)
+    );
+
+    localStorage.setItem(
+        'truco_pica_pica_historical_stats',
+        JSON.stringify(historicalStats)
+    );
+
+    localStorage.setItem(
+        'truco_pica_pica_labels',
+        JSON.stringify(statsLabels)
+    );
+
+}
+
+
+function loadFromLocalStorage() {
+
+    const savedState =
+        localStorage.getItem('truco_pica_pica_state');
+
+    if (savedState) {
 
         try {
 
-            const savedState =
-                localStorage.getItem('truco_pica_pica_state');
+            gameState = JSON.parse(savedState);
 
-            if (savedState) {
-
-                gameState = JSON.parse(savedState);
-
-                if (!gameState.knownPlayers) {
-                    gameState.knownPlayers = [];
-                }
-
-                if (!gameState.activeMatches) {
-                    gameState.activeMatches = [];
-                }
+            if (!gameState.knownPlayers) {
+                gameState.knownPlayers = [];
             }
 
-            const savedHistory =
-                localStorage.getItem('truco_pica_pica_history');
-
-            if (savedHistory) {
-                historyStack = JSON.parse(savedHistory);
+            if (!gameState.activeMatches) {
+                gameState.activeMatches = [];
             }
 
-            const savedHistorical =
-                localStorage.getItem(
-                    'truco_pica_pica_historical_stats'
-                );
-
-            if (savedHistorical) {
-                historicalStats = JSON.parse(savedHistorical);
-            }
-
-        } catch (error) {
-
-            console.error(error);
+        } catch (e) {
 
             gameState = {
                 activeMatches: [],
                 knownPlayers: []
             };
 
+        }
+
+    }
+
+
+    const savedHistory =
+        localStorage.getItem('truco_pica_pica_history');
+
+    if (savedHistory) {
+
+        try {
+            historyStack = JSON.parse(savedHistory);
+        } catch (e) {
             historyStack = [];
+        }
+
+    }
+
+
+    const savedHistorical =
+        localStorage.getItem('truco_pica_pica_historical_stats');
+
+    if (savedHistorical) {
+
+        try {
+            historicalStats = JSON.parse(savedHistorical);
+        } catch (e) {
             historicalStats = {};
         }
 
-        renderMatches();
-        renderStats();
-        renderHistoricalStats();
-        updateUndoButton();
     }
 
 
-    /* =========================================================
-       BACKUP
-    ========================================================== */
+    const savedLabels =
+        localStorage.getItem('truco_pica_pica_labels');
 
-    function exportBackup() {
+    if (savedLabels) {
 
-        const backupData = {
-            version: "2.0",
-            timestamp: new Date().toISOString(),
-            state: gameState,
-            history: historyStack,
-            historicalStats: historicalStats
-        };
+        try {
 
-        const jsonStr = JSON.stringify(
-            backupData,
-            null,
-            2
-        );
+            statsLabels = {
+                ...statsLabels,
+                ...JSON.parse(savedLabels)
+            };
 
-        const blob =
-            new Blob(
-                [jsonStr],
-                { type: "application/json" }
-            );
+        } catch (e) {}
 
-        const url =
-            URL.createObjectURL(blob);
-
-        const anchor =
-            document.createElement('a');
-
-        anchor.href = url;
-        anchor.download = "PICA_PICA.json";
-
-        document.body.appendChild(anchor);
-
-        anchor.click();
-
-        document.body.removeChild(anchor);
-
-        URL.revokeObjectURL(url);
-
-        showModal(
-            "Backup guardado correctamente.<br><br><b>PICA_PICA.json</b>",
-            "alert"
-        );
     }
 
 
-    function importBackup(event) {
+    applyStatsLabels();
 
-        const file =
-            event.target.files[0];
+    renderMatches();
 
-        if (!file) return;
+    updateUndoButton();
 
-        const reader =
-            new FileReader();
+    renderHistoricalStats();
 
-        reader.onload = function(e) {
+}
 
-            try {
 
-                const importedData =
-                    JSON.parse(e.target.result);
+/* =========================================================
+   ETIQUETAS ESTADÍSTICAS
+   ========================================================= */
 
-                if (
-                    importedData.state &&
-                    importedData.state.activeMatches
-                ) {
+function applyStatsLabels() {
 
-                    showModal(
-                        "¿Estás seguro de cargar este backup?<br><br>Se sobrescribirán los datos actuales.",
-                        "confirm",
-                        () => {
+    const map = {
 
-                            gameState =
-                                importedData.state;
+        'label-results-title': statsLabels.resultsTitle,
+        'label-tonight-title': statsLabels.tonightTitle,
+        'label-player': statsLabels.player,
+        'label-win': statsLabels.win,
+        'label-loss': statsLabels.loss,
+        'label-diff': statsLabels.diff,
+        'label-matches-title': statsLabels.matchesTitle,
 
-                            historyStack =
-                                importedData.history || [];
+        'label-history-title': statsLabels.historyTitle,
+        'label-history-points': statsLabels.historyPoints,
+        'label-history-player': statsLabels.historyPlayer,
+        'label-history-win': statsLabels.historyWin,
+        'label-history-loss': statsLabels.historyLoss,
+        'label-history-diff': statsLabels.historyDiff
 
-                            historicalStats =
-                                importedData.historicalStats || {};
+    };
 
-                            saveToLocalStorage();
 
-                            renderMatches();
-                            renderStats();
-                            renderHistoricalStats();
-                            updateUndoButton();
+    Object.keys(map).forEach(id => {
 
-                            showModal(
-                                "Backup cargado correctamente.",
-                                "alert"
-                            );
+        const el = document.getElementById(id);
 
-                        },
-                        "Sí, Cargar",
-                        "Cancelar"
-                    );
+        if (el) {
+            el.textContent = map[id];
+        }
 
-                } else {
+    });
 
-                    showModal(
-                        "El archivo no parece ser un backup válido.",
-                        "alert"
-                    );
-                }
+}
 
-            } catch (error) {
+
+/* =========================================================
+   EDIT MODE
+   ========================================================= */
+
+function toggleEditMode() {
+
+    editMode = !editMode;
+
+    const btn =
+        document.getElementById('edit-toggle-btn');
+
+    const indicator =
+        document.getElementById('edit-indicator');
+
+    const dot =
+        document.getElementById('edit-indicator-dot');
+
+    const app =
+        document.getElementById('app');
+
+
+    if (editMode) {
+
+        btn.textContent = "EDIT ON";
+
+        btn.className =
+            "px-5 py-2 rounded-lg text-xs font-black uppercase tracking-wider bg-amber-600 text-white border border-amber-500 shadow-lg transition-all";
+
+        indicator.textContent = "Edición ON";
+
+        indicator.className =
+            "text-xs font-bold text-amber-400 uppercase tracking-wider";
+
+        dot.className =
+            "w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse";
+
+
+        app.classList.add('editing-active');
+
+        enableStatsEditing();
+
+        vibrarFuerte();
+
+    }
+
+    else {
+
+        saveStatsEdits();
+
+        btn.textContent = "EDIT OFF";
+
+        btn.className =
+            "px-5 py-2 rounded-lg text-xs font-black uppercase tracking-wider bg-emerald-800 text-emerald-200 border border-emerald-700 hover:bg-emerald-700 transition-all";
+
+        indicator.textContent = "Edición OFF";
+
+        indicator.className =
+            "text-xs font-bold text-emerald-300 uppercase tracking-wider";
+
+        dot.className =
+            "w-2.5 h-2.5 rounded-full bg-gray-500";
+
+        app.classList.remove('editing-active');
+
+        disableStatsEditing();
+
+        saveToLocalStorage();
+
+        vibrar();
+
+    }
+
+}
+
+
+/*
+    Activa contenteditable en todos los elementos relevantes
+    de la pantalla de estadísticas.
+
+    No activamos botones para evitar romper funciones.
+*/
+
+function enableStatsEditing() {
+
+    const areas = [
+        document.getElementById('capture-area'),
+        document.getElementById('capture-area-history')
+    ];
+
+
+    areas.forEach(area => {
+
+        if (!area) return;
+
+
+        const editableSelectors = [
+
+            'h1',
+            'h2',
+            'h3',
+            'span',
+            'div'
+
+        ];
+
+
+        area.querySelectorAll(editableSelectors.join(',')).forEach(el => {
+
+            /*
+                No hacer editables contenedores.
+                Solamente elementos que tengan texto directo.
+            */
+
+            const hasDirectText =
+                Array.from(el.childNodes).some(
+                    node =>
+                        node.nodeType === Node.TEXT_NODE &&
+                        node.textContent.trim() !== ''
+                );
+
+
+            if (!hasDirectText) return;
+
+
+            /*
+                No tocar elementos que contengan otros elementos
+                interactivos.
+            */
+
+            if (
+                el.tagName === 'BUTTON' ||
+                el.closest('button')
+            ) {
+                return;
+            }
+
+
+            el.contentEditable = "true";
+
+            el.classList.add('editable-field');
+            el.classList.add('edit-mode');
+
+        });
+
+    });
+
+}
+
+
+/*
+    Guarda los textos modificados por el usuario.
+*/
+
+function saveStatsEdits() {
+
+    const ids = {
+
+        'label-results-title': 'resultsTitle',
+        'label-tonight-title': 'tonightTitle',
+        'label-player': 'player',
+        'label-win': 'win',
+        'label-loss': 'loss',
+        'label-diff': 'diff',
+        'label-matches-title': 'matchesTitle',
+
+        'label-history-title': 'historyTitle',
+        'label-history-points': 'historyPoints',
+        'label-history-player': 'historyPlayer',
+        'label-history-win': 'historyWin',
+        'label-history-loss': 'historyLoss',
+        'label-history-diff': 'historyDiff'
+
+    };
+
+
+    Object.keys(ids).forEach(id => {
+
+        const el = document.getElementById(id);
+
+        if (el) {
+
+            statsLabels[ids[id]] =
+                el.innerText.trim();
+
+        }
+
+    });
+
+
+    /*
+        Guardamos también las modificaciones de las filas
+        en los datos principales cuando sea posible.
+    */
+
+    saveEditableRowsToData();
+
+}
+
+
+/*
+    Sincroniza nombres y estadísticas editadas.
+*/
+
+function saveEditableRowsToData() {
+
+    /*
+        ESTADÍSTICAS DE LA NOCHE
+    */
+
+    const currentRows =
+        document.querySelectorAll(
+            '#stats-list-combined .current-stat-row'
+        );
+
+
+    currentRows.forEach(row => {
+
+        const oldName =
+            row.dataset.originalName;
+
+        const nameEl =
+            row.querySelector('.editable-player-name');
+
+        if (!nameEl || !oldName) return;
+
+        const newName =
+            nameEl.innerText.trim();
+
+        if (!newName || newName === oldName) return;
+
+
+        gameState.activeMatches.forEach(match => {
+
+            if (match.p1 === oldName) {
+                match.p1 = newName;
+            }
+
+            if (match.p2 === oldName) {
+                match.p2 = newName;
+            }
+
+        });
+
+
+        if (gameState.knownPlayers.includes(oldName)) {
+
+            gameState.knownPlayers =
+                gameState.knownPlayers.map(
+                    p => p === oldName ? newName : p
+                );
+
+        }
+
+    });
+
+
+    /*
+        HISTÓRICO
+    */
+
+    const historicalRows =
+        document.querySelectorAll(
+            '#historical-stats-list .historical-row'
+        );
+
+
+    historicalRows.forEach(row => {
+
+        const oldName =
+            row.dataset.originalName;
+
+        const nameEl =
+            row.querySelector('.editable-historical-name');
+
+        if (!nameEl || !oldName) return;
+
+        const newName =
+            nameEl.innerText
+                .replace('(BA)', '')
+                .trim();
+
+        if (!newName || newName === oldName) return;
+
+
+        if (
+            historicalStats[oldName] &&
+            !historicalStats[newName]
+        ) {
+
+            historicalStats[newName] =
+                historicalStats[oldName];
+
+            delete historicalStats[oldName];
+
+        }
+
+    });
+
+}
+
+
+/*
+    Desactiva contenteditable.
+*/
+
+function disableStatsEditing() {
+
+    document
+        .querySelectorAll('.editable-field')
+        .forEach(el => {
+
+            el.contentEditable = "false";
+
+            el.classList.remove('editable-field');
+            el.classList.remove('edit-mode');
+
+        });
+
+
+    renderStats();
+    renderHistoricalStats();
+
+}
+
+
+/* =========================================================
+   BACKUP
+   ========================================================= */
+
+function exportBackup() {
+
+    const backupData = {
+
+        version: "2.0",
+
+        timestamp: new Date().toISOString(),
+
+        state: gameState,
+
+        history: historyStack,
+
+        historicalStats: historicalStats,
+
+        statsLabels: statsLabels
+
+    };
+
+
+    const jsonStr =
+        JSON.stringify(backupData, null, 2);
+
+    const blob =
+        new Blob(
+            [jsonStr],
+            { type: "application/json" }
+        );
+
+
+    const url =
+        URL.createObjectURL(blob);
+
+
+    const downloadAnchorNode =
+        document.createElement('a');
+
+
+    downloadAnchorNode.href = url;
+
+    downloadAnchorNode.download =
+        "PICA_PICA.json";
+
+
+    document.body.appendChild(
+        downloadAnchorNode
+    );
+
+    downloadAnchorNode.click();
+
+    document.body.removeChild(
+        downloadAnchorNode
+    );
+
+
+    URL.revokeObjectURL(url);
+
+
+    showModal(
+        "Backup guardado exitosamente.<br><br>Se ha descargado <b>PICA_PICA.json</b>.",
+        "alert"
+    );
+
+}
+
+
+function importBackup(event) {
+
+    const file =
+        event.target.files[0];
+
+    if (!file) return;
+
+
+    const reader =
+        new FileReader();
+
+
+    reader.onload = function(e) {
+
+        try {
+
+            const importedData =
+                JSON.parse(e.target.result);
+
+
+            if (
+                importedData.state &&
+                importedData.state.activeMatches
+            ) {
 
                 showModal(
-                    "Error al leer el archivo JSON.",
+                    "¿Estás seguro de cargar este backup?<br><br>Se sobrescribirán todos los datos actuales y el histórico.",
+                    "confirm",
+                    () => {
+
+                        gameState =
+                            importedData.state;
+
+                        historyStack =
+                            importedData.history || [];
+
+                        historicalStats =
+                            importedData.historicalStats || {};
+
+                        statsLabels =
+                            importedData.statsLabels || statsLabels;
+
+
+                        saveToLocalStorage();
+
+                        applyStatsLabels();
+
+                        renderMatches();
+
+                        renderStats();
+
+                        renderHistoricalStats();
+
+                        updateUndoButton();
+
+
+                        showModal(
+                            "Backup cargado correctamente.",
+                            "alert"
+                        );
+
+                    },
+                    "Sí, Cargar",
+                    "Cancelar"
+                );
+
+            }
+
+            else {
+
+                showModal(
+                    "El archivo seleccionado no parece ser un backup válido de Truco Tracker.",
                     "alert"
                 );
-            }
-        };
 
-        reader.readAsText(file);
-
-        event.target.value = "";
-    }
-
-
-    /* =========================================================
-       DATALISTS
-    ========================================================== */
-
-    function updateDatalists() {
-
-        const p1Val =
-            document.getElementById('p1').value.trim();
-
-        const p2Val =
-            document.getElementById('p2').value.trim();
-
-        const activePlayers =
-            gameState.activeMatches.flatMap(
-                m => [m.p1, m.p2]
-            );
-
-        const available =
-            gameState.knownPlayers.filter(
-                p => !activePlayers.includes(p)
-            );
-
-        document.getElementById('players-1').innerHTML =
-            available
-                .filter(p => p !== p2Val)
-                .map(p => `<option value="${escapeHtml(p)}">`)
-                .join('');
-
-        document.getElementById('players-2').innerHTML =
-            available
-                .filter(p => p !== p1Val)
-                .map(p => `<option value="${escapeHtml(p)}">`)
-                .join('');
-    }
-
-
-    /* =========================================================
-       ESCAPE HTML
-    ========================================================== */
-
-    function escapeHtml(value) {
-
-        return String(value)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
-
-    /* =========================================================
-       UNDO
-    ========================================================== */
-
-    function updateUndoButton() {
-
-        const btn =
-            document.getElementById('undo-btn');
-
-        if (historyStack.length > 0) {
-
-            btn.classList.remove(
-                'opacity-0',
-                'pointer-events-none',
-                'translate-y-4'
-            );
-
-            btn.classList.add(
-                'opacity-100',
-                'pointer-events-auto',
-                'translate-y-0'
-            );
-
-        } else {
-
-            btn.classList.add(
-                'opacity-0',
-                'pointer-events-none',
-                'translate-y-4'
-            );
-
-            btn.classList.remove(
-                'opacity-100',
-                'pointer-events-auto',
-                'translate-y-0'
-            );
-        }
-    }
-
-
-    function executeWithUndo(actionFn) {
-
-        const previousState =
-            JSON.stringify(gameState);
-
-        actionFn();
-
-        const newState =
-            JSON.stringify(gameState);
-
-        if (previousState !== newState) {
-
-            historyStack.push(previousState);
-
-            if (historyStack.length > 30) {
-                historyStack.shift();
             }
 
-            updateUndoButton();
         }
 
-        saveToLocalStorage();
+        catch (error) {
 
-        renderMatches();
+            showModal(
+                "Error al leer el archivo. Asegúrate de que sea un JSON válido.",
+                "alert"
+            );
 
-        if (
-            !document
-                .getElementById('section-stats')
-                .classList
-                .contains('hidden')
-        ) {
-            renderStats();
-            renderHistoricalStats();
         }
+
+    };
+
+
+    reader.readAsText(file);
+
+    event.target.value = "";
+
+}
+
+
+/* =========================================================
+   JUGADORES
+   ========================================================= */
+
+function updateDatalists() {
+
+    const p1Val =
+        document.getElementById('p1').value.trim();
+
+    const p2Val =
+        document.getElementById('p2').value.trim();
+
+
+    const activePlayers =
+        gameState.activeMatches.flatMap(
+            m => [m.p1, m.p2]
+        );
+
+
+    const available =
+        gameState.knownPlayers.filter(
+            p => !activePlayers.includes(p)
+        );
+
+
+    const dl1 =
+        document.getElementById('players-1');
+
+    const dl2 =
+        document.getElementById('players-2');
+
+
+    dl1.innerHTML =
+        available
+            .filter(p => p !== p2Val)
+            .map(p => `<option value="${escapeHtml(p)}">`)
+            .join('');
+
+
+    dl2.innerHTML =
+        available
+            .filter(p => p !== p1Val)
+            .map(p => `<option value="${escapeHtml(p)}">`)
+            .join('');
+
+}
+
+
+/* =========================================================
+   SEGURIDAD HTML
+   ========================================================= */
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+}
+
+
+function escapeAttribute(value) {
+
+    return String(value)
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'");
+
+}
+
+
+/* =========================================================
+   UNDO
+   ========================================================= */
+
+function updateUndoButton() {
+
+    const btn =
+        document.getElementById('undo-btn');
+
+
+    if (historyStack.length > 0) {
+
+        btn.classList.remove(
+            'opacity-0',
+            'pointer-events-none',
+            'translate-y-4'
+        );
+
+        btn.classList.add(
+            'opacity-100',
+            'pointer-events-auto',
+            'translate-y-0'
+        );
+
     }
 
+    else {
 
-    function undo() {
+        btn.classList.add(
+            'opacity-0',
+            'pointer-events-none',
+            'translate-y-4'
+        );
 
-        if (historyStack.length === 0) {
-            return;
+        btn.classList.remove(
+            'opacity-100',
+            'pointer-events-auto',
+            'translate-y-0'
+        );
+
+    }
+
+}
+
+
+function executeWithUndo(actionFn) {
+
+    const previousState =
+        JSON.stringify(gameState);
+
+
+    actionFn();
+
+
+    const newState =
+        JSON.stringify(gameState);
+
+
+    if (previousState !== newState) {
+
+        historyStack.push(previousState);
+
+        if (historyStack.length > 30) {
+            historyStack.shift();
         }
-
-        const previousState =
-            historyStack.pop();
-
-        gameState =
-            JSON.parse(previousState);
-
-        saveToLocalStorage();
-
-        renderMatches();
-        renderStats();
-        renderHistoricalStats();
 
         updateUndoButton();
+
     }
 
 
-    /* =========================================================
-       TABS
-    ========================================================== */
+    saveToLocalStorage();
 
-    function switchTab(tab) {
+    renderMatches();
 
-        document
-            .getElementById('section-play')
-            .classList
-            .toggle('hidden', tab !== 'play');
 
-        document
+    if (
+        !document
             .getElementById('section-stats')
             .classList
-            .toggle('hidden', tab !== 'stats');
+            .contains('hidden')
+    ) {
 
-        document
-            .getElementById('tab-play')
-            .className =
-            tab === 'play'
-                ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all'
-                : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all';
+        renderStats();
 
-        document
-            .getElementById('tab-stats')
-            .className =
-            tab === 'stats'
-                ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all'
-                : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all';
+    }
 
-        if (tab === 'stats') {
+}
 
-            renderStats();
-            renderHistoricalStats();
-        }
+
+function undo() {
+
+    if (historyStack.length === 0) return;
+
+
+    const previousState =
+        historyStack.pop();
+
+
+    gameState =
+        JSON.parse(previousState);
+
+
+    saveToLocalStorage();
+
+    renderMatches();
+
+    renderStats();
+
+    renderHistoricalStats();
+
+    updateUndoButton();
+
+}
+
+
+/* =========================================================
+   TABS
+   ========================================================= */
+
+function switchTab(tab) {
+
+    /*
+        Si estaba editando y cambia de pestaña,
+        guardamos automáticamente.
+    */
+
+    if (editMode && tab !== 'stats') {
+        toggleEditMode();
     }
 
 
-    /* =========================================================
-       NUEVA PARTIDA
-    ========================================================== */
+    document
+        .getElementById('section-play')
+        .classList
+        .toggle(
+            'hidden',
+            tab !== 'play'
+        );
 
-    function startMatch() {
 
-        const p1 =
-            document.getElementById('p1')
-                .value
-                .trim();
+    document
+        .getElementById('section-stats')
+        .classList
+        .toggle(
+            'hidden',
+            tab !== 'stats'
+        );
 
-        const p2 =
-            document.getElementById('p2')
-                .value
-                .trim();
 
-        if (!p1 || !p2) {
+    document.getElementById('tab-play').className =
+        tab === 'play'
+            ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all'
+            : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all';
 
-            showModal(
-                "Debes ingresar nombres para ambos jugadores.",
-                "alert"
-            );
 
-            return;
-        }
+    document.getElementById('tab-stats').className =
+        tab === 'stats'
+            ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all'
+            : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all';
 
-        if (p1 === p2) {
 
-            showModal(
-                "Los jugadores deben ser distintos.",
-                "alert"
-            );
+    if (tab === 'stats') {
 
-            return;
-        }
+        renderStats();
 
-        const p1Existe =
-            gameState.knownPlayers.includes(p1);
+        renderHistoricalStats();
 
-        const p2Existe =
-            gameState.knownPlayers.includes(p2);
-
-        if (!p1Existe || !p2Existe) {
-
-            const nuevos = [];
-
-            if (!p1Existe) nuevos.push(p1);
-            if (!p2Existe) nuevos.push(p2);
-
-            showModal(
-                `¿Confirmar nuevos jugadores?<br><br>${nuevos.join(' y ')}`,
-                "confirm",
-                () => procesarInicioMatch(p1, p2),
-                "Sí, Iniciar",
-                "Cancelar"
-            );
-
-        } else {
-
-            procesarInicioMatch(p1, p2);
-        }
     }
 
-
-    function procesarInicioMatch(p1, p2) {
-
-        const activePlayers =
-            gameState.activeMatches.flatMap(
-                m => [m.p1, m.p2]
-            );
-
-        if (
-            activePlayers.includes(p1) ||
-            activePlayers.includes(p2)
-        ) {
-
-            showModal(
-                "Uno o ambos jugadores ya están jugando en una partida activa.",
-                "alert"
-            );
-
-            return;
-        }
-
-        executeWithUndo(() => {
-
-            if (!gameState.knownPlayers.includes(p1)) {
-                gameState.knownPlayers.push(p1);
-            }
-
-            if (!gameState.knownPlayers.includes(p2)) {
-                gameState.knownPlayers.push(p2);
-            }
-
-            gameState.activeMatches.push({
-
-                id: Date.now(),
-
-                p1,
-                p2,
-
-                score1: 0,
-                score2: 0,
-
-                currentPica1: 0,
-                currentPica2: 0,
-
-                picas: [],
-                chicos: []
-            });
-        });
-
-        document.getElementById('p1').value = '';
-        document.getElementById('p2').value = '';
-
-        updateDatalists();
-    }
+}
 
 
-    /* =========================================================
-       PUNTUACIÓN
-    ========================================================== */
+/* =========================================================
+   NUEVA PARTIDA
+   ========================================================= */
 
-    function updateScore(matchId, playerIdx, delta) {
+function startMatch() {
 
-        executeWithUndo(() => {
+    const p1Input =
+        document.getElementById('p1');
 
-            const match =
-                gameState.activeMatches
-                    .find(m => m.id === matchId);
-
-            if (!match) return;
-
-            if (playerIdx === 1) {
-
-                match.score1 =
-                    Math.max(
-                        0,
-                        match.score1 + delta
-                    );
-
-                match.currentPica1 =
-                    Math.max(
-                        0,
-                        match.currentPica1 + delta
-                    );
-
-            } else {
-
-                match.score2 =
-                    Math.max(
-                        0,
-                        match.score2 + delta
-                    );
-
-                match.currentPica2 =
-                    Math.max(
-                        0,
-                        match.currentPica2 + delta
-                    );
-            }
-        });
-    }
+    const p2Input =
+        document.getElementById('p2');
 
 
-    /* =========================================================
-       REGISTRAR PICA
-    ========================================================== */
+    const p1 =
+        p1Input.value.trim();
 
-    function registrarPica(matchId) {
-
-        vibrarFuerte();
-
-        executeWithUndo(() => {
-
-            const match =
-                gameState.activeMatches
-                    .find(m => m.id === matchId);
-
-            if (!match) return;
-
-            match.picas.push({
-                s1: match.currentPica1,
-                s2: match.currentPica2
-            });
-
-            match.currentPica1 = 0;
-            match.currentPica2 = 0;
-        });
-    }
+    const p2 =
+        p2Input.value.trim();
 
 
-    /* =========================================================
-       CERRAR CHICOS
-    ========================================================== */
-
-    function cerrarTodosLosChicos() {
-
-        vibrarFuerte();
-
-        executeWithUndo(() => {
-
-            gameState.activeMatches.forEach(match => {
-
-                if (!match.chicos) {
-                    match.chicos = [];
-                }
-
-                if (
-                    match.picas &&
-                    match.picas.length > 0
-                ) {
-
-                    match.chicos.push(
-                        [...match.picas]
-                    );
-
-                    match.picas = [];
-                }
-            });
-        });
-    }
-
-
-    /* =========================================================
-       BORRAR PARTIDA
-    ========================================================== */
-
-    function deleteMatch(matchId) {
+    if (!p1 || !p2) {
 
         showModal(
-            "¿Seguro que quieres borrar esta partida de la noche actual?",
-            "confirm",
-            () => {
-
-                executeWithUndo(() => {
-
-                    gameState.activeMatches =
-                        gameState.activeMatches.filter(
-                            m => m.id !== matchId
-                        );
-                });
-
-            },
-            "Borrar",
-            "Cancelar"
+            "Debes ingresar nombres para ambos jugadores.",
+            'alert'
         );
+
+        return;
+
     }
 
 
-    /* =========================================================
-       NUEVA NOCHE
-    ========================================================== */
-
-    function resetEverything() {
+    if (p1 === p2) {
 
         showModal(
-            "¿Seguro que quieres borrar los resultados actuales para empezar una nueva noche?<br><br>Los nombres y el histórico se conservarán.",
-            "confirm",
-            () => {
-
-                executeWithUndo(() => {
-
-                    gameState.activeMatches = [];
-                });
-
-            },
-            "Sí, Nueva Noche",
-            "Cancelar"
+            "Los jugadores deben ser distintos.",
+            'alert'
         );
+
+        return;
+
     }
 
 
-    /* =========================================================
-       RENDER PARTIDAS
-    ========================================================== */
+    const p1Existe =
+        gameState.knownPlayers.includes(p1);
 
-    function renderMatches() {
+    const p2Existe =
+        gameState.knownPlayers.includes(p2);
 
-        const container =
-            document.getElementById(
-                'active-matches-container'
+
+    if (!p1Existe || !p2Existe) {
+
+        const nuevos = [];
+
+        if (!p1Existe) nuevos.push(p1);
+        if (!p2Existe) nuevos.push(p2);
+
+
+        showModal(
+            `¿Confirmar nuevos jugadores?<br><br>Se añadirán al sistema: <b>${escapeHtml(nuevos.join(' y '))}</b>`,
+            'confirm',
+            () => {
+                procesarInicioMatch(p1, p2);
+            },
+            "Sí, Iniciar",
+            "Cancelar"
+        );
+
+    }
+
+    else {
+
+        procesarInicioMatch(p1, p2);
+
+    }
+
+}
+
+
+function procesarInicioMatch(p1, p2) {
+
+    const activePlayers =
+        gameState.activeMatches.flatMap(
+            m => [m.p1, m.p2]
+        );
+
+
+    if (
+        activePlayers.includes(p1) ||
+        activePlayers.includes(p2)
+    ) {
+
+        showModal(
+            "Uno o ambos jugadores ya están jugando en una partida activa.",
+            'alert'
+        );
+
+        return;
+
+    }
+
+
+    executeWithUndo(() => {
+
+        if (!gameState.knownPlayers.includes(p1)) {
+            gameState.knownPlayers.push(p1);
+        }
+
+
+        if (!gameState.knownPlayers.includes(p2)) {
+            gameState.knownPlayers.push(p2);
+        }
+
+
+        gameState.activeMatches.push({
+
+            id: Date.now(),
+
+            p1,
+            p2,
+
+            score1: 0,
+            score2: 0,
+
+            currentPica1: 0,
+            currentPica2: 0,
+
+            picas: [],
+
+            chicos: []
+
+        });
+
+    });
+
+
+    document.getElementById('p1').value = '';
+    document.getElementById('p2').value = '';
+
+    updateDatalists();
+
+}
+
+
+/* =========================================================
+   PUNTUACIÓN
+   ========================================================= */
+
+function updateScore(
+    matchId,
+    playerIdx,
+    delta
+) {
+
+    executeWithUndo(() => {
+
+        const match =
+            gameState.activeMatches.find(
+                m => m.id === matchId
             );
 
-        container.innerHTML =
+
+        if (!match) return;
+
+
+        if (playerIdx === 1) {
+
+            match.score1 =
+                Math.max(
+                    0,
+                    match.score1 + delta
+                );
+
+            match.currentPica1 =
+                Math.max(
+                    0,
+                    match.currentPica1 + delta
+                );
+
+        }
+
+        else {
+
+            match.score2 =
+                Math.max(
+                    0,
+                    match.score2 + delta
+                );
+
+            match.currentPica2 =
+                Math.max(
+                    0,
+                    match.currentPica2 + delta
+                );
+
+        }
+
+    });
+
+}
+
+
+function registrarPica(matchId) {
+
+    vibrarFuerte();
+
+
+    executeWithUndo(() => {
+
+        const match =
+            gameState.activeMatches.find(
+                m => m.id === matchId
+            );
+
+
+        if (!match) return;
+
+
+        if (!match.picas) {
+            match.picas = [];
+        }
+
+
+        match.picas.push({
+
+            s1: match.currentPica1,
+            s2: match.currentPica2
+
+        });
+
+
+        match.currentPica1 = 0;
+        match.currentPica2 = 0;
+
+    });
+
+}
+
+
+function cerrarTodosLosChicos() {
+
+    vibrarFuerte();
+
+
+    executeWithUndo(() => {
+
+        gameState.activeMatches.forEach(match => {
+
+            if (!match.chicos) {
+                match.chicos = [];
+            }
+
+
+            if (
+                match.picas &&
+                match.picas.length > 0
+            ) {
+
+                match.chicos.push(
+                    [...match.picas]
+                );
+
+                match.picas = [];
+
+            }
+
+        });
+
+    });
+
+}
+
+
+/* =========================================================
+   BORRAR / NUEVA NOCHE
+   ========================================================= */
+
+function deleteMatch(matchId) {
+
+    showModal(
+        "¿Seguro que quieres borrar esta partida de la noche actual?",
+        'confirm',
+        () => {
+
+            executeWithUndo(() => {
+
+                gameState.activeMatches =
+                    gameState.activeMatches.filter(
+                        m => m.id !== matchId
+                    );
+
+            });
+
+        },
+        "Borrar",
+        "Cancelar"
+    );
+
+}
+
+
+function resetEverything() {
+
+    showModal(
+        "¿Seguro que quieres borrar los resultados actuales para empezar una nueva noche?<br><br>Los nombres y el histórico se guardarán.",
+        'confirm',
+        () => {
+
+            executeWithUndo(() => {
+
+                gameState.activeMatches = [];
+
+            });
+
+        },
+        "Sí, Nueva Noche",
+        "Cancelar"
+    );
+
+}
+
+
+/* =========================================================
+   RENDER PARTIDAS
+   ========================================================= */
+
+function renderMatches() {
+
+    const container =
+        document.getElementById(
+            'active-matches-container'
+        );
+
+
+    container.innerHTML =
+        gameState.activeMatches.map(m => {
+
+            let allGroups = [];
+
+            let picaGlobalCount = 0;
+
+
+            if (
+                m.chicos &&
+                m.chicos.length > 0
+            ) {
+
+                m.chicos.forEach(chico => {
+
+                    const picasHtml =
+                        chico.map(pica => {
+
+                            picaGlobalCount++;
+
+
+                            return `
+                            <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-300/80 font-mono text-center flex flex-col justify-center border-emerald-800 bg-emerald-950/50">
+
+                                <div class="text-amber-500/70 font-bold pb-0.5">
+                                    P${picaGlobalCount}
+                                </div>
+
+                                <div>
+                                    ${pica.s1}-${pica.s2}
+                                </div>
+
+                            </div>
+                            `;
+
+                        }).join('');
+
+
+                    allGroups.push(picasHtml);
+
+                });
+
+            }
+
+
+            if (
+                m.picas &&
+                m.picas.length > 0
+            ) {
+
+                const currentPicasHtml =
+                    m.picas.map(pica => {
+
+                        picaGlobalCount++;
+
+
+                        return `
+                        <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-200 font-mono text-center flex flex-col justify-center shadow-md">
+
+                            <div class="text-amber-500 font-bold pb-0.5">
+                                P${picaGlobalCount}
+                            </div>
+
+                            <div>
+                                ${pica.s1}-${pica.s2}
+                            </div>
+
+                        </div>
+                        `;
+
+                    }).join('');
+
+
+                allGroups.push(
+                    currentPicasHtml
+                );
+
+            }
+
+
+            const groupedPicasHtml =
+                allGroups.join(`
+                    <div class="flex items-center justify-center px-1.5">
+
+                        <div class="w-[3.5px] h-8 bg-[#451a03] rounded-full shadow-sm">
+                        </div>
+
+                    </div>
+                `);
+
+
+            return `
+            <div
+                class="truco-table p-4 rounded-xl shadow-lg text-white"
+                id="match-${m.id}">
+
+                <div class="flex justify-between items-start mb-4">
+
+                    <div class="w-[45%] text-center">
+
+                        <div class="font-bold text-xl text-amber-300 break-words pb-1.5">
+                            ${escapeHtml(m.p1)}
+                        </div>
+
+                        <div class="score-font text-4xl font-bold text-amber-500 py-1">
+                            ${m.currentPica1}
+                        </div>
+
+                    </div>
+
+
+                    <div class="text-emerald-500 font-bold text-sm mt-3">
+                        VS
+                    </div>
+
+
+                    <div class="w-[45%] text-center">
+
+                        <div class="font-bold text-xl text-amber-300 break-words pb-1.5">
+                            ${escapeHtml(m.p2)}
+                        </div>
+
+                        <div class="score-font text-4xl font-bold text-amber-500 py-1">
+                            ${m.currentPica2}
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="grid grid-cols-2 gap-3 mb-4">
+
+                    <div class="flex bg-emerald-900 rounded-lg p-1">
+
+                        <button
+                            onclick="updateScore(${m.id},1,-1); vibrar();"
+                            class="flex-1 text-2xl py-1 hover:bg-emerald-800 rounded-md transition-colors">
+
+                            -
+
+                        </button>
+
+                        <button
+                            onclick="updateScore(${m.id},1,1); vibrar();"
+                            class="flex-1 bg-amber-600 rounded-md text-2xl py-1 hover:bg-amber-500 transition-colors shadow-inner">
+
+                            +
+
+                        </button>
+
+                    </div>
+
+
+                    <div class="flex bg-emerald-900 rounded-lg p-1">
+
+                        <button
+                            onclick="updateScore(${m.id},2,-1); vibrar();"
+                            class="flex-1 text-2xl py-1 hover:bg-emerald-800 rounded-md transition-colors">
+
+                            -
+
+                        </button>
+
+                        <button
+                            onclick="updateScore(${m.id},2,1); vibrar();"
+                            class="flex-1 bg-amber-600 rounded-md text-2xl py-1 hover:bg-amber-500 transition-colors shadow-inner">
+
+                            +
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <button
+                    onclick="registrarPica(${m.id});"
+                    class="w-full mb-4 bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 py-2.5 rounded-lg text-sm font-bold transition-colors shadow-sm">
+
+                    Registrar Pica Actual
+
+                </button>
+
+
+                ${allGroups.length > 0 ? `
+
+                    <div class="flex flex-wrap gap-1.5 mb-4 mt-3 justify-center items-center border-t border-emerald-800 pt-4">
+
+                        <div class="w-full text-xs font-bold text-emerald-400 mb-2 uppercase tracking-widest text-center opacity-80">
+
+                            Picas
+
+                        </div>
+
+                        ${groupedPicasHtml}
+
+                    </div>
+
+                ` : ''}
+
+
+                <div class="flex justify-between items-center mt-3 border-t border-emerald-800/50 pt-4">
+
+                    <div class="text-sm font-bold text-amber-200">
+
+                        Total:
+                        <span class="text-amber-400">
+                            ${m.score1} - ${m.score2}
+                        </span>
+
+                    </div>
+
+
+                    <div class="flex space-x-2">
+
+                        <button
+                            onclick="deleteMatch(${m.id}); vibrar();"
+                            class="bg-red-950/80 hover:bg-red-900/80 text-red-400 text-[10px] uppercase font-bold px-3 py-1.5 rounded border border-red-900/50 transition-all">
+
+                            Borrar
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+            `;
+
+        }).join('');
+
+
+    updateDatalists();
+
+}
+
+
+/* =========================================================
+   TOTALES
+   ========================================================= */
+
+function getTotals() {
+
+    const totals = {};
+
+
+    gameState.activeMatches.forEach(m => {
+
+        if (!totals[m.p1]) {
+            totals[m.p1] = {
+                won: 0,
+                lost: 0
+            };
+        }
+
+
+        if (!totals[m.p2]) {
+            totals[m.p2] = {
+                won: 0,
+                lost: 0
+            };
+        }
+
+
+        totals[m.p1].won += m.score1;
+        totals[m.p1].lost += m.score2;
+
+        totals[m.p2].won += m.score2;
+        totals[m.p2].lost += m.score1;
+
+    });
+
+
+    return totals;
+
+}
+
+
+/* =========================================================
+   ESTADÍSTICAS
+   ========================================================= */
+
+function renderStats() {
+
+    if (editMode) return;
+
+
+    applyStatsLabels();
+
+
+    const totals =
+        getTotals();
+
+
+    const listCombined =
+        document.getElementById(
+            'stats-list-combined'
+        );
+
+
+    const sortedPlayers =
+        Object.keys(totals).sort((a, b) => {
+
+            const diffA =
+                totals[a].won -
+                totals[a].lost;
+
+
+            const diffB =
+                totals[b].won -
+                totals[b].lost;
+
+
+            return (
+                diffB - diffA ||
+                totals[b].won - totals[a].won ||
+                a.localeCompare(b)
+            );
+
+        });
+
+
+    if (sortedPlayers.length === 0) {
+
+        listCombined.innerHTML = `
+            <div class="text-center text-emerald-500/70 text-xs py-4">
+                No hay datos esta noche
+            </div>
+        `;
+
+    }
+
+    else {
+
+        listCombined.innerHTML =
+            sortedPlayers.map((name, index) => {
+
+                const won =
+                    totals[name].won;
+
+                const lost =
+                    totals[name].lost;
+
+                const diff =
+                    won - lost;
+
+
+                const diffColor =
+                    diff > 0
+                        ? 'text-emerald-400'
+                        : diff < 0
+                            ? 'text-red-400'
+                            : 'text-gray-400';
+
+
+                const diffSign =
+                    diff > 0
+                        ? '+'
+                        : '';
+
+
+                return `
+                <div
+                    class="current-stat-row flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-2 py-1 mb-1"
+                    data-original-name="${escapeHtml(name)}">
+
+                    <div class="flex items-center flex-1 min-w-0">
+
+                        <span class="text-amber-500 font-bold text-xs w-5 shrink-0 py-1">
+                            ${index + 1}.
+                        </span>
+
+                        <span
+                            class="editable-player-name text-white font-bold text-xs break-words pr-1 py-1">
+
+                            ${escapeHtml(name)}
+
+                        </span>
+
+                    </div>
+
+
+                    <div class="flex w-24 justify-between items-center text-center shrink-0">
+
+                        <span class="text-amber-500 font-bold text-xs w-6 py-1">
+                            ${won}
+                        </span>
+
+                        <span class="text-red-400 font-bold text-xs w-6 py-1">
+                            ${lost}
+                        </span>
+
+                        <span class="${diffColor} font-bold text-xs w-8 py-1">
+                            ${diffSign}${diff}
+                        </span>
+
+                    </div>
+
+                </div>
+                `;
+
+            }).join('');
+
+    }
+
+
+    /* =====================================================
+       HISTORIAL DE ENFRENTAMIENTOS
+       ===================================================== */
+
+    const history =
+        document.getElementById(
+            'history-list'
+        );
+
+
+    if (gameState.activeMatches.length === 0) {
+
+        history.innerHTML = `
+            <div class="text-center text-emerald-500/70 text-xs py-4">
+                No hay enfrentamientos activos
+            </div>
+        `;
+
+    }
+
+    else {
+
+        history.innerHTML =
             gameState.activeMatches.map(m => {
 
                 let allGroups = [];
@@ -1286,816 +2445,6 @@
 
                                 picaGlobalCount++;
 
-                                return `
-                                <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-300/80 font-mono text-center flex flex-col justify-center border-emerald-800 bg-emerald-950/50">
-
-                                    <div class="text-amber-500/70 font-bold pb-0.5">
-                                        P${picaGlobalCount}
-                                    </div>
-
-                                    <div>
-                                        ${pica.s1}-${pica.s2}
-                                    </div>
-
-                                </div>
-                                `;
-
-                            }).join('');
-
-                        allGroups.push(picasHtml);
-                    });
-                }
-
-
-                if (
-                    m.picas &&
-                    m.picas.length > 0
-                ) {
-
-                    const currentPicasHtml =
-                        m.picas.map(pica => {
-
-                            picaGlobalCount++;
-
-                            return `
-                            <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-200 font-mono text-center flex flex-col justify-center shadow-md">
-
-                                <div class="text-amber-500 font-bold pb-0.5">
-                                    P${picaGlobalCount}
-                                </div>
-
-                                <div>
-                                    ${pica.s1}-${pica.s2}
-                                </div>
-
-                            </div>
-                            `;
-
-                        }).join('');
-
-                    allGroups.push(currentPicasHtml);
-                }
-
-
-                const groupedPicasHtml =
-                    allGroups.join(`
-                        <div class="flex items-center justify-center px-1.5">
-                            <div class="w-[3.5px] h-8 bg-[#451a03] rounded-full shadow-sm"></div>
-                        </div>
-                    `);
-
-
-                return `
-                <div
-                    class="truco-table p-4 rounded-xl shadow-lg text-white"
-                    id="match-${m.id}"
-                >
-
-                    <div class="flex justify-between items-start mb-4">
-
-                        <div class="w-[45%] text-center">
-
-                            <div class="font-bold text-xl text-amber-300 break-words pb-1.5">
-                                ${escapeHtml(m.p1)}
-                            </div>
-
-                            <div class="score-font text-4xl font-bold text-amber-500 py-1">
-                                ${m.currentPica1}
-                            </div>
-
-                        </div>
-
-                        <div class="text-emerald-500 font-bold text-sm mt-3">
-                            VS
-                        </div>
-
-                        <div class="w-[45%] text-center">
-
-                            <div class="font-bold text-xl text-amber-300 break-words pb-1.5">
-                                ${escapeHtml(m.p2)}
-                            </div>
-
-                            <div class="score-font text-4xl font-bold text-amber-500 py-1">
-                                ${m.currentPica2}
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <div class="grid grid-cols-2 gap-3 mb-4">
-
-                        <div class="flex bg-emerald-900 rounded-lg p-1">
-
-                            <button
-                                onclick="updateScore(${m.id},1,-1); vibrar();"
-                                class="flex-1 text-2xl py-1 hover:bg-emerald-800 rounded-md"
-                            >
-                                -
-                            </button>
-
-                            <button
-                                onclick="updateScore(${m.id},1,1); vibrar();"
-                                class="flex-1 bg-amber-600 rounded-md text-2xl py-1 hover:bg-amber-500"
-                            >
-                                +
-                            </button>
-
-                        </div>
-
-
-                        <div class="flex bg-emerald-900 rounded-lg p-1">
-
-                            <button
-                                onclick="updateScore(${m.id},2,-1); vibrar();"
-                                class="flex-1 text-2xl py-1 hover:bg-emerald-800 rounded-md"
-                            >
-                                -
-                            </button>
-
-                            <button
-                                onclick="updateScore(${m.id},2,1); vibrar();"
-                                class="flex-1 bg-amber-600 rounded-md text-2xl py-1 hover:bg-amber-500"
-                            >
-                                +
-                            </button>
-
-                        </div>
-
-                    </div>
-
-
-                    <button
-                        onclick="registrarPica(${m.id});"
-                        class="w-full mb-4 bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 py-2.5 rounded-lg text-sm font-bold"
-                    >
-                        Registrar Pica Actual
-                    </button>
-
-
-                    ${
-                        allGroups.length > 0
-                        ?
-                        `
-                        <div class="flex flex-wrap gap-1.5 mb-4 mt-3 justify-center items-center border-t border-emerald-800 pt-4">
-
-                            <div class="w-full text-xs font-bold text-emerald-400 mb-2 uppercase tracking-widest text-center opacity-80">
-                                Picas
-                            </div>
-
-                            ${groupedPicasHtml}
-
-                        </div>
-                        `
-                        :
-                        ''
-                    }
-
-
-                    <div class="flex justify-between items-center mt-3 border-t border-emerald-800/50 pt-4">
-
-                        <div class="text-sm font-bold text-amber-200">
-
-                            Total:
-                            <span class="text-amber-400">
-                                ${m.score1} - ${m.score2}
-                            </span>
-
-                        </div>
-
-                        <button
-                            onclick="deleteMatch(${m.id}); vibrar();"
-                            class="bg-red-950/80 hover:bg-red-900/80 text-red-400 text-[10px] uppercase font-bold px-3 py-1.5 rounded border border-red-900/50"
-                        >
-                            Borrar
-                        </button>
-
-                    </div>
-
-                </div>
-                `;
-
-            }).join('');
-
-        updateDatalists();
-    }
-
-
-    /* =========================================================
-       TOTALES
-    ========================================================== */
-
-    function getTotals() {
-
-        const totals = {};
-
-        gameState.activeMatches.forEach(m => {
-
-            if (!totals[m.p1]) {
-                totals[m.p1] = {
-                    won: 0,
-                    lost: 0
-                };
-            }
-
-            if (!totals[m.p2]) {
-                totals[m.p2] = {
-                    won: 0,
-                    lost: 0
-                };
-            }
-
-            totals[m.p1].won += m.score1;
-            totals[m.p1].lost += m.score2;
-
-            totals[m.p2].won += m.score2;
-            totals[m.p2].lost += m.score1;
-        });
-
-        return totals;
-    }
-
-
-    /* =========================================================
-       EDIT MODE
-    ========================================================== */
-
-    function toggleEditMode() {
-
-        if (editMode) {
-
-            finishEditMode();
-
-        } else {
-
-            editMode = true;
-
-            document.body.classList.add('editing');
-
-            document
-                .getElementById('edit-toggle-btn')
-                .classList.add('hidden');
-
-            document
-                .getElementById('save-edit-btn')
-                .classList.remove('hidden');
-
-            document
-                .getElementById('edit-help')
-                .classList.remove('hidden');
-
-            renderStats();
-            renderHistoricalStats();
-
-            vibrarFuerte();
-        }
-    }
-
-
-    function finishEditMode() {
-
-        if (!editMode) return;
-
-        editMode = false;
-
-        document.body.classList.remove('editing');
-
-        document
-            .getElementById('edit-toggle-btn')
-            .classList.remove('hidden');
-
-        document
-            .getElementById('save-edit-btn')
-            .classList.add('hidden');
-
-        document
-            .getElementById('edit-help')
-            .classList.add('hidden');
-
-        saveToLocalStorage();
-
-        renderMatches();
-        renderStats();
-        renderHistoricalStats();
-
-        vibrarFuerte();
-    }
-
-
-    /* =========================================================
-       EDITAR TEXTO
-    ========================================================== */
-
-    function makeEditable(
-        element,
-        callback,
-        numeric = false
-    ) {
-
-        if (!editMode) return;
-
-        element.contentEditable = "true";
-
-        element.classList.add(
-            'editable-field',
-            'edit-mode'
-        );
-
-        element.focus();
-
-        const finish = () => {
-
-            element.contentEditable = "false";
-
-            element.classList.remove(
-                'editable-field',
-                'edit-mode'
-            );
-
-            callback(
-                element.innerText.trim()
-            );
-        };
-
-        element.addEventListener(
-            'blur',
-            finish,
-            { once: true }
-        );
-
-        element.addEventListener(
-            'keydown',
-            e => {
-
-                if (e.key === 'Enter') {
-
-                    e.preventDefault();
-
-                    element.blur();
-                }
-            }
-        );
-    }
-
-
-    /* =========================================================
-       EDITAR JUGADOR EN PARTIDA
-    ========================================================== */
-
-    function editCurrentPlayer(
-        matchId,
-        playerIndex,
-        element
-    ) {
-
-        if (!editMode) return;
-
-        const match =
-            gameState.activeMatches.find(
-                m => m.id === matchId
-            );
-
-        if (!match) return;
-
-        const oldName =
-            playerIndex === 1
-                ? match.p1
-                : match.p2;
-
-        const newName =
-            prompt(
-                "Nuevo nombre del jugador:",
-                oldName
-            );
-
-        if (!newName) return;
-
-        const cleanName =
-            newName.trim();
-
-        if (!cleanName) return;
-
-        if (playerIndex === 1) {
-            match.p1 = cleanName;
-        } else {
-            match.p2 = cleanName;
-        }
-
-        if (!gameState.knownPlayers.includes(cleanName)) {
-            gameState.knownPlayers.push(cleanName);
-        }
-
-        saveToLocalStorage();
-
-        renderMatches();
-        renderStats();
-        renderHistoricalStats();
-    }
-
-
-    /* =========================================================
-       EDITAR RESULTADO DE PARTIDA
-    ========================================================== */
-
-    function editMatchScore(
-        matchId,
-        playerIndex
-    ) {
-
-        if (!editMode) return;
-
-        const match =
-            gameState.activeMatches.find(
-                m => m.id === matchId
-            );
-
-        if (!match) return;
-
-        const oldValue =
-            playerIndex === 1
-                ? match.score1
-                : match.score2;
-
-        const value =
-            prompt(
-                "Nuevo resultado:",
-                oldValue
-            );
-
-        if (value === null) return;
-
-        const number =
-            parseInt(value, 10);
-
-        if (
-            Number.isNaN(number) ||
-            number < 0
-        ) {
-
-            showModal(
-                "Introduce un número válido.",
-                "alert"
-            );
-
-            return;
-        }
-
-        if (playerIndex === 1) {
-            match.score1 = number;
-        } else {
-            match.score2 = number;
-        }
-
-        saveToLocalStorage();
-
-        renderMatches();
-        renderStats();
-    }
-
-
-    /* =========================================================
-       EDITAR ESTADÍSTICAS DE ESTA NOCHE
-    ========================================================== */
-
-    function editNightStat(
-        playerName,
-        field
-    ) {
-
-        if (!editMode) return;
-
-        const totals =
-            getTotals();
-
-        if (!totals[playerName]) return;
-
-        const oldValue =
-            totals[playerName][field];
-
-        const value =
-            prompt(
-                `Modificar ${field === 'won' ? 'G' : 'P'} de ${playerName}:`,
-                oldValue
-            );
-
-        if (value === null) return;
-
-        const number =
-            parseInt(value, 10);
-
-        if (
-            Number.isNaN(number) ||
-            number < 0
-        ) {
-
-            showModal(
-                "Introduce un número válido.",
-                "alert"
-            );
-
-            return;
-        }
-
-        /*
-         * Las estadísticas de la noche se calculan
-         * automáticamente a partir de las partidas.
-         *
-         * Por tanto, si quieres modificar G/P desde
-         * esta pantalla, ajustamos las partidas para
-         * conseguir el nuevo valor.
-         */
-
-        adjustPlayerTotal(
-            playerName,
-            field,
-            number
-        );
-    }
-
-
-    function adjustPlayerTotal(
-        playerName,
-        field,
-        target
-    ) {
-
-        const matches =
-            gameState.activeMatches.filter(
-                m =>
-                    m.p1 === playerName ||
-                    m.p2 === playerName
-            );
-
-        if (matches.length === 0) {
-            return;
-        }
-
-        let current = 0;
-
-        matches.forEach(m => {
-
-            if (m.p1 === playerName) {
-
-                current +=
-                    field === 'won'
-                        ? m.score1
-                        : m.score2;
-
-            } else {
-
-                current +=
-                    field === 'won'
-                        ? m.score2
-                        : m.score1;
-            }
-        });
-
-        const difference =
-            target - current;
-
-        if (difference === 0) return;
-
-        /*
-         * Modificamos la última partida del jugador.
-         */
-
-        const match =
-            matches[matches.length - 1];
-
-        if (match.p1 === playerName) {
-
-            if (field === 'won') {
-
-                match.score1 =
-                    Math.max(
-                        0,
-                        match.score1 + difference
-                    );
-
-            } else {
-
-                match.score2 =
-                    Math.max(
-                        0,
-                        match.score2 + difference
-                    );
-            }
-
-        } else {
-
-            if (field === 'won') {
-
-                match.score2 =
-                    Math.max(
-                        0,
-                        match.score2 + difference
-                    );
-
-            } else {
-
-                match.score1 =
-                    Math.max(
-                        0,
-                        match.score1 + difference
-                    );
-            }
-        }
-
-        saveToLocalStorage();
-
-        renderMatches();
-        renderStats();
-    }
-
-
-    /* =========================================================
-       RENDER ESTADÍSTICAS
-    ========================================================== */
-
-    function renderStats() {
-
-        const totals =
-            getTotals();
-
-        const listCombined =
-            document.getElementById(
-                'stats-list-combined'
-            );
-
-        const sortedPlayers =
-            Object.keys(totals).sort((a, b) => {
-
-                const diffA =
-                    totals[a].won -
-                    totals[a].lost;
-
-                const diffB =
-                    totals[b].won -
-                    totals[b].lost;
-
-                return (
-                    diffB - diffA ||
-                    totals[b].won -
-                    totals[a].won ||
-                    a.localeCompare(b)
-                );
-            });
-
-
-        if (sortedPlayers.length === 0) {
-
-            listCombined.innerHTML =
-                `<div class="text-center text-emerald-500/70 text-xs py-4">
-                    No hay datos esta noche
-                </div>`;
-
-        } else {
-
-            listCombined.innerHTML =
-                sortedPlayers.map(
-                    (name, index) => {
-
-                        const won =
-                            totals[name].won;
-
-                        const lost =
-                            totals[name].lost;
-
-                        const diff =
-                            won - lost;
-
-                        const diffColor =
-                            diff > 0
-                                ? 'text-emerald-400'
-                                : diff < 0
-                                    ? 'text-red-400'
-                                    : 'text-gray-400';
-
-                        const diffSign =
-                            diff > 0
-                                ? '+'
-                                : '';
-
-                        return `
-                        <div
-                            class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-2 py-1 mb-1"
-                        >
-
-                            <div class="flex items-center flex-1 min-w-0">
-
-                                <span class="text-amber-500 font-bold text-xs w-5 shrink-0 py-1">
-                                    ${index + 1}.
-                                </span>
-
-                                <span
-                                    class="text-white font-bold text-xs break-words pr-1 py-1"
-                                    ${editMode ? `onclick="editPlayerNameFromStats('${escapeHtml(name)}')"` : ''}
-                                >
-                                    ${escapeHtml(name)}
-                                </span>
-
-                            </div>
-
-
-                            <div class="flex w-24 justify-between items-center text-center shrink-0">
-
-                                <span
-                                    class="text-amber-500 font-bold text-xs w-6 py-1 ${editMode ? 'editable-field' : ''}"
-                                    ${editMode ? `onclick="editNightStat('${escapeJs(name)}','won')"` : ''}
-                                >
-                                    ${won}
-                                </span>
-
-                                <span
-                                    class="text-red-400 font-bold text-xs w-6 py-1 ${editMode ? 'editable-field' : ''}"
-                                    ${editMode ? `onclick="editNightStat('${escapeJs(name)}','lost')"` : ''}
-                                >
-                                    ${lost}
-                                </span>
-
-                                <span class="${diffColor} font-bold text-xs w-8 py-1">
-                                    ${diffSign}${diff}
-                                </span>
-
-                            </div>
-
-                        </div>
-                        `;
-
-                    }
-                ).join('');
-        }
-
-
-        /* =====================================================
-           HISTORIAL DE ENFRENTAMIENTOS
-        ===================================================== */
-
-        const history =
-            document.getElementById(
-                'history-list'
-            );
-
-        if (gameState.activeMatches.length === 0) {
-
-            history.innerHTML =
-                `<div class="text-center text-emerald-500/70 text-xs py-4">
-                    No hay enfrentamientos activos
-                </div>`;
-
-        } else {
-
-            history.innerHTML =
-                gameState.activeMatches.map(m => {
-
-                    let allGroups = [];
-
-                    let picaGlobalCount = 0;
-
-
-                    if (
-                        m.chicos &&
-                        m.chicos.length > 0
-                    ) {
-
-                        m.chicos.forEach(chico => {
-
-                            const picasHtml =
-                                chico.map(pica => {
-
-                                    picaGlobalCount++;
-
-                                    return `
-                                    <div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center leading-normal">
-
-                                        <div class="text-amber-500 font-bold">
-                                            P${picaGlobalCount}
-                                        </div>
-
-                                        <div>
-                                            ${pica.s1}-${pica.s2}
-                                        </div>
-
-                                    </div>
-                                    `;
-
-                                }).join('');
-
-                            allGroups.push(picasHtml);
-                        });
-                    }
-
-
-                    if (
-                        m.picas &&
-                        m.picas.length > 0
-                    ) {
-
-                        const currentPicasHtml =
-                            m.picas.map(pica => {
-
-                                picaGlobalCount++;
 
                                 return `
                                 <div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center leading-normal">
@@ -2113,747 +2462,1080 @@
 
                             }).join('');
 
-                        allGroups.push(
-                            currentPicasHtml
-                        );
-                    }
+
+                        allGroups.push(picasHtml);
+
+                    });
+
+                }
 
 
-                    const finalPicasHtml =
-                        allGroups.join(`
-                            <div class="flex items-center justify-center px-1">
-                                <div class="w-[3.5px] h-6 bg-[#451a03] rounded-full shadow-sm"></div>
-                            </div>
-                        `);
+                if (
+                    m.picas &&
+                    m.picas.length > 0
+                ) {
+
+                    const currentPicasHtml =
+                        m.picas.map(pica => {
+
+                            picaGlobalCount++;
 
 
-                    return `
-                    <div
-                        class="truco-table p-2.5 rounded-xl shadow-lg text-white mb-2"
-                        style="border-width:3px;"
-                    >
+                            return `
+                            <div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center leading-normal">
 
-                        <div class="flex justify-between items-center">
-
-                            <div class="w-[42%] text-center">
-
-                                <div class="font-bold text-xs text-amber-300 break-words py-1">
-                                    ${escapeHtml(m.p1)}
+                                <div class="text-amber-500 font-bold">
+                                    P${picaGlobalCount}
                                 </div>
 
-                                <div
-                                    class="score-font text-lg font-bold text-amber-500 py-0.5 ${editMode ? 'editable-field' : ''}"
-                                    ${editMode ? `onclick="editMatchScore(${m.id},1)"` : ''}
-                                >
-                                    ${m.score1}
+                                <div>
+                                    ${pica.s1}-${pica.s2}
                                 </div>
 
                             </div>
+                            `;
+
+                        }).join('');
 
 
-                            <div class="text-emerald-500 font-bold text-[9px]">
-                                VS
+                    allGroups.push(
+                        currentPicasHtml
+                    );
+
+                }
+
+
+                const finalPicasHtml =
+                    allGroups.join(`
+                        <div class="flex items-center justify-center px-1">
+
+                            <div class="w-[3.5px] h-6 bg-[#451a03] rounded-full shadow-sm">
                             </div>
 
+                        </div>
+                    `);
 
-                            <div class="w-[42%] text-center">
 
-                                <div class="font-bold text-xs text-amber-300 break-words py-1">
-                                    ${escapeHtml(m.p2)}
-                                </div>
+                return `
+                <div
+                    class="truco-table p-2.5 rounded-xl shadow-lg text-white mb-2"
+                    style="border-width:3px;">
 
-                                <div
-                                    class="score-font text-lg font-bold text-amber-500 py-0.5 ${editMode ? 'editable-field' : ''}"
-                                    ${editMode ? `onclick="editMatchScore(${m.id},2)"` : ''}
-                                >
-                                    ${m.score2}
-                                </div>
+                    <div class="flex justify-between items-center">
 
+                        <div class="w-[42%] text-center">
+
+                            <div class="font-bold text-xs text-amber-300 break-words py-1">
+                                ${escapeHtml(m.p1)}
+                            </div>
+
+                            <div class="score-font text-lg font-bold text-amber-500 py-0.5">
+                                ${m.score1}
                             </div>
 
                         </div>
 
 
-                        ${
-                            allGroups.length > 0
-                            ?
-                            `
-                            <div class="flex flex-wrap justify-center items-center gap-1 mt-1 border-t border-emerald-800/60 pt-2">
-                                ${finalPicasHtml}
+                        <div class="text-emerald-500 font-bold text-[9px]">
+                            VS
+                        </div>
+
+
+                        <div class="w-[42%] text-center">
+
+                            <div class="font-bold text-xs text-amber-300 break-words py-1">
+                                ${escapeHtml(m.p2)}
                             </div>
-                            `
-                            :
-                            ''
-                        }
+
+                            <div class="score-font text-lg font-bold text-amber-500 py-0.5">
+                                ${m.score2}
+                            </div>
+
+                        </div>
 
                     </div>
-                    `;
 
-                }).join('');
-        }
+
+                    ${allGroups.length > 0 ? `
+
+                        <div class="flex flex-wrap justify-center items-center gap-1 mt-1 border-t border-emerald-800/60 pt-2">
+
+                            ${finalPicasHtml}
+
+                        </div>
+
+                    ` : ''}
+
+                </div>
+                `;
+
+            }).join('');
+
     }
 
+}
 
-    /* =========================================================
-       EDITAR NOMBRE DESDE RANKING
-    ========================================================== */
 
-    function editPlayerNameFromStats(oldName) {
+/* =========================================================
+   BA / OPCIONES DEL JUGADOR
+   ========================================================= */
 
-        if (!editMode) return;
+let pressTimer = null;
 
-        const newName =
-            prompt(
-                "Nuevo nombre del jugador:",
-                oldName
+
+function startPress(event, playerName) {
+
+    if (editMode) return;
+
+
+    pressTimer =
+        setTimeout(() => {
+
+            vibrar();
+
+            showPlayerOptionsModal(
+                playerName
             );
 
-        if (newName === null) return;
+        }, 3000);
 
-        const clean =
-            newName.trim();
+}
 
-        if (!clean || clean === oldName) {
-            return;
-        }
 
-        executeWithUndo(() => {
+function cancelPress() {
 
-            gameState.activeMatches.forEach(m => {
+    if (pressTimer !== null) {
 
-                if (m.p1 === oldName) {
-                    m.p1 = clean;
-                }
+        clearTimeout(pressTimer);
 
-                if (m.p2 === oldName) {
-                    m.p2 = clean;
-                }
-            });
+        pressTimer = null;
 
-            if (
-                gameState.knownPlayers.includes(oldName)
-            ) {
+    }
 
-                gameState.knownPlayers =
-                    gameState.knownPlayers.map(
-                        p =>
-                            p === oldName
-                                ? clean
-                                : p
-                    );
-            }
+}
 
-        });
+
+function showPlayerOptionsModal(playerName) {
+
+    const modal =
+        document.getElementById(
+            'custom-modal'
+        );
+
+    const modalContent =
+        document.getElementById(
+            'modal-content'
+        );
+
+    const msgEl =
+        document.getElementById(
+            'modal-message'
+        );
+
+    const btnsEl =
+        document.getElementById(
+            'modal-buttons'
+        );
+
+
+    /*
+        MUY IMPORTANTE:
+        Si el jugador todavía no tiene registro histórico,
+        lo creamos antes de tocar isBA.
+    */
+
+    if (!historicalStats[playerName]) {
+
+        historicalStats[playerName] = {
+
+            won: 0,
+            lost: 0,
+            isBA: false
+
+        };
+
     }
 
 
-    function escapeJs(value) {
-
-        return String(value)
-            .replace(/\\/g, '\\\\')
-            .replace(/'/g, "\\'");
-    }
+    const isBA =
+        !!historicalStats[playerName].isBA;
 
 
-    /* =========================================================
-       HISTÓRICO
-    ========================================================== */
+    msgEl.innerHTML =
+        `Opciones para <span class="text-amber-400 font-bold break-words">${escapeHtml(playerName)}</span>`;
 
-    function confirmarRegistroNoche() {
 
-        const currentTotals =
-            getTotals();
+    btnsEl.className =
+        "flex flex-col gap-3";
 
-        if (
-            Object.keys(currentTotals).length === 0
-        ) {
 
-            showModal(
-                "No hay datos en la noche actual para registrar.",
-                "alert"
-            );
+    btnsEl.innerHTML = '';
 
-            return;
+
+    /* ============================
+       BOTÓN BA
+       ============================ */
+
+    const btnBA =
+        document.createElement('button');
+
+
+    btnBA.className =
+        "w-full bg-gray-700 text-white px-4 py-3 rounded-xl font-bold hover:bg-gray-600 transition-colors shadow-lg border border-gray-500";
+
+
+    btnBA.textContent =
+        isBA
+            ? "Quitar Baja Asistencia (BA)"
+            : "Marcar como Baja Asistencia (BA)";
+
+
+    btnBA.onclick = () => {
+
+        /*
+            NO borramos al jugador.
+            Solo cambiamos su estado BA.
+        */
+
+        if (!historicalStats[playerName]) {
+
+            historicalStats[playerName] = {
+                won: 0,
+                lost: 0,
+                isBA: false
+            };
+
         }
+
+
+        historicalStats[playerName].isBA =
+            !isBA;
+
+
+        saveToLocalStorage();
+
+        renderHistoricalStats();
+
+        closePlayerOptionsModal();
+
+        vibrar();
+
+    };
+
+
+    /* ============================
+       ELIMINAR JUGADOR
+       ============================ */
+
+    const btnDelete =
+        document.createElement('button');
+
+
+    btnDelete.className =
+        "w-full bg-red-900/80 text-red-100 px-4 py-3 rounded-xl font-bold hover:bg-red-800 transition-colors shadow-lg border border-red-700";
+
+
+    btnDelete.textContent =
+        "Eliminar Jugador";
+
+
+    btnDelete.onclick = () => {
 
         showModal(
-            "¿Seguro que quieres sumar los puntos actuales a la Tabla Histórica Anual?<br><br>Asegúrate de hacerlo solo al finalizar la noche.",
-            "confirm",
+            `¿Eliminar a <b>${escapeHtml(playerName)}</b> del histórico?`,
+            'confirm',
             () => {
 
-                for (
-                    const player in currentTotals
-                ) {
-
-                    if (!historicalStats[player]) {
-
-                        historicalStats[player] = {
-                            won: 0,
-                            lost: 0,
-                            isBA: false
-                        };
-                    }
-
-                    historicalStats[player].won +=
-                        currentTotals[player].won;
-
-                    historicalStats[player].lost +=
-                        currentTotals[player].lost;
-                }
+                delete historicalStats[playerName];
 
                 saveToLocalStorage();
 
                 renderHistoricalStats();
 
-                showModal(
-                    "¡Noche registrada exitosamente en el histórico!",
-                    "alert"
-                );
+                closePlayerOptionsModal();
+
+                vibrar();
 
             },
-            "Sí, Registrar Noche",
+            "Eliminar",
             "Cancelar"
         );
-    }
+
+    };
 
 
-    /* =========================================================
-       EDITAR HISTÓRICO
-    ========================================================== */
+    /* ============================
+       CANCELAR
+       ============================ */
 
-    function editHistoricalPlayerName(oldName) {
-
-        if (!editMode) return;
-
-        const newName =
-            prompt(
-                "Nuevo nombre del jugador:",
-                oldName
-            );
-
-        if (newName === null) return;
-
-        const clean =
-            newName.trim();
-
-        if (!clean || clean === oldName) {
-            return;
-        }
-
-        executeHistoricalEdit(() => {
-
-            historicalStats[clean] =
-                historicalStats[oldName];
-
-            delete historicalStats[oldName];
-        });
-    }
+    const btnCancel =
+        document.createElement('button');
 
 
-    function editHistoricalStat(
-        playerName,
-        field
+    btnCancel.className =
+        "w-full bg-emerald-900 text-emerald-200 px-4 py-3 rounded-xl font-bold hover:bg-emerald-800 transition-colors border border-emerald-700 mt-2";
+
+
+    btnCancel.textContent =
+        "Cancelar";
+
+
+    btnCancel.onclick =
+        closePlayerOptionsModal;
+
+
+    btnsEl.appendChild(btnBA);
+
+    btnsEl.appendChild(btnDelete);
+
+    btnsEl.appendChild(btnCancel);
+
+
+    modal.classList.remove('hidden');
+
+    modal.classList.add('flex');
+
+
+    setTimeout(() => {
+
+        modal.classList.remove('opacity-0');
+        modal.classList.add('opacity-100');
+
+        modalContent.classList.remove('scale-95');
+        modalContent.classList.add('scale-100');
+
+    }, 10);
+
+}
+
+
+function closePlayerOptionsModal() {
+
+    closeModal();
+
+
+    setTimeout(() => {
+
+        document
+            .getElementById(
+                'modal-buttons'
+            )
+            .className =
+            "flex justify-center gap-3";
+
+    }, 300);
+
+}
+
+
+/* =========================================================
+   REGISTRAR NOCHE
+   ========================================================= */
+
+function confirmarRegistroNoche() {
+
+    const currentTotals =
+        getTotals();
+
+
+    if (
+        Object.keys(currentTotals).length === 0
     ) {
 
-        if (!editMode) return;
+        showModal(
+            "No hay datos en la noche actual para registrar.",
+            "alert"
+        );
 
-        const player =
-            historicalStats[playerName];
+        return;
 
-        if (!player) return;
-
-        const oldValue =
-            player[field];
-
-        const value =
-            prompt(
-                `Modificar ${field === 'won' ? 'G' : 'P'} de ${playerName}:`,
-                oldValue
-            );
-
-        if (value === null) return;
-
-        const number =
-            parseInt(value, 10);
-
-        if (
-            Number.isNaN(number) ||
-            number < 0
-        ) {
-
-            showModal(
-                "Introduce un número válido.",
-                "alert"
-            );
-
-            return;
-        }
-
-        executeHistoricalEdit(() => {
-
-            player[field] = number;
-        });
     }
 
 
-    function editHistoricalBA(playerName) {
+    showModal(
+        "¿Seguro que quieres sumar los puntos actuales a la Tabla Histórica Anual?<br><br>Asegúrate de hacerlo solo al finalizar la noche.",
+        "confirm",
+        () => {
 
-        if (!editMode) return;
+            for (
+                const player in currentTotals
+            ) {
 
-        const player =
-            historicalStats[playerName];
+                if (
+                    !historicalStats[player]
+                ) {
 
-        if (!player) return;
+                    historicalStats[player] = {
 
-        executeHistoricalEdit(() => {
+                        won: 0,
+                        lost: 0,
+                        isBA: false
 
-            player.isBA =
-                !player.isBA;
-        });
-    }
+                    };
+
+                }
 
 
-    function executeHistoricalEdit(
-        callback
-    ) {
+                historicalStats[player].won +=
+                    currentTotals[player].won;
 
-        const before =
-            JSON.stringify(historicalStats);
 
-        callback();
+                historicalStats[player].lost +=
+                    currentTotals[player].lost;
 
-        const after =
-            JSON.stringify(historicalStats);
+            }
 
-        if (before !== after) {
 
             saveToLocalStorage();
 
             renderHistoricalStats();
-        }
-    }
 
 
-    /* =========================================================
-       RENDER HISTÓRICO
-    ========================================================== */
-
-    function renderHistoricalStats() {
-
-        const listCombined =
-            document.getElementById(
-                'historical-stats-list'
+            showModal(
+                "¡Noche registrada exitosamente en el histórico!",
+                "alert"
             );
 
-        const sortedPlayers =
-            Object.keys(historicalStats)
-                .sort((a, b) => {
+        },
+        "Sí, Registrar Noche",
+        "Cancelar"
+    );
 
-                    const isBaA =
-                        historicalStats[a].isBA
-                            ? 1
-                            : 0;
+}
 
-                    const isBaB =
-                        historicalStats[b].isBA
-                            ? 1
-                            : 0;
 
-                    if (isBaA !== isBaB) {
-                        return isBaA - isBaB;
-                    }
+/* =========================================================
+   HISTÓRICO
+   ========================================================= */
 
-                    const diffA =
-                        historicalStats[a].won -
-                        historicalStats[a].lost;
+function renderHistoricalStats() {
 
-                    const diffB =
-                        historicalStats[b].won -
-                        historicalStats[b].lost;
+    if (editMode) return;
 
-                    return (
-                        diffB - diffA ||
-                        historicalStats[b].won -
+
+    applyStatsLabels();
+
+
+    const listCombined =
+        document.getElementById(
+            'historical-stats-list'
+        );
+
+
+    const sortedPlayers =
+        Object.keys(historicalStats).sort(
+            (a, b) => {
+
+                const isBaA =
+                    historicalStats[a].isBA
+                        ? 1
+                        : 0;
+
+
+                const isBaB =
+                    historicalStats[b].isBA
+                        ? 1
+                        : 0;
+
+
+                /*
+                    BA SIEMPRE AL FINAL
+                */
+
+                if (
+                    isBaA !== isBaB
+                ) {
+
+                    return isBaA - isBaB;
+
+                }
+
+
+                const diffA =
+                    historicalStats[a].won -
+                    historicalStats[a].lost;
+
+
+                const diffB =
+                    historicalStats[b].won -
+                    historicalStats[b].lost;
+
+
+                return (
+                    diffB - diffA ||
+                    historicalStats[b].won -
                         historicalStats[a].won ||
-                        a.localeCompare(b)
-                    );
-                });
+                    a.localeCompare(b)
+                );
+
+            }
+        );
 
 
-        if (sortedPlayers.length === 0) {
+    if (
+        sortedPlayers.length === 0
+    ) {
 
-            listCombined.innerHTML =
-                `<div class="text-center text-emerald-500/50 text-xs py-4">
-                    Aún no hay noches registradas
-                </div>`;
+        listCombined.innerHTML = `
+            <div class="text-center text-emerald-500/50 text-xs py-4">
+                Aún no hay noches registradas
+            </div>
+        `;
 
-            return;
-        }
+        return;
 
-
-        listCombined.innerHTML =
-            sortedPlayers.map(
-                (name, index) => {
-
-                    const player =
-                        historicalStats[name];
-
-                    const won =
-                        player.won;
-
-                    const lost =
-                        player.lost;
-
-                    const isBA =
-                        player.isBA;
-
-                    const diff =
-                        won - lost;
-
-                    const diffSign =
-                        diff > 0
-                            ? '+'
-                            : '';
+    }
 
 
-                    const bgClass =
-                        isBA
-                            ? 'bg-gray-800/80 border-gray-700/50 opacity-80'
-                            : 'bg-[#022c22] border-emerald-800/70';
+    listCombined.innerHTML =
+        sortedPlayers.map(
+            (name, index) => {
 
-                    const rankColor =
-                        isBA
-                            ? 'text-gray-500'
-                            : 'text-amber-600';
-
-                    const nameColor =
-                        isBA
-                            ? 'text-gray-400'
-                            : 'text-emerald-50';
-
-                    const numColorWon =
-                        isBA
-                            ? 'text-gray-500'
-                            : 'text-amber-500/90';
-
-                    const numColorLost =
-                        isBA
-                            ? 'text-gray-500'
-                            : 'text-red-500/90';
-
-                    const diffColor =
-                        isBA
-                            ? 'text-gray-400'
-                            : diff > 0
-                                ? 'text-emerald-400'
-                                : diff < 0
-                                    ? 'text-red-400'
-                                    : 'text-gray-500';
+                const player =
+                    historicalStats[name];
 
 
-                    const nameDisplay =
-                        isBA
-                            ? `${escapeHtml(name)} <span class="ba-label">(BA)</span>`
-                            : escapeHtml(name);
+                const won =
+                    player.won || 0;
 
 
-                    return `
-                    <div
-                        class="historical-row flex justify-between items-center ${bgClass} border rounded-md px-2 py-1.5 mb-1 shadow-sm select-none cursor-pointer"
-                    >
-
-                        <div class="flex items-center flex-1 min-w-0">
-
-                            <span class="${rankColor} font-black text-xs w-5 shrink-0">
-                                ${index + 1}.
-                            </span>
-
-                            <span
-                                class="${nameColor} font-bold text-xs break-words pr-1 ${editMode ? 'editable-field' : ''}"
-                                ${editMode ? `onclick="editHistoricalPlayerName('${escapeJs(name)}')"` : ''}
-                            >
-                                ${nameDisplay}
-                            </span>
-
-                        </div>
+                const lost =
+                    player.lost || 0;
 
 
-                        <div class="flex w-24 justify-between items-center text-center shrink-0">
+                const isBA =
+                    !!player.isBA;
 
-                            <span
-                                class="${numColorWon} font-bold text-xs w-6 ${editMode ? 'editable-field' : ''}"
-                                ${editMode ? `onclick="editHistoricalStat('${escapeJs(name)}','won')"` : ''}
-                            >
-                                ${won}
-                            </span>
 
-                            <span
-                                class="${numColorLost} font-bold text-xs w-6 ${editMode ? 'editable-field' : ''}"
-                                ${editMode ? `onclick="editHistoricalStat('${escapeJs(name)}','lost')"` : ''}
-                            >
-                                ${lost}
-                            </span>
+                const diff =
+                    won - lost;
 
-                            <span
-                                class="${diffColor} font-black text-xs w-8 bg-black/20 rounded py-0.5"
-                            >
-                                ${diffSign}${diff}
-                            </span>
 
-                        </div>
+                const diffSign =
+                    diff > 0
+                        ? '+'
+                        : '';
+
+
+                /*
+                    ESTILOS BA
+                */
+
+                const bgClass =
+                    isBA
+                        ? 'bg-gray-800/80 border-gray-700/50 opacity-80'
+                        : 'bg-[#022c22] border-emerald-800/70';
+
+
+                const rankColor =
+                    isBA
+                        ? 'text-gray-500'
+                        : 'text-amber-600';
+
+
+                const nameColor =
+                    isBA
+                        ? 'text-gray-400'
+                        : 'text-emerald-50';
+
+
+                const numColorWON =
+                    isBA
+                        ? 'text-gray-500'
+                        : 'text-amber-500/90';
+
+
+                const numColorLOST =
+                    isBA
+                        ? 'text-gray-500'
+                        : 'text-red-500/90';
+
+
+                const diffColor =
+                    isBA
+                        ? 'text-gray-400'
+                        : diff > 0
+                            ? 'text-emerald-400'
+                            : diff < 0
+                                ? 'text-red-400'
+                                : 'text-gray-500';
+
+
+                /*
+                    BA EN LA MISMA LÍNEA
+                */
+
+                const nameDisplay =
+                    isBA
+                        ? `${escapeHtml(name)} <span class="ba-label">(BA)</span>`
+                        : escapeHtml(name);
+
+
+                const safeName =
+                    escapeAttribute(name);
+
+
+                return `
+                <div
+
+                    onmousedown="startPress(event, '${safeName}')"
+
+                    onmouseup="cancelPress()"
+
+                    onmouseleave="cancelPress()"
+
+                    ontouchstart="startPress(event, '${safeName}')"
+
+                    ontouchend="cancelPress()"
+
+                    ontouchmove="cancelPress()"
+
+                    oncontextmenu="event.preventDefault();"
+
+                    style="-webkit-touch-callout:none;"
+
+                    data-original-name="${escapeHtml(name)}"
+
+                    class="historical-row flex justify-between items-center ${bgClass} border rounded-md px-2 py-1.5 mb-1 shadow-sm select-none cursor-pointer transition-all duration-300">
+
+
+                    <div class="flex items-center flex-1 min-w-0">
+
+                        <span class="${rankColor} font-black text-xs w-5 shrink-0">
+
+                            ${index + 1}.
+
+                        </span>
+
+
+                        <span
+                            class="${nameColor} font-bold text-xs break-words pr-1 editable-historical-name">
+
+                            ${nameDisplay}
+
+                        </span>
 
                     </div>
-                    `;
 
-                }
-            ).join('');
+
+                    <div class="flex w-24 justify-between items-center text-center shrink-0">
+
+                        <span class="${numColorWON} font-bold text-xs w-6">
+
+                            ${won}
+
+                        </span>
+
+
+                        <span class="${numColorLOST} font-bold text-xs w-6">
+
+                            ${lost}
+
+                        </span>
+
+
+                        <span class="${diffColor} font-black text-xs w-8 bg-black/20 rounded py-0.5">
+
+                            ${diffSign}${diff}
+
+                        </span>
+
+                    </div>
+
+                </div>
+                `;
+
+            }
+        ).join('');
+
+}
+
+
+/* =========================================================
+   COMPARTIR ESTADÍSTICAS
+   ========================================================= */
+
+function shareStats() {
+
+    if (editMode) {
+
+        showModal(
+            "Primero pulsa EDIT OFF para guardar los cambios.",
+            "alert"
+        );
+
+        return;
+
     }
 
 
-    /* =========================================================
-       COMPARTIR NOCHE
-    ========================================================== */
+    renderStats();
 
-    function shareStats() {
 
-        renderStats();
+    setTimeout(() => {
 
-        setTimeout(() => {
+        html2canvas(
+            document.getElementById(
+                "capture-area"
+            ),
+            {
 
-            html2canvas(
-                document.getElementById(
-                    "capture-area"
-                ),
-                {
-                    backgroundColor: "#064e3b",
-                    scale: 2,
-                    useCORS: true
-                }
-            ).then(canvas => {
+                backgroundColor: "#064e3b",
 
-                canvas.toBlob(blob => {
+                scale: 2,
 
-                    const file =
-                        new File(
-                            [blob],
-                            'resultados_pica_pica.png',
-                            {
-                                type: 'image/png'
-                            }
-                        );
+                useCORS: true
 
-                    const shareData = {
-                        title: 'Resultados Pica Pica',
+            }
+
+        ).then(canvas => {
+
+            canvas.toBlob(blob => {
+
+                const file =
+                    new File(
+                        [blob],
+                        'resultados_pica_pica.png',
+                        {
+                            type: 'image/png'
+                        }
+                    );
+
+
+                const shareData = {
+
+                    title:
+                        'Resultados Pica Pica',
+
+                    files: [file]
+
+                };
+
+
+                if (
+                    navigator.canShare &&
+                    navigator.canShare({
                         files: [file]
-                    };
+                    })
+                ) {
 
-                    if (
-                        navigator.canShare &&
-                        navigator.canShare({
-                            files: [file]
-                        })
-                    ) {
+                    navigator.share(
+                        shareData
+                    ).catch(
+                        console.error
+                    );
 
-                        navigator.share(
-                            shareData
-                        ).catch(
-                            console.error
+                }
+
+                else {
+
+                    const link =
+                        document.createElement('a');
+
+                    link.download =
+                        'resultados_pica_pica.png';
+
+                    link.href =
+                        canvas.toDataURL(
+                            "image/png"
                         );
 
-                    } else {
+                    link.click();
 
-                        const link =
-                            document.createElement('a');
+                }
 
-                        link.download =
-                            'resultados_pica_pica.png';
+            }, 'image/png');
 
-                        link.href =
-                            canvas.toDataURL(
-                                "image/png"
-                            );
+        });
 
-                        link.click();
-                    }
+    }, 50);
 
-                }, 'image/png');
+}
 
-            });
 
-        }, 50);
+/* =========================================================
+   COMPARTIR HISTÓRICO
+   ========================================================= */
+
+function shareHistoricalStats() {
+
+    if (editMode) {
+
+        showModal(
+            "Primero pulsa EDIT OFF para guardar los cambios.",
+            "alert"
+        );
+
+        return;
+
     }
 
 
-    /* =========================================================
-       COMPARTIR HISTÓRICO
-    ========================================================== */
+    renderHistoricalStats();
 
-    function shareHistoricalStats() {
 
-        renderHistoricalStats();
+    setTimeout(() => {
 
-        setTimeout(() => {
+        html2canvas(
+            document.getElementById(
+                "capture-area-history"
+            ),
+            {
 
-            html2canvas(
-                document.getElementById(
-                    "capture-area-history"
-                ),
-                {
-                    backgroundColor: "#064e3b",
-                    scale: 2,
-                    useCORS: true,
+                backgroundColor: "#064e3b",
 
-                    onclone: clonedDoc => {
+                scale: 2,
 
-                        const rows =
-                            clonedDoc.querySelectorAll(
-                                '#historical-stats-list .historical-row'
-                            );
+                useCORS: true,
 
-                        rows.forEach(row => {
 
-                            row.style.height = '40px';
-                            row.style.minHeight = '40px';
-                            row.style.boxSizing = 'border-box';
-                            row.style.paddingTop = '0';
-                            row.style.paddingBottom = '0';
-                            row.style.display = 'flex';
-                            row.style.alignItems = 'center';
+                onclone: clonedDoc => {
 
-                            const left =
-                                row.children[0];
+                    const rows =
+                        clonedDoc.querySelectorAll(
+                            '#historical-stats-list .historical-row'
+                        );
 
-                            const stats =
-                                row.children[1];
 
-                            if (left) {
+                    rows.forEach(row => {
 
-                                left.style.height = '40px';
-                                left.style.display = 'flex';
-                                left.style.alignItems = 'center';
-                            }
+                        row.style.height = '40px';
 
-                            if (stats) {
+                        row.style.minHeight = '40px';
 
-                                stats.style.height = '40px';
-                                stats.style.display = 'flex';
-                                stats.style.alignItems = 'center';
-                            }
+                        row.style.boxSizing =
+                            'border-box';
 
-                            row.querySelectorAll(
+                        row.style.paddingTop =
+                            '0';
+
+                        row.style.paddingBottom =
+                            '0';
+
+                        row.style.display =
+                            'flex';
+
+                        row.style.alignItems =
+                            'center';
+
+
+                        const left =
+                            row.children[0];
+
+
+                        const stats =
+                            row.children[1];
+
+
+                        if (left) {
+
+                            left.style.height =
+                                '40px';
+
+                            left.style.display =
+                                'flex';
+
+                            left.style.alignItems =
+                                'center';
+
+                        }
+
+
+                        if (stats) {
+
+                            stats.style.height =
+                                '40px';
+
+                            stats.style.display =
+                                'flex';
+
+                            stats.style.alignItems =
+                                'center';
+
+                        }
+
+
+                        row
+                            .querySelectorAll(
                                 ':scope > div:first-child > span'
-                            ).forEach(el => {
+                            )
+                            .forEach(el => {
 
-                                el.style.display = 'flex';
-                                el.style.alignItems = 'center';
-                                el.style.height = '40px';
-                                el.style.lineHeight = '1';
+                                el.style.display =
+                                    'flex';
+
+                                el.style.alignItems =
+                                    'center';
+
+                                el.style.height =
+                                    '40px';
+
+                                el.style.lineHeight =
+                                    '1';
+
                             });
 
-                            row.querySelectorAll(
+
+                        row
+                            .querySelectorAll(
                                 ':scope > div:last-child > span'
-                            ).forEach(el => {
+                            )
+                            .forEach(el => {
 
-                                el.style.display = 'flex';
-                                el.style.alignItems = 'center';
-                                el.style.justifyContent = 'center';
-                                el.style.height = '40px';
-                                el.style.lineHeight = '1';
+                                el.style.display =
+                                    'flex';
+
+                                el.style.alignItems =
+                                    'center';
+
+                                el.style.justifyContent =
+                                    'center';
+
+                                el.style.height =
+                                    '40px';
+
+                                el.style.lineHeight =
+                                    '1';
+
                             });
 
-                            const diff =
-                                row.querySelector(
-                                    ':scope > div:last-child > span:last-child'
-                                );
 
-                            if (diff) {
-
-                                diff.style.height = '32px';
-                                diff.style.alignSelf = 'center';
-                            }
-
-                            const ba =
-                                row.querySelector(
-                                    '.ba-label'
-                                );
-
-                            if (ba) {
-
-                                ba.style.display = 'inline';
-                                ba.style.position = 'static';
-                                ba.style.transform = 'none';
-                                ba.style.top = 'auto';
-                                ba.style.bottom = 'auto';
-                                ba.style.marginTop = '0';
-                                ba.style.marginBottom = '0';
-                                ba.style.padding = '0';
-                                ba.style.border = '0';
-                                ba.style.lineHeight = '1';
-                                ba.style.verticalAlign = 'baseline';
-                            }
-                        });
-                    }
-                }
-            ).then(canvas => {
-
-                canvas.toBlob(blob => {
-
-                    const file =
-                        new File(
-                            [blob],
-                            'historico_pica_pica.png',
-                            {
-                                type: 'image/png'
-                            }
-                        );
-
-                    const shareData = {
-                        title: 'Histórico Pica Pica',
-                        files: [file]
-                    };
-
-                    if (
-                        navigator.canShare &&
-                        navigator.canShare({
-                            files: [file]
-                        })
-                    ) {
-
-                        navigator.share(
-                            shareData
-                        ).catch(
-                            console.error
-                        );
-
-                    } else {
-
-                        const link =
-                            document.createElement('a');
-
-                        link.download =
-                            'historico_pica_pica.png';
-
-                        link.href =
-                            canvas.toDataURL(
-                                "image/png"
+                        const diff =
+                            row.querySelector(
+                                ':scope > div:last-child > span:last-child'
                             );
 
-                        link.click();
-                    }
 
-                }, 'image/png');
+                        if (diff) {
 
-            });
+                            diff.style.height =
+                                '32px';
 
-        }, 50);
-    }
+                            diff.style.alignSelf =
+                                'center';
+
+                        }
 
 
-    /* =========================================================
-       INICIO
-    ========================================================== */
+                        const ba =
+                            row.querySelector(
+                                '.ba-label'
+                            );
 
-    loadFromLocalStorage();
+
+                        if (ba) {
+
+                            ba.style.display =
+                                'inline';
+
+                            ba.style.position =
+                                'static';
+
+                            ba.style.transform =
+                                'none';
+
+                            ba.style.top =
+                                'auto';
+
+                            ba.style.bottom =
+                                'auto';
+
+                            ba.style.marginTop =
+                                '0';
+
+                            ba.style.marginBottom =
+                                '0';
+
+                            ba.style.padding =
+                                '0';
+
+                            ba.style.border =
+                                '0';
+
+                            ba.style.lineHeight =
+                                '1';
+
+                            ba.style.verticalAlign =
+                                'baseline';
+
+                        }
+
+                    });
+
+                }
+
+            }
+
+        ).then(canvas => {
+
+            canvas.toBlob(blob => {
+
+                const file =
+                    new File(
+                        [blob],
+                        'historico_pica_pica.png',
+                        {
+                            type: 'image/png'
+                        }
+                    );
+
+
+                const shareData = {
+
+                    title:
+                        'Histórico Pica Pica',
+
+                    files: [file]
+
+                };
+
+
+                if (
+                    navigator.canShare &&
+                    navigator.canShare({
+                        files: [file]
+                    })
+                ) {
+
+                    navigator.share(
+                        shareData
+                    ).catch(
+                        console.error
+                    );
+
+                }
+
+                else {
+
+                    const link =
+                        document.createElement('a');
+
+                    link.download =
+                        'historico_pica_pica.png';
+
+                    link.href =
+                        canvas.toDataURL(
+                            "image/png"
+                        );
+
+                    link.click();
+
+                }
+
+            }, 'image/png');
+
+        });
+
+    }, 50);
+
+}
+
+
+/* =========================================================
+   INICIO
+   ========================================================= */
+
+loadFromLocalStorage();
 
 </script>
 
