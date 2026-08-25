@@ -39,7 +39,7 @@
             font-size: 9px;
             font-weight: 400;
             line-height: 1;
-            vertical-align: baseline;
+            vertical-align: middle;
             margin-left: 4px;
             padding: 0;
             border: 0;
@@ -50,17 +50,43 @@
 
         button {
             touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
         }
 
-        input {
-            -webkit-user-select: text;
-            user-select: text;
+        /* =========================
+           MODO EDICIÓN
+        ========================= */
+
+        .edit-mode {
+            outline: 2px dashed #f59e0b !important;
+            outline-offset: 3px;
+            cursor: text !important;
         }
 
-        .no-select {
-            user-select: none;
-            -webkit-user-select: none;
+        .editable-field {
+            cursor: text;
+            border-radius: 4px;
+            transition: all 0.15s;
+        }
+
+        .editable-field:hover {
+            background: rgba(245,158,11,0.15);
+        }
+
+        .editable-field:focus {
+            outline: 2px solid #f59e0b;
+            background: rgba(0,0,0,0.25);
+        }
+
+        .edit-only {
+            display: none;
+        }
+
+        body.editing .edit-only {
+            display: block;
+        }
+
+        body.editing .normal-only {
+            display: none;
         }
     </style>
 </head>
@@ -69,13 +95,16 @@
 
 <div class="max-w-md w-full relative pt-2 pb-24" id="app">
 
-    <!-- DESHACER -->
+    <!-- =========================
+         BOTÓN DESHACER
+    ========================== -->
+
     <button
         id="undo-btn"
         onclick="undo(); vibrar();"
         class="fixed bottom-6 right-4 sm:right-8 z-[90] flex items-center space-x-1.5 px-4 py-2.5 text-emerald-100 bg-emerald-800/95 backdrop-blur-sm border border-emerald-600 rounded-full hover:bg-emerald-700 transition-all duration-300 opacity-0 pointer-events-none translate-y-4 shadow-2xl"
-        title="Deshacer última acción">
-
+        title="Deshacer última acción"
+    >
         <svg xmlns="http://www.w3.org/2000/svg"
              width="16"
              height="16"
@@ -88,14 +117,13 @@
             <path d="M3 7v6h6"/>
             <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
         </svg>
-
-        <span class="text-[11px] font-bold uppercase tracking-wider">
-            Deshacer
-        </span>
+        <span class="text-[11px] font-bold uppercase tracking-wider">Deshacer</span>
     </button>
 
+    <!-- =========================
+         HEADER
+    ========================== -->
 
-    <!-- CABECERA -->
     <header class="text-center mb-6 mt-4 relative">
         <h1 class="text-4xl font-bold text-amber-500 score-font drop-shadow-md">
             Noche de Truco
@@ -106,47 +134,47 @@
         </p>
     </header>
 
+    <!-- =========================
+         TABS
+    ========================== -->
 
-    <!-- TABS -->
     <div class="flex space-x-2 mb-6 bg-emerald-950 p-1 rounded-xl shadow-inner border border-emerald-800">
 
         <button
             onclick="switchTab('play'); vibrar();"
             id="tab-play"
-            class="flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all">
+            class="flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all"
+        >
             Partidas
         </button>
 
         <button
             onclick="switchTab('stats'); vibrar();"
             id="tab-stats"
-            class="flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all">
+            class="flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all"
+        >
             Ranking
         </button>
 
     </div>
 
-
-    <!-- ========================================================= -->
-    <!-- PARTIDAS -->
-    <!-- ========================================================= -->
+    <!-- =========================================================
+         PARTIDAS
+    ========================================================== -->
 
     <div id="section-play" class="space-y-6">
 
         <div id="active-matches-container" class="space-y-4"></div>
 
-
-        <!-- CERRAR CHICO -->
         <button
             onclick="cerrarTodosLosChicos();"
-            class="w-full bg-blue-900/80 text-blue-300 py-3 rounded-xl font-bold border border-blue-700/50 hover:bg-blue-800 transition-all shadow-lg mt-6 mb-2">
-
+            class="w-full bg-blue-900/80 text-blue-300 py-3 rounded-xl font-bold border border-blue-700/50 hover:bg-blue-800 transition-all shadow-lg mt-6 mb-2"
+        >
             Cerrar Chico (Todos los enfrentamientos)
-
         </button>
 
-
         <!-- NUEVA PARTIDA -->
+
         <div class="bg-emerald-800 p-6 rounded-2xl shadow-xl border border-emerald-700 mt-4">
 
             <h2 class="text-lg font-bold text-white mb-4">
@@ -160,72 +188,98 @@
                     type="text"
                     id="p1"
                     placeholder="Jugador 1"
-                    autocomplete="off"
                     class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none"
-                    oninput="updateDatalists()">
+                    oninput="updateDatalists()"
+                >
 
                 <datalist id="players-1"></datalist>
-
 
                 <input
                     list="players-2"
                     type="text"
                     id="p2"
                     placeholder="Jugador 2"
-                    autocomplete="off"
                     class="w-full p-3 bg-emerald-900 border-none text-white rounded-lg placeholder-emerald-500 focus:ring-2 focus:ring-amber-500 outline-none"
-                    oninput="updateDatalists()">
+                    oninput="updateDatalists()"
+                >
 
                 <datalist id="players-2"></datalist>
 
             </div>
 
-
             <button
                 onclick="startMatch(); vibrar();"
-                class="w-full mt-4 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50">
-
+                class="w-full mt-4 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50"
+            >
                 Empezar Duelo
-
             </button>
 
         </div>
 
-
-        <!-- NUEVA NOCHE -->
         <button
             onclick="resetEverything(); vibrar();"
-            class="w-full bg-emerald-950 text-emerald-500 py-2 rounded-xl font-bold border border-emerald-900 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest mt-2">
-
+            class="w-full bg-emerald-950 text-emerald-500 py-2 rounded-xl font-bold border border-emerald-900 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest mt-2"
+        >
             Empezar nueva noche de truco
-
         </button>
 
     </div>
 
-
-    <!-- ========================================================= -->
-    <!-- RANKING -->
-    <!-- ========================================================= -->
+    <!-- =========================================================
+         ESTADÍSTICAS
+    ========================================================== -->
 
     <div id="section-stats" class="hidden space-y-6">
 
+        <!-- =========================
+             BOTÓN EDIT ON/OFF
+        ========================== -->
+
+        <div class="flex gap-2">
+
+            <button
+                id="edit-toggle-btn"
+                onclick="toggleEditMode(); vibrar();"
+                class="flex-1 bg-amber-600 text-white py-3 rounded-xl font-bold hover:bg-amber-700 transition-all shadow-lg"
+            >
+                ✏️ EDIT ON
+            </button>
+
+            <button
+                id="save-edit-btn"
+                onclick="finishEditMode(); vibrar();"
+                class="hidden flex-1 bg-emerald-600 text-white py-3 rounded-xl font-bold hover:bg-emerald-500 transition-all shadow-lg"
+            >
+                ✓ EDIT OFF
+            </button>
+
+        </div>
+
+        <div
+            id="edit-help"
+            class="hidden bg-amber-950/70 border border-amber-700 text-amber-200 rounded-xl p-3 text-xs text-center"
+        >
+            Modo edición activo. Pulsa sobre cualquier dato para modificarlo.
+        </div>
+
+        <!-- =========================
+             RESULTADOS DE ESTA NOCHE
+        ========================== -->
+
         <div
             id="capture-area"
-            class="bg-emerald-800 p-3 rounded-2xl shadow-xl border border-emerald-700 space-y-2 relative">
+            class="bg-emerald-800 p-3 rounded-2xl shadow-xl border border-emerald-700 space-y-2 relative"
+        >
 
             <h2 class="text-xl font-bold text-amber-400 score-font text-center drop-shadow-md pb-1.5 border-b border-emerald-700/50">
                 Resultados Pica Pica
             </h2>
 
-
-            <!-- PUNTOS DE ESTA NOCHE -->
             <div class="pt-1">
 
                 <h2 class="text-xs font-bold text-emerald-300 mb-1.5 border-b border-emerald-700 pb-1 text-center uppercase tracking-widest">
                     PUNTOS DE ESTA NOCHE
                 </h2>
-
 
                 <div class="flex justify-between px-2 mb-1 mt-1 text-[9px] font-bold text-emerald-500 uppercase tracking-wider">
 
@@ -241,86 +295,64 @@
 
                 </div>
 
-
-                <div id="stats-list-combined"
-                     class="grid grid-cols-1 gap-1">
-                </div>
+                <div
+                    id="stats-list-combined"
+                    class="grid grid-cols-1 gap-1"
+                ></div>
 
             </div>
 
-
             <!-- ENFRENTAMIENTOS -->
+
             <div class="pt-1">
 
                 <h2 class="text-xs font-bold text-emerald-300 mb-1.5 border-b border-emerald-700 pb-1 text-center uppercase tracking-widest">
                     ENFRENTAMIENTOS
                 </h2>
 
-                <div id="history-list"
-                     class="space-y-1.5 mt-1">
-                </div>
+                <div
+                    id="history-list"
+                    class="space-y-1.5 mt-1"
+                ></div>
 
             </div>
 
         </div>
 
-
-        <!-- COMPARTIR NOCHE -->
         <button
             onclick="shareStats(); vibrar();"
-            class="w-full mt-2 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">
-
+            class="w-full mt-2 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg"
+        >
             📸 Compartir Noche
-
         </button>
 
-
-        <!-- ===================================================== -->
-        <!-- HISTÓRICO -->
-        <!-- ===================================================== -->
+        <!-- =========================
+             HISTÓRICO
+        ========================== -->
 
         <div class="mt-8 pt-6 border-t border-emerald-800/50">
 
             <button
                 onclick="confirmarRegistroNoche(); vibrar();"
-                class="w-full bg-amber-700 text-amber-100 py-3 rounded-xl font-bold border border-amber-600 hover:bg-amber-600 transition-all shadow-lg mb-6 uppercase tracking-wider text-sm flex items-center justify-center gap-2">
-
-                <svg xmlns="http://www.w3.org/2000/svg"
-                     width="18"
-                     height="18"
-                     viewBox="0 0 24 24"
-                     fill="none"
-                     stroke="currentColor"
-                     stroke-width="2"
-                     stroke-linecap="round"
-                     stroke-linejoin="round">
-
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
-                    <polyline points="7 3 7 8 15 8"></polyline>
-
-                </svg>
-
+                class="w-full bg-amber-700 text-amber-100 py-3 rounded-xl font-bold border border-amber-600 hover:bg-amber-600 transition-all shadow-lg mb-6 uppercase tracking-wider text-sm flex items-center justify-center gap-2"
+            >
                 Registrar Noche en Histórico
-
             </button>
-
 
             <div
                 id="capture-area-history"
-                class="bg-[#043d2e] p-3 rounded-2xl shadow-xl border border-emerald-900 space-y-2 relative">
+                class="bg-[#043d2e] p-3 rounded-2xl shadow-xl border border-emerald-900 space-y-2 relative"
+            >
 
                 <h2 class="text-xl font-bold text-amber-500 score-font text-center drop-shadow-md pb-1.5 border-b border-emerald-800/80">
                     Tabla Histórica Anual
                 </h2>
-
 
                 <div class="pt-1">
 
                     <h2 class="text-[10px] font-bold text-emerald-400 mb-1.5 border-b border-emerald-800 pb-1 text-center uppercase tracking-widest">
                         PUNTOS ACUMULADOS EN PICA PICAS
                     </h2>
-
 
                     <div class="flex justify-between px-2 mb-1 mt-1 text-[9px] font-bold text-emerald-600 uppercase tracking-wider">
 
@@ -329,1261 +361,932 @@
                         </div>
 
                         <div class="flex w-24 justify-between text-center">
-                            <span class="w-6 text-emerald-500">G</span>
-                            <span class="w-6 text-red-500">P</span>
-                            <span class="w-8 text-blue-500">DIF</span>
+                            <span class="w-6">G</span>
+                            <span class="w-6">P</span>
+                            <span class="w-8">DIF</span>
                         </div>
 
                     </div>
 
-
-                    <div id="historical-stats-list"
-                         class="grid grid-cols-1 gap-1">
-                    </div>
+                    <div
+                        id="historical-stats-list"
+                        class="grid grid-cols-1 gap-1"
+                    ></div>
 
                 </div>
 
             </div>
 
-
-            <!-- COMPARTIR HISTÓRICO -->
             <button
                 onclick="shareHistoricalStats(); vibrar();"
-                class="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg">
-
+                class="w-full mt-4 bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors shadow-lg"
+            >
                 📸 Compartir Histórico
-
             </button>
 
         </div>
 
     </div>
 
-
-    <!-- ========================================================= -->
-    <!-- BACKUP -->
-    <!-- ========================================================= -->
+    <!-- =========================
+         BACKUP
+    ========================== -->
 
     <div class="mt-12 pt-6 border-t border-emerald-900 flex gap-3">
 
         <button
             onclick="exportBackup(); vibrar();"
-            class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-1">
-
+            class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest"
+        >
             Guardar Backup
-
         </button>
-
 
         <button
             onclick="document.getElementById('backup-input').click(); vibrar();"
-            class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest flex items-center justify-center gap-1">
-
+            class="flex-1 bg-emerald-950 text-emerald-400 py-2.5 rounded-lg font-bold border border-emerald-800 hover:bg-emerald-900 transition-all text-xs uppercase tracking-widest"
+        >
             Cargar Backup
-
         </button>
-
 
         <input
             type="file"
             id="backup-input"
             class="hidden"
-            accept=".json,application/json"
-            onchange="importBackup(event)">
+            accept=".json"
+            onchange="importBackup(event)"
+        >
 
     </div>
 
 </div>
 
-
-<!-- ============================================================= -->
-<!-- MODAL -->
-<!-- ============================================================= -->
+<!-- =========================================================
+     MODAL
+========================================================== -->
 
 <div
     id="custom-modal"
-    class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm px-4 opacity-0 transition-opacity duration-300">
+    class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/80 backdrop-blur-sm px-4 opacity-0 transition-opacity duration-300"
+>
 
     <div
+        class="bg-emerald-950 border-2 border-emerald-600 rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center transform scale-95 transition-transform duration-300"
         id="modal-content"
-        class="bg-emerald-950 border-2 border-emerald-600 rounded-2xl shadow-2xl p-6 max-w-sm w-full text-center transform scale-95 transition-transform duration-300">
+    >
 
         <p
             id="modal-message"
-            class="text-emerald-50 mb-6 text-sm font-semibold leading-relaxed">
-        </p>
+            class="text-emerald-50 mb-6 text-sm font-semibold leading-relaxed"
+        ></p>
 
         <div
+            class="flex justify-center gap-3"
             id="modal-buttons"
-            class="flex justify-center gap-3">
-        </div>
+        ></div>
 
     </div>
 
 </div>
 
-
 <script>
 
-/* ================================================================
-   ESTADO
-================================================================ */
-
-let gameState = {
-    activeMatches: [],
-    knownPlayers: []
-};
-
-let historyStack = [];
-let historicalStats = {};
-
-let pressTimer = null;
-
-
-/* ================================================================
-   VIBRACIÓN
-================================================================ */
-
-function vibrar() {
-    if (navigator.vibrate) {
-        navigator.vibrate(120);
-    }
-}
-
-function vibrarFuerte() {
-    if (navigator.vibrate) {
-        navigator.vibrate([180, 70, 180]);
-    }
-}
-
-
-/* ================================================================
-   ESCAPAR HTML
-   Evita problemas si un jugador tiene caracteres especiales.
-================================================================ */
-
-function escapeHtml(value) {
-
-    return String(value)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-
-}
-
-
-/* ================================================================
-   MODALES
-================================================================ */
-
-function showModal(
-    message,
-    type,
-    onConfirmCallback = null,
-    customConfirmText = "Confirmar",
-    customCancelText = "Cancelar"
-) {
-
-    const modal = document.getElementById('custom-modal');
-    const modalContent = document.getElementById('modal-content');
-    const msgEl = document.getElementById('modal-message');
-    const btnsEl = document.getElementById('modal-buttons');
-
-    msgEl.innerHTML = message;
-
-    btnsEl.innerHTML = '';
-    btnsEl.className = "flex justify-center gap-3";
-
-
-    if (type === 'alert') {
-
-        const btn = document.createElement('button');
-
-        btn.className =
-            "bg-amber-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50 w-full";
-
-        btn.textContent = "Entendido";
-
-        btn.onclick = closeModal;
-
-        btnsEl.appendChild(btn);
-
-    }
-
-
-    if (type === 'confirm') {
-
-        const cancelBtn = document.createElement('button');
-
-        cancelBtn.className =
-            "flex-1 bg-emerald-900 text-emerald-200 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-800 transition-colors border border-emerald-700";
-
-        cancelBtn.textContent = customCancelText;
-
-        cancelBtn.onclick = closeModal;
-
-
-        const confirmBtn = document.createElement('button');
-
-        confirmBtn.className =
-            "flex-1 bg-amber-600 text-white px-4 py-2.5 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50";
-
-        confirmBtn.textContent = customConfirmText;
-
-        confirmBtn.onclick = () => {
-
-            closeModal();
-
-            if (onConfirmCallback) {
-                onConfirmCallback();
-            }
-
-        };
-
-
-        btnsEl.appendChild(cancelBtn);
-        btnsEl.appendChild(confirmBtn);
-
-    }
-
-
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-
-    setTimeout(() => {
-
-        modal.classList.remove('opacity-0');
-        modal.classList.add('opacity-100');
-
-        modalContent.classList.remove('scale-95');
-        modalContent.classList.add('scale-100');
-
-    }, 10);
-
-}
-
-
-function closeModal() {
-
-    const modal = document.getElementById('custom-modal');
-    const modalContent = document.getElementById('modal-content');
-
-    modal.classList.remove('opacity-100');
-    modal.classList.add('opacity-0');
-
-    modalContent.classList.remove('scale-100');
-    modalContent.classList.add('scale-95');
-
-    setTimeout(() => {
-
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-
-    }, 300);
-
-}
-
-
-/* ================================================================
-   LOCAL STORAGE
-================================================================ */
-
-function saveToLocalStorage() {
-
-    localStorage.setItem(
-        'truco_pica_pica_state',
-        JSON.stringify(gameState)
-    );
-
-    localStorage.setItem(
-        'truco_pica_pica_history',
-        JSON.stringify(historyStack)
-    );
-
-    localStorage.setItem(
-        'truco_pica_pica_historical_stats',
-        JSON.stringify(historicalStats)
-    );
-
-}
-
-
-/* ================================================================
-   CARGAR DATOS
-================================================================ */
-
-function loadFromLocalStorage() {
-
-    try {
-
-        const savedState =
-            localStorage.getItem('truco_pica_pica_state');
-
-        if (savedState) {
-
-            const parsed = JSON.parse(savedState);
-
-            gameState = {
-                activeMatches: Array.isArray(parsed.activeMatches)
-                    ? parsed.activeMatches
-                    : [],
-
-                knownPlayers: Array.isArray(parsed.knownPlayers)
-                    ? parsed.knownPlayers
-                    : []
-            };
-
-        }
-
-
-        const savedHistory =
-            localStorage.getItem('truco_pica_pica_history');
-
-        if (savedHistory) {
-
-            const parsedHistory = JSON.parse(savedHistory);
-
-            historyStack =
-                Array.isArray(parsedHistory)
-                    ? parsedHistory
-                    : [];
-
-        }
-
-
-        const savedHistorical =
-            localStorage.getItem('truco_pica_pica_historical_stats');
-
-        if (savedHistorical) {
-
-            const parsedHistorical =
-                JSON.parse(savedHistorical);
-
-            historicalStats =
-                parsedHistorical &&
-                typeof parsedHistorical === 'object'
-                    ? parsedHistorical
-                    : {};
-
-        }
-
-
-    } catch (error) {
-
-        console.error("Error cargando datos:", error);
-
-        gameState = {
-            activeMatches: [],
-            knownPlayers: []
-        };
-
-        historyStack = [];
-        historicalStats = {};
-
-    }
-
-
-    normalizarDatos();
-
-    renderMatches();
-    renderStats();
-    renderHistoricalStats();
-    updateUndoButton();
-    updateDatalists();
-
-}
-
-
-/* ================================================================
-   NORMALIZACIÓN
-================================================================ */
-
-function normalizarDatos() {
-
-    if (!Array.isArray(gameState.activeMatches)) {
-        gameState.activeMatches = [];
-    }
-
-    if (!Array.isArray(gameState.knownPlayers)) {
-        gameState.knownPlayers = [];
-    }
-
-
-    gameState.activeMatches.forEach(match => {
-
-        if (!Array.isArray(match.picas)) {
-            match.picas = [];
-        }
-
-        if (!Array.isArray(match.chicos)) {
-            match.chicos = [];
-        }
-
-        if (typeof match.score1 !== 'number') {
-            match.score1 = 0;
-        }
-
-        if (typeof match.score2 !== 'number') {
-            match.score2 = 0;
-        }
-
-        if (typeof match.currentPica1 !== 'number') {
-            match.currentPica1 = 0;
-        }
-
-        if (typeof match.currentPica2 !== 'number') {
-            match.currentPica2 = 0;
-        }
-
-    });
-
-
-    Object.keys(historicalStats).forEach(player => {
-
-        if (!historicalStats[player]) {
-            historicalStats[player] = {};
-        }
-
-        if (typeof historicalStats[player].won !== 'number') {
-            historicalStats[player].won = 0;
-        }
-
-        if (typeof historicalStats[player].lost !== 'number') {
-            historicalStats[player].lost = 0;
-        }
-
-        if (typeof historicalStats[player].isBA !== 'boolean') {
-            historicalStats[player].isBA = false;
-        }
-
-    });
-
-}
-
-
-/* ================================================================
-   BACKUP
-================================================================ */
-
-function exportBackup() {
-
-    const backupData = {
-
-        version: "2.0",
-
-        timestamp: new Date().toISOString(),
-
-        state: gameState,
-
-        history: historyStack,
-
-        historicalStats: historicalStats
-
+    /* =========================================================
+       ESTADO
+    ========================================================== */
+
+    let gameState = {
+        activeMatches: [],
+        knownPlayers: []
     };
 
+    let historyStack = [];
 
-    const jsonStr =
-        JSON.stringify(backupData, null, 2);
+    let historicalStats = {};
 
-    const blob =
-        new Blob([jsonStr], {
-            type: "application/json"
-        });
-
-    const url =
-        URL.createObjectURL(blob);
-
-    const anchor =
-        document.createElement('a');
-
-    anchor.href = url;
-    anchor.download = "PICA_PICA.json";
-
-    document.body.appendChild(anchor);
-
-    anchor.click();
-
-    document.body.removeChild(anchor);
-
-    setTimeout(() => {
-        URL.revokeObjectURL(url);
-    }, 1000);
+    let editMode = false;
 
 
-    showModal(
-        "Backup guardado correctamente.<br><br><strong>PICA_PICA.json</strong>",
-        "alert"
-    );
+    /* =========================================================
+       VIBRACIÓN
+    ========================================================== */
 
-}
+    function vibrar() {
+        if (navigator.vibrate) {
+            navigator.vibrate(120);
+        }
+    }
 
-
-function importBackup(event) {
-
-    const file = event.target.files[0];
-
-    if (!file) {
-        return;
+    function vibrarFuerte() {
+        if (navigator.vibrate) {
+            navigator.vibrate([180, 70, 180]);
+        }
     }
 
 
-    const reader = new FileReader();
+    /* =========================================================
+       MODAL
+    ========================================================== */
+
+    function showModal(
+        message,
+        type,
+        onConfirmCallback = null,
+        customConfirmText = "Confirmar",
+        customCancelText = "Cancelar"
+    ) {
+
+        const modal = document.getElementById('custom-modal');
+        const modalContent = document.getElementById('modal-content');
+        const msgEl = document.getElementById('modal-message');
+        const btnsEl = document.getElementById('modal-buttons');
+
+        msgEl.innerHTML = message;
+
+        btnsEl.innerHTML = '';
+
+        btnsEl.className = "flex justify-center gap-3";
+
+        if (type === 'alert') {
+
+            const btn = document.createElement('button');
+
+            btn.className =
+                "bg-amber-600 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50 w-full";
+
+            btn.textContent = "Entendido";
+
+            btn.onclick = closeModal;
+
+            btnsEl.appendChild(btn);
+
+        } else if (type === 'confirm') {
+
+            const cancelBtn = document.createElement('button');
+
+            cancelBtn.className =
+                "flex-1 bg-emerald-900 text-emerald-200 px-4 py-2.5 rounded-xl font-bold hover:bg-emerald-800 transition-colors border border-emerald-700";
+
+            cancelBtn.textContent = customCancelText;
+
+            cancelBtn.onclick = closeModal;
 
 
-    reader.onload = function(e) {
+            const confirmBtn = document.createElement('button');
+
+            confirmBtn.className =
+                "flex-1 bg-amber-600 text-white px-4 py-2.5 rounded-xl font-bold hover:bg-amber-700 transition-colors shadow-lg shadow-amber-900/50";
+
+            confirmBtn.textContent = customConfirmText;
+
+            confirmBtn.onclick = () => {
+
+                closeModal();
+
+                if (onConfirmCallback) {
+                    onConfirmCallback();
+                }
+
+            };
+
+            btnsEl.appendChild(cancelBtn);
+            btnsEl.appendChild(confirmBtn);
+        }
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+
+        setTimeout(() => {
+
+            modal.classList.remove('opacity-0');
+            modal.classList.add('opacity-100');
+
+            modalContent.classList.remove('scale-95');
+            modalContent.classList.add('scale-100');
+
+        }, 10);
+    }
+
+
+    function closeModal() {
+
+        const modal = document.getElementById('custom-modal');
+
+        const modalContent =
+            document.getElementById('modal-content');
+
+        modal.classList.remove('opacity-100');
+        modal.classList.add('opacity-0');
+
+        modalContent.classList.remove('scale-100');
+        modalContent.classList.add('scale-95');
+
+        setTimeout(() => {
+
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+
+        }, 300);
+    }
+
+
+    /* =========================================================
+       LOCAL STORAGE
+    ========================================================== */
+
+    function saveToLocalStorage() {
+
+        localStorage.setItem(
+            'truco_pica_pica_state',
+            JSON.stringify(gameState)
+        );
+
+        localStorage.setItem(
+            'truco_pica_pica_history',
+            JSON.stringify(historyStack)
+        );
+
+        localStorage.setItem(
+            'truco_pica_pica_historical_stats',
+            JSON.stringify(historicalStats)
+        );
+    }
+
+
+    function loadFromLocalStorage() {
 
         try {
 
-            const importedData =
-                JSON.parse(e.target.result);
+            const savedState =
+                localStorage.getItem('truco_pica_pica_state');
 
+            if (savedState) {
 
-            if (
-                !importedData ||
-                !importedData.state ||
-                !Array.isArray(importedData.state.activeMatches)
-            ) {
+                gameState = JSON.parse(savedState);
 
-                showModal(
-                    "El archivo seleccionado no parece ser un backup válido de Truco Tracker.",
-                    "alert"
-                );
+                if (!gameState.knownPlayers) {
+                    gameState.knownPlayers = [];
+                }
 
-                return;
+                if (!gameState.activeMatches) {
+                    gameState.activeMatches = [];
+                }
             }
 
+            const savedHistory =
+                localStorage.getItem('truco_pica_pica_history');
 
-            showModal(
-                "¿Estás seguro de cargar este backup?<br><br>Se sobrescribirán los datos actuales y el histórico.",
-                "confirm",
+            if (savedHistory) {
+                historyStack = JSON.parse(savedHistory);
+            }
 
-                () => {
+            const savedHistorical =
+                localStorage.getItem(
+                    'truco_pica_pica_historical_stats'
+                );
 
-                    gameState = importedData.state;
-
-                    historyStack =
-                        Array.isArray(importedData.history)
-                            ? importedData.history
-                            : [];
-
-                    historicalStats =
-                        importedData.historicalStats &&
-                        typeof importedData.historicalStats === 'object'
-                            ? importedData.historicalStats
-                            : {};
-
-
-                    normalizarDatos();
-
-                    saveToLocalStorage();
-
-                    renderMatches();
-                    renderStats();
-                    renderHistoricalStats();
-                    updateUndoButton();
-                    updateDatalists();
-
-
-                    showModal(
-                        "Backup cargado correctamente.",
-                        "alert"
-                    );
-
-                },
-
-                "Sí, Cargar",
-                "Cancelar"
-            );
-
+            if (savedHistorical) {
+                historicalStats = JSON.parse(savedHistorical);
+            }
 
         } catch (error) {
 
             console.error(error);
 
-            showModal(
-                "Error al leer el archivo.<br><br>Asegúrate de que sea un JSON válido.",
-                "alert"
+            gameState = {
+                activeMatches: [],
+                knownPlayers: []
+            };
+
+            historyStack = [];
+            historicalStats = {};
+        }
+
+        renderMatches();
+        renderStats();
+        renderHistoricalStats();
+        updateUndoButton();
+    }
+
+
+    /* =========================================================
+       BACKUP
+    ========================================================== */
+
+    function exportBackup() {
+
+        const backupData = {
+            version: "2.0",
+            timestamp: new Date().toISOString(),
+            state: gameState,
+            history: historyStack,
+            historicalStats: historicalStats
+        };
+
+        const jsonStr = JSON.stringify(
+            backupData,
+            null,
+            2
+        );
+
+        const blob =
+            new Blob(
+                [jsonStr],
+                { type: "application/json" }
             );
 
+        const url =
+            URL.createObjectURL(blob);
+
+        const anchor =
+            document.createElement('a');
+
+        anchor.href = url;
+        anchor.download = "PICA_PICA.json";
+
+        document.body.appendChild(anchor);
+
+        anchor.click();
+
+        document.body.removeChild(anchor);
+
+        URL.revokeObjectURL(url);
+
+        showModal(
+            "Backup guardado correctamente.<br><br><b>PICA_PICA.json</b>",
+            "alert"
+        );
+    }
+
+
+    function importBackup(event) {
+
+        const file =
+            event.target.files[0];
+
+        if (!file) return;
+
+        const reader =
+            new FileReader();
+
+        reader.onload = function(e) {
+
+            try {
+
+                const importedData =
+                    JSON.parse(e.target.result);
+
+                if (
+                    importedData.state &&
+                    importedData.state.activeMatches
+                ) {
+
+                    showModal(
+                        "¿Estás seguro de cargar este backup?<br><br>Se sobrescribirán los datos actuales.",
+                        "confirm",
+                        () => {
+
+                            gameState =
+                                importedData.state;
+
+                            historyStack =
+                                importedData.history || [];
+
+                            historicalStats =
+                                importedData.historicalStats || {};
+
+                            saveToLocalStorage();
+
+                            renderMatches();
+                            renderStats();
+                            renderHistoricalStats();
+                            updateUndoButton();
+
+                            showModal(
+                                "Backup cargado correctamente.",
+                                "alert"
+                            );
+
+                        },
+                        "Sí, Cargar",
+                        "Cancelar"
+                    );
+
+                } else {
+
+                    showModal(
+                        "El archivo no parece ser un backup válido.",
+                        "alert"
+                    );
+                }
+
+            } catch (error) {
+
+                showModal(
+                    "Error al leer el archivo JSON.",
+                    "alert"
+                );
+            }
+        };
+
+        reader.readAsText(file);
+
+        event.target.value = "";
+    }
+
+
+    /* =========================================================
+       DATALISTS
+    ========================================================== */
+
+    function updateDatalists() {
+
+        const p1Val =
+            document.getElementById('p1').value.trim();
+
+        const p2Val =
+            document.getElementById('p2').value.trim();
+
+        const activePlayers =
+            gameState.activeMatches.flatMap(
+                m => [m.p1, m.p2]
+            );
+
+        const available =
+            gameState.knownPlayers.filter(
+                p => !activePlayers.includes(p)
+            );
+
+        document.getElementById('players-1').innerHTML =
+            available
+                .filter(p => p !== p2Val)
+                .map(p => `<option value="${escapeHtml(p)}">`)
+                .join('');
+
+        document.getElementById('players-2').innerHTML =
+            available
+                .filter(p => p !== p1Val)
+                .map(p => `<option value="${escapeHtml(p)}">`)
+                .join('');
+    }
+
+
+    /* =========================================================
+       ESCAPE HTML
+    ========================================================== */
+
+    function escapeHtml(value) {
+
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+
+    /* =========================================================
+       UNDO
+    ========================================================== */
+
+    function updateUndoButton() {
+
+        const btn =
+            document.getElementById('undo-btn');
+
+        if (historyStack.length > 0) {
+
+            btn.classList.remove(
+                'opacity-0',
+                'pointer-events-none',
+                'translate-y-4'
+            );
+
+            btn.classList.add(
+                'opacity-100',
+                'pointer-events-auto',
+                'translate-y-0'
+            );
+
+        } else {
+
+            btn.classList.add(
+                'opacity-0',
+                'pointer-events-none',
+                'translate-y-4'
+            );
+
+            btn.classList.remove(
+                'opacity-100',
+                'pointer-events-auto',
+                'translate-y-0'
+            );
+        }
+    }
+
+
+    function executeWithUndo(actionFn) {
+
+        const previousState =
+            JSON.stringify(gameState);
+
+        actionFn();
+
+        const newState =
+            JSON.stringify(gameState);
+
+        if (previousState !== newState) {
+
+            historyStack.push(previousState);
+
+            if (historyStack.length > 30) {
+                historyStack.shift();
+            }
+
+            updateUndoButton();
         }
 
-    };
+        saveToLocalStorage();
 
+        renderMatches();
 
-    reader.readAsText(file);
-
-    event.target.value = "";
-
-}
-
-
-/* ================================================================
-   DATALISTS
-================================================================ */
-
-function updateDatalists() {
-
-    const p1Input = document.getElementById('p1');
-    const p2Input = document.getElementById('p2');
-
-    if (!p1Input || !p2Input) {
-        return;
+        if (
+            !document
+                .getElementById('section-stats')
+                .classList
+                .contains('hidden')
+        ) {
+            renderStats();
+            renderHistoricalStats();
+        }
     }
 
 
-    const p1Val =
-        p1Input.value.trim();
+    function undo() {
 
-    const p2Val =
-        p2Input.value.trim();
-
-
-    const activePlayers =
-        gameState.activeMatches.flatMap(match => [
-            match.p1,
-            match.p2
-        ]);
-
-
-    const available =
-        gameState.knownPlayers.filter(
-            player => !activePlayers.includes(player)
-        );
-
-
-    const dl1 =
-        document.getElementById('players-1');
-
-    const dl2 =
-        document.getElementById('players-2');
-
-
-    dl1.innerHTML =
-        available
-            .filter(player => player !== p2Val)
-            .map(player =>
-                `<option value="${escapeHtml(player)}">`
-            )
-            .join('');
-
-
-    dl2.innerHTML =
-        available
-            .filter(player => player !== p1Val)
-            .map(player =>
-                `<option value="${escapeHtml(player)}">`
-            )
-            .join('');
-
-}
-
-
-/* ================================================================
-   DESHACER
-================================================================ */
-
-function updateUndoButton() {
-
-    const btn =
-        document.getElementById('undo-btn');
-
-
-    if (historyStack.length > 0) {
-
-        btn.classList.remove(
-            'opacity-0',
-            'pointer-events-none',
-            'translate-y-4'
-        );
-
-        btn.classList.add(
-            'opacity-100',
-            'pointer-events-auto',
-            'translate-y-0'
-        );
-
-    } else {
-
-        btn.classList.add(
-            'opacity-0',
-            'pointer-events-none',
-            'translate-y-4'
-        );
-
-        btn.classList.remove(
-            'opacity-100',
-            'pointer-events-auto',
-            'translate-y-0'
-        );
-
-    }
-
-}
-
-
-function executeWithUndo(actionFn) {
-
-    const previousState =
-        JSON.stringify(gameState);
-
-
-    actionFn();
-
-
-    const newState =
-        JSON.stringify(gameState);
-
-
-    if (previousState !== newState) {
-
-        historyStack.push(previousState);
-
-        if (historyStack.length > 30) {
-            historyStack.shift();
+        if (historyStack.length === 0) {
+            return;
         }
 
-    }
-
-
-    saveToLocalStorage();
-
-    renderMatches();
-
-    renderStats();
-
-    renderHistoricalStats();
-
-    updateUndoButton();
-
-}
-
-
-function undo() {
-
-    if (historyStack.length === 0) {
-        return;
-    }
-
-
-    const previousState =
-        historyStack.pop();
-
-
-    try {
+        const previousState =
+            historyStack.pop();
 
         gameState =
             JSON.parse(previousState);
 
-        normalizarDatos();
+        saveToLocalStorage();
 
-    } catch (error) {
-
-        console.error(
-            "Error al restaurar estado:",
-            error
-        );
-
-        return;
-
-    }
-
-
-    saveToLocalStorage();
-
-    renderMatches();
-
-    renderStats();
-
-    renderHistoricalStats();
-
-    updateUndoButton();
-
-    updateDatalists();
-
-}
-
-
-/* ================================================================
-   TABS
-================================================================ */
-
-function switchTab(tab) {
-
-    const play =
-        document.getElementById('section-play');
-
-    const stats =
-        document.getElementById('section-stats');
-
-    const tabPlay =
-        document.getElementById('tab-play');
-
-    const tabStats =
-        document.getElementById('tab-stats');
-
-
-    play.classList.toggle(
-        'hidden',
-        tab !== 'play'
-    );
-
-    stats.classList.toggle(
-        'hidden',
-        tab !== 'stats'
-    );
-
-
-    tabPlay.className =
-        tab === 'play'
-            ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all'
-            : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all';
-
-
-    tabStats.className =
-        tab === 'stats'
-            ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all'
-            : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all';
-
-
-    if (tab === 'stats') {
-
+        renderMatches();
         renderStats();
         renderHistoricalStats();
 
-    }
-
-}
-
-
-/* ================================================================
-   NUEVA PARTIDA
-================================================================ */
-
-function startMatch() {
-
-    const p1 =
-        document.getElementById('p1').value.trim();
-
-    const p2 =
-        document.getElementById('p2').value.trim();
-
-
-    if (!p1 || !p2) {
-
-        showModal(
-            "Debes ingresar nombres para ambos jugadores.",
-            "alert"
-        );
-
-        return;
+        updateUndoButton();
     }
 
 
-    if (p1.toLowerCase() === p2.toLowerCase()) {
+    /* =========================================================
+       TABS
+    ========================================================== */
 
-        showModal(
-            "Los jugadores deben ser distintos.",
-            "alert"
-        );
+    function switchTab(tab) {
 
-        return;
+        document
+            .getElementById('section-play')
+            .classList
+            .toggle('hidden', tab !== 'play');
+
+        document
+            .getElementById('section-stats')
+            .classList
+            .toggle('hidden', tab !== 'stats');
+
+        document
+            .getElementById('tab-play')
+            .className =
+            tab === 'play'
+                ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all'
+                : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all';
+
+        document
+            .getElementById('tab-stats')
+            .className =
+            tab === 'stats'
+                ? 'flex-1 py-2 font-semibold rounded-lg bg-emerald-700 text-white shadow-lg transition-all'
+                : 'flex-1 py-2 font-semibold rounded-lg text-emerald-200 hover:bg-emerald-800 transition-all';
+
+        if (tab === 'stats') {
+
+            renderStats();
+            renderHistoricalStats();
+        }
     }
 
 
-    const p1Existe =
-        gameState.knownPlayers.includes(p1);
-
-    const p2Existe =
-        gameState.knownPlayers.includes(p2);
-
-
-    if (!p1Existe || !p2Existe) {
-
-        const nuevos = [];
-
-        if (!p1Existe) {
-            nuevos.push(p1);
-        }
-
-        if (!p2Existe) {
-            nuevos.push(p2);
-        }
-
-
-        showModal(
-            `¿Confirmar nuevos jugadores?<br><br>
-             Se añadirán al sistema:<br>
-             <strong>${nuevos.map(escapeHtml).join(" y ")}</strong>`,
-            "confirm",
-
-            () => {
-                procesarInicioMatch(p1, p2);
-            },
-
-            "Sí, Iniciar",
-            "Cancelar"
-        );
-
-    } else {
-
-        procesarInicioMatch(p1, p2);
-
-    }
-
-}
-
-
-function procesarInicioMatch(p1, p2) {
-
-    const activePlayers =
-        gameState.activeMatches.flatMap(match => [
-            match.p1,
-            match.p2
-        ]);
-
-
-    if (
-        activePlayers.includes(p1) ||
-        activePlayers.includes(p2)
-    ) {
-
-        showModal(
-            "Uno o ambos jugadores ya están jugando en una partida activa.",
-            "alert"
-        );
-
-        return;
-    }
-
-
-    executeWithUndo(() => {
-
-        if (!gameState.knownPlayers.includes(p1)) {
-            gameState.knownPlayers.push(p1);
-        }
-
-        if (!gameState.knownPlayers.includes(p2)) {
-            gameState.knownPlayers.push(p2);
-        }
-
-
-        gameState.activeMatches.push({
-
-            id: Date.now() + Math.random(),
-
-            p1,
-            p2,
-
-            score1: 0,
-            score2: 0,
-
-            currentPica1: 0,
-            currentPica2: 0,
-
-            picas: [],
-
-            chicos: []
-
-        });
-
-    });
-
-
-    document.getElementById('p1').value = '';
-    document.getElementById('p2').value = '';
-
-    updateDatalists();
-
-}
-
-
-/* ================================================================
-   PUNTOS
-================================================================ */
-
-function updateScore(matchId, playerIdx, delta) {
-
-    executeWithUndo(() => {
-
-        const match =
-            gameState.activeMatches.find(
-                m => String(m.id) === String(matchId)
-            );
-
-
-        if (!match) {
-            return;
-        }
-
-
-        if (playerIdx === 1) {
-
-            match.score1 =
-                Math.max(
-                    0,
-                    match.score1 + delta
-                );
-
-            match.currentPica1 =
-                Math.max(
-                    0,
-                    match.currentPica1 + delta
-                );
-
-        } else {
-
-            match.score2 =
-                Math.max(
-                    0,
-                    match.score2 + delta
-                );
-
-            match.currentPica2 =
-                Math.max(
-                    0,
-                    match.currentPica2 + delta
-                );
-
-        }
-
-    });
-
-}
-
-
-/* ================================================================
-   REGISTRAR PICA
-================================================================ */
-
-function registrarPica(matchId) {
-
-    vibrarFuerte();
-
-
-    executeWithUndo(() => {
-
-        const match =
-            gameState.activeMatches.find(
-                m => String(m.id) === String(matchId)
-            );
-
-
-        if (!match) {
-            return;
-        }
-
-
-        if (
-            match.currentPica1 === 0 &&
-            match.currentPica2 === 0
-        ) {
+    /* =========================================================
+       NUEVA PARTIDA
+    ========================================================== */
+
+    function startMatch() {
+
+        const p1 =
+            document.getElementById('p1')
+                .value
+                .trim();
+
+        const p2 =
+            document.getElementById('p2')
+                .value
+                .trim();
+
+        if (!p1 || !p2) {
 
             showModal(
-                "No hay puntos para registrar en la pica actual.",
+                "Debes ingresar nombres para ambos jugadores.",
                 "alert"
             );
 
             return;
-
         }
 
+        if (p1 === p2) {
 
-        match.picas.push({
+            showModal(
+                "Los jugadores deben ser distintos.",
+                "alert"
+            );
 
-            s1: match.currentPica1,
+            return;
+        }
 
-            s2: match.currentPica2
+        const p1Existe =
+            gameState.knownPlayers.includes(p1);
 
-        });
+        const p2Existe =
+            gameState.knownPlayers.includes(p2);
 
+        if (!p1Existe || !p2Existe) {
 
-        match.currentPica1 = 0;
+            const nuevos = [];
 
-        match.currentPica2 = 0;
+            if (!p1Existe) nuevos.push(p1);
+            if (!p2Existe) nuevos.push(p2);
 
-    });
+            showModal(
+                `¿Confirmar nuevos jugadores?<br><br>${nuevos.join(' y ')}`,
+                "confirm",
+                () => procesarInicioMatch(p1, p2),
+                "Sí, Iniciar",
+                "Cancelar"
+            );
 
-}
+        } else {
 
-
-/* ================================================================
-   CERRAR CHICOS
-================================================================ */
-
-function cerrarTodosLosChicos() {
-
-    vibrarFuerte();
-
-
-    const hayAlgoParaCerrar =
-        gameState.activeMatches.some(match =>
-            Array.isArray(match.picas) &&
-            match.picas.length > 0
-        );
-
-
-    if (!hayAlgoParaCerrar) {
-
-        showModal(
-            "No hay picas pendientes para cerrar.",
-            "alert"
-        );
-
-        return;
-
+            procesarInicioMatch(p1, p2);
+        }
     }
 
 
-    executeWithUndo(() => {
+    function procesarInicioMatch(p1, p2) {
 
-        gameState.activeMatches.forEach(match => {
+        const activePlayers =
+            gameState.activeMatches.flatMap(
+                m => [m.p1, m.p2]
+            );
 
-            if (!Array.isArray(match.chicos)) {
-                match.chicos = [];
+        if (
+            activePlayers.includes(p1) ||
+            activePlayers.includes(p2)
+        ) {
+
+            showModal(
+                "Uno o ambos jugadores ya están jugando en una partida activa.",
+                "alert"
+            );
+
+            return;
+        }
+
+        executeWithUndo(() => {
+
+            if (!gameState.knownPlayers.includes(p1)) {
+                gameState.knownPlayers.push(p1);
             }
 
-            if (
-                Array.isArray(match.picas) &&
-                match.picas.length > 0
-            ) {
-
-                match.chicos.push(
-                    [...match.picas]
-                );
-
-                match.picas = [];
-
+            if (!gameState.knownPlayers.includes(p2)) {
+                gameState.knownPlayers.push(p2);
             }
 
+            gameState.activeMatches.push({
+
+                id: Date.now(),
+
+                p1,
+                p2,
+
+                score1: 0,
+                score2: 0,
+
+                currentPica1: 0,
+                currentPica2: 0,
+
+                picas: [],
+                chicos: []
+            });
         });
 
-    });
-
-}
-
-
-/* ================================================================
-   BORRAR PARTIDA
-================================================================ */
-
-function deleteMatch(matchId) {
-
-    showModal(
-        "¿Seguro que quieres borrar esta partida de la noche actual?",
-        "confirm",
-
-        () => {
-
-            executeWithUndo(() => {
-
-                gameState.activeMatches =
-                    gameState.activeMatches.filter(
-                        m => String(m.id) !== String(matchId)
-                    );
-
-            });
-
-        },
-
-        "Borrar",
-        "Cancelar"
-    );
-
-}
-
-
-/* ================================================================
-   NUEVA NOCHE
-================================================================ */
-
-function resetEverything() {
-
-    if (gameState.activeMatches.length === 0) {
-
-        showModal(
-            "No hay partidas activas.",
-            "alert"
-        );
-
-        return;
-
-    }
-
-
-    showModal(
-        "¿Seguro que quieres borrar los resultados actuales para empezar una nueva noche?<br><br>Los nombres y el histórico se conservarán.",
-        "confirm",
-
-        () => {
-
-            executeWithUndo(() => {
-
-                gameState.activeMatches = [];
-
-            });
-
-        },
-
-        "Sí, Nueva Noche",
-        "Cancelar"
-    );
-
-}
-
-
-/* ================================================================
-   RENDER PARTIDAS
-================================================================ */
-
-function renderMatches() {
-
-    const container =
-        document.getElementById(
-            'active-matches-container'
-        );
-
-
-    if (gameState.activeMatches.length === 0) {
-
-        container.innerHTML = `
-            <div class="text-center text-emerald-400/70 text-sm py-8">
-                No hay partidas activas
-            </div>
-        `;
+        document.getElementById('p1').value = '';
+        document.getElementById('p2').value = '';
 
         updateDatalists();
-
-        return;
     }
 
 
-    container.innerHTML =
-        gameState.activeMatches.map(match => {
+    /* =========================================================
+       PUNTUACIÓN
+    ========================================================== */
 
-            const m = match;
+    function updateScore(matchId, playerIdx, delta) {
 
-            let allGroups = [];
+        executeWithUndo(() => {
 
-            let picaGlobalCount = 0;
+            const match =
+                gameState.activeMatches
+                    .find(m => m.id === matchId);
+
+            if (!match) return;
+
+            if (playerIdx === 1) {
+
+                match.score1 =
+                    Math.max(
+                        0,
+                        match.score1 + delta
+                    );
+
+                match.currentPica1 =
+                    Math.max(
+                        0,
+                        match.currentPica1 + delta
+                    );
+
+            } else {
+
+                match.score2 =
+                    Math.max(
+                        0,
+                        match.score2 + delta
+                    );
+
+                match.currentPica2 =
+                    Math.max(
+                        0,
+                        match.currentPica2 + delta
+                    );
+            }
+        });
+    }
 
 
-            /* CHICOS CERRADOS */
+    /* =========================================================
+       REGISTRAR PICA
+    ========================================================== */
 
-            if (
-                Array.isArray(m.chicos) &&
-                m.chicos.length > 0
-            ) {
+    function registrarPica(matchId) {
 
-                m.chicos.forEach(chico => {
+        vibrarFuerte();
 
-                    const picasHtml =
-                        chico.map(pica => {
+        executeWithUndo(() => {
 
-                            picaGlobalCount++;
+            const match =
+                gameState.activeMatches
+                    .find(m => m.id === matchId);
 
-                            return `
+            if (!match) return;
+
+            match.picas.push({
+                s1: match.currentPica1,
+                s2: match.currentPica2
+            });
+
+            match.currentPica1 = 0;
+            match.currentPica2 = 0;
+        });
+    }
+
+
+    /* =========================================================
+       CERRAR CHICOS
+    ========================================================== */
+
+    function cerrarTodosLosChicos() {
+
+        vibrarFuerte();
+
+        executeWithUndo(() => {
+
+            gameState.activeMatches.forEach(match => {
+
+                if (!match.chicos) {
+                    match.chicos = [];
+                }
+
+                if (
+                    match.picas &&
+                    match.picas.length > 0
+                ) {
+
+                    match.chicos.push(
+                        [...match.picas]
+                    );
+
+                    match.picas = [];
+                }
+            });
+        });
+    }
+
+
+    /* =========================================================
+       BORRAR PARTIDA
+    ========================================================== */
+
+    function deleteMatch(matchId) {
+
+        showModal(
+            "¿Seguro que quieres borrar esta partida de la noche actual?",
+            "confirm",
+            () => {
+
+                executeWithUndo(() => {
+
+                    gameState.activeMatches =
+                        gameState.activeMatches.filter(
+                            m => m.id !== matchId
+                        );
+                });
+
+            },
+            "Borrar",
+            "Cancelar"
+        );
+    }
+
+
+    /* =========================================================
+       NUEVA NOCHE
+    ========================================================== */
+
+    function resetEverything() {
+
+        showModal(
+            "¿Seguro que quieres borrar los resultados actuales para empezar una nueva noche?<br><br>Los nombres y el histórico se conservarán.",
+            "confirm",
+            () => {
+
+                executeWithUndo(() => {
+
+                    gameState.activeMatches = [];
+                });
+
+            },
+            "Sí, Nueva Noche",
+            "Cancelar"
+        );
+    }
+
+
+    /* =========================================================
+       RENDER PARTIDAS
+    ========================================================== */
+
+    function renderMatches() {
+
+        const container =
+            document.getElementById(
+                'active-matches-container'
+            );
+
+        container.innerHTML =
+            gameState.activeMatches.map(m => {
+
+                let allGroups = [];
+
+                let picaGlobalCount = 0;
+
+
+                if (
+                    m.chicos &&
+                    m.chicos.length > 0
+                ) {
+
+                    m.chicos.forEach(chico => {
+
+                        const picasHtml =
+                            chico.map(pica => {
+
+                                picaGlobalCount++;
+
+                                return `
                                 <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-300/80 font-mono text-center flex flex-col justify-center border-emerald-800 bg-emerald-950/50">
 
                                     <div class="text-amber-500/70 font-bold pb-0.5">
@@ -1595,33 +1298,26 @@ function renderMatches() {
                                     </div>
 
                                 </div>
-                            `;
+                                `;
 
-                        }).join('');
+                            }).join('');
 
-
-                    if (picasHtml) {
                         allGroups.push(picasHtml);
-                    }
-
-                });
-
-            }
+                    });
+                }
 
 
-            /* PICAS ACTUALES */
+                if (
+                    m.picas &&
+                    m.picas.length > 0
+                ) {
 
-            if (
-                Array.isArray(m.picas) &&
-                m.picas.length > 0
-            ) {
+                    const currentPicasHtml =
+                        m.picas.map(pica => {
 
-                const currentPicasHtml =
-                    m.picas.map(pica => {
+                            picaGlobalCount++;
 
-                        picaGlobalCount++;
-
-                        return `
+                            return `
                             <div class="pica-badge px-2 py-1 rounded text-[10px] text-emerald-200 font-mono text-center flex flex-col justify-center shadow-md">
 
                                 <div class="text-amber-500 font-bold pb-0.5">
@@ -1633,32 +1329,27 @@ function renderMatches() {
                                 </div>
 
                             </div>
-                        `;
+                            `;
 
-                    }).join('');
+                        }).join('');
 
-
-                allGroups.push(currentPicasHtml);
-
-            }
+                    allGroups.push(currentPicasHtml);
+                }
 
 
-            const groupedPicasHtml =
-                allGroups.join(`
-                    <div class="flex items-center justify-center px-1.5">
-                        <div class="w-[3.5px] h-8 bg-[#451a03] rounded-full shadow-sm"></div>
-                    </div>
-                `);
+                const groupedPicasHtml =
+                    allGroups.join(`
+                        <div class="flex items-center justify-center px-1.5">
+                            <div class="w-[3.5px] h-8 bg-[#451a03] rounded-full shadow-sm"></div>
+                        </div>
+                    `);
 
 
-            return `
-
+                return `
                 <div
                     class="truco-table p-4 rounded-xl shadow-lg text-white"
-                    id="match-${m.id}">
-
-
-                    <!-- CABECERA PARTIDA -->
+                    id="match-${m.id}"
+                >
 
                     <div class="flex justify-between items-start mb-4">
 
@@ -1674,11 +1365,9 @@ function renderMatches() {
 
                         </div>
 
-
                         <div class="text-emerald-500 font-bold text-sm mt-3">
                             VS
                         </div>
-
 
                         <div class="w-[45%] text-center">
 
@@ -1695,28 +1384,22 @@ function renderMatches() {
                     </div>
 
 
-                    <!-- BOTONES -->
-
                     <div class="grid grid-cols-2 gap-3 mb-4">
-
 
                         <div class="flex bg-emerald-900 rounded-lg p-1">
 
                             <button
-                                onclick="updateScore('${m.id}', 1, -1); vibrar();"
-                                class="flex-1 text-2xl py-1 hover:bg-emerald-800 rounded-md transition-colors">
-
+                                onclick="updateScore(${m.id},1,-1); vibrar();"
+                                class="flex-1 text-2xl py-1 hover:bg-emerald-800 rounded-md"
+                            >
                                 -
-
                             </button>
 
-
                             <button
-                                onclick="updateScore('${m.id}', 1, 1); vibrar();"
-                                class="flex-1 bg-amber-600 rounded-md text-2xl py-1 hover:bg-amber-500 transition-colors shadow-inner">
-
+                                onclick="updateScore(${m.id},1,1); vibrar();"
+                                class="flex-1 bg-amber-600 rounded-md text-2xl py-1 hover:bg-amber-500"
+                            >
                                 +
-
                             </button>
 
                         </div>
@@ -1725,20 +1408,17 @@ function renderMatches() {
                         <div class="flex bg-emerald-900 rounded-lg p-1">
 
                             <button
-                                onclick="updateScore('${m.id}', 2, -1); vibrar();"
-                                class="flex-1 text-2xl py-1 hover:bg-emerald-800 rounded-md transition-colors">
-
+                                onclick="updateScore(${m.id},2,-1); vibrar();"
+                                class="flex-1 text-2xl py-1 hover:bg-emerald-800 rounded-md"
+                            >
                                 -
-
                             </button>
 
-
                             <button
-                                onclick="updateScore('${m.id}', 2, 1); vibrar();"
-                                class="flex-1 bg-amber-600 rounded-md text-2xl py-1 hover:bg-amber-500 transition-colors shadow-inner">
-
+                                onclick="updateScore(${m.id},2,1); vibrar();"
+                                class="flex-1 bg-amber-600 rounded-md text-2xl py-1 hover:bg-amber-500"
+                            >
                                 +
-
                             </button>
 
                         </div>
@@ -1746,296 +1426,678 @@ function renderMatches() {
                     </div>
 
 
-                    <!-- REGISTRAR PICA -->
-
                     <button
-                        onclick="registrarPica('${m.id}');"
-                        class="w-full mb-4 bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 py-2.5 rounded-lg text-sm font-bold transition-colors shadow-sm">
-
+                        onclick="registrarPica(${m.id});"
+                        class="w-full mb-4 bg-blue-900/60 hover:bg-blue-800 text-blue-300 border border-blue-700/50 py-2.5 rounded-lg text-sm font-bold"
+                    >
                         Registrar Pica Actual
-
                     </button>
 
 
-                    <!-- PICAS -->
-
                     ${
                         allGroups.length > 0
+                        ?
+                        `
+                        <div class="flex flex-wrap gap-1.5 mb-4 mt-3 justify-center items-center border-t border-emerald-800 pt-4">
 
-                        ? `
-
-                            <div class="flex flex-wrap gap-1.5 mb-4 mt-3 justify-center items-center border-t border-emerald-800 pt-4">
-
-                                <div class="w-full text-xs font-bold text-emerald-400 mb-2 uppercase tracking-widest text-center opacity-80">
-                                    Picas
-                                </div>
-
-                                ${groupedPicasHtml}
-
+                            <div class="w-full text-xs font-bold text-emerald-400 mb-2 uppercase tracking-widest text-center opacity-80">
+                                Picas
                             </div>
 
-                          `
+                            ${groupedPicasHtml}
 
-                        : ''
+                        </div>
+                        `
+                        :
+                        ''
                     }
 
-
-                    <!-- TOTAL -->
 
                     <div class="flex justify-between items-center mt-3 border-t border-emerald-800/50 pt-4">
 
                         <div class="text-sm font-bold text-amber-200">
 
                             Total:
-
                             <span class="text-amber-400">
                                 ${m.score1} - ${m.score2}
                             </span>
 
                         </div>
 
-
                         <button
-                            onclick="deleteMatch('${m.id}'); vibrar();"
-                            class="bg-red-950/80 hover:bg-red-900/80 text-red-400 text-[10px] uppercase font-bold px-3 py-1.5 rounded border border-red-900/50 transition-all">
-
+                            onclick="deleteMatch(${m.id}); vibrar();"
+                            class="bg-red-950/80 hover:bg-red-900/80 text-red-400 text-[10px] uppercase font-bold px-3 py-1.5 rounded border border-red-900/50"
+                        >
                             Borrar
-
                         </button>
 
                     </div>
 
                 </div>
-
-            `;
-
-        }).join('');
-
-
-    updateDatalists();
-
-}
-
-
-/* ================================================================
-   TOTALES
-================================================================ */
-
-function getTotals() {
-
-    const totals = {};
-
-
-    gameState.activeMatches.forEach(m => {
-
-        if (!totals[m.p1]) {
-            totals[m.p1] = {
-                won: 0,
-                lost: 0
-            };
-        }
-
-
-        if (!totals[m.p2]) {
-            totals[m.p2] = {
-                won: 0,
-                lost: 0
-            };
-        }
-
-
-        totals[m.p1].won += m.score1;
-        totals[m.p1].lost += m.score2;
-
-
-        totals[m.p2].won += m.score2;
-        totals[m.p2].lost += m.score1;
-
-    });
-
-
-    return totals;
-
-}
-
-
-/* ================================================================
-   RANKING
-================================================================ */
-
-function renderStats() {
-
-    const totals =
-        getTotals();
-
-
-    const listCombined =
-        document.getElementById(
-            'stats-list-combined'
-        );
-
-
-    const sortedPlayers =
-        Object.keys(totals).sort((a, b) => {
-
-            const diffA =
-                totals[a].won -
-                totals[a].lost;
-
-            const diffB =
-                totals[b].won -
-                totals[b].lost;
-
-
-            return (
-
-                diffB - diffA
-
-                ||
-
-                totals[b].won -
-                totals[a].won
-
-                ||
-
-                a.localeCompare(b)
-
-            );
-
-        });
-
-
-    if (sortedPlayers.length === 0) {
-
-        listCombined.innerHTML = `
-            <div class="text-center text-emerald-500/70 text-xs py-4">
-                No hay datos esta noche
-            </div>
-        `;
-
-    } else {
-
-        listCombined.innerHTML =
-            sortedPlayers.map((name, index) => {
-
-                const won =
-                    totals[name].won;
-
-                const lost =
-                    totals[name].lost;
-
-                const diff =
-                    won - lost;
-
-
-                const diffColor =
-                    diff > 0
-                        ? 'text-emerald-400'
-                        : diff < 0
-                            ? 'text-red-400'
-                            : 'text-gray-400';
-
-
-                const diffSign =
-                    diff > 0
-                        ? '+'
-                        : '';
-
-
-                return `
-
-                    <div class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-2 py-1 mb-1">
-
-                        <div class="flex items-center flex-1 min-w-0">
-
-                            <span class="text-amber-500 font-bold text-xs w-5 shrink-0 py-1">
-                                ${index + 1}.
-                            </span>
-
-                            <span class="text-white font-bold text-xs break-words pr-1 py-1">
-                                ${escapeHtml(name)}
-                            </span>
-
-                        </div>
-
-
-                        <div class="flex w-24 justify-between items-center text-center shrink-0">
-
-                            <span class="text-amber-500 font-bold text-xs w-6 py-1">
-                                ${won}
-                            </span>
-
-                            <span class="text-red-400 font-bold text-xs w-6 py-1">
-                                ${lost}
-                            </span>
-
-                            <span class="${diffColor} font-bold text-xs w-8 py-1">
-                                ${diffSign}${diff}
-                            </span>
-
-                        </div>
-
-                    </div>
-
                 `;
 
             }).join('');
 
+        updateDatalists();
     }
 
 
-    renderMatchHistory();
+    /* =========================================================
+       TOTALES
+    ========================================================== */
 
-}
+    function getTotals() {
+
+        const totals = {};
+
+        gameState.activeMatches.forEach(m => {
+
+            if (!totals[m.p1]) {
+                totals[m.p1] = {
+                    won: 0,
+                    lost: 0
+                };
+            }
+
+            if (!totals[m.p2]) {
+                totals[m.p2] = {
+                    won: 0,
+                    lost: 0
+                };
+            }
+
+            totals[m.p1].won += m.score1;
+            totals[m.p1].lost += m.score2;
+
+            totals[m.p2].won += m.score2;
+            totals[m.p2].lost += m.score1;
+        });
+
+        return totals;
+    }
 
 
-/* ================================================================
-   HISTORIAL DE PARTIDAS
-================================================================ */
+    /* =========================================================
+       EDIT MODE
+    ========================================================== */
 
-function renderMatchHistory() {
+    function toggleEditMode() {
 
-    const history =
-        document.getElementById(
-            'history-list'
+        if (editMode) {
+
+            finishEditMode();
+
+        } else {
+
+            editMode = true;
+
+            document.body.classList.add('editing');
+
+            document
+                .getElementById('edit-toggle-btn')
+                .classList.add('hidden');
+
+            document
+                .getElementById('save-edit-btn')
+                .classList.remove('hidden');
+
+            document
+                .getElementById('edit-help')
+                .classList.remove('hidden');
+
+            renderStats();
+            renderHistoricalStats();
+
+            vibrarFuerte();
+        }
+    }
+
+
+    function finishEditMode() {
+
+        if (!editMode) return;
+
+        editMode = false;
+
+        document.body.classList.remove('editing');
+
+        document
+            .getElementById('edit-toggle-btn')
+            .classList.remove('hidden');
+
+        document
+            .getElementById('save-edit-btn')
+            .classList.add('hidden');
+
+        document
+            .getElementById('edit-help')
+            .classList.add('hidden');
+
+        saveToLocalStorage();
+
+        renderMatches();
+        renderStats();
+        renderHistoricalStats();
+
+        vibrarFuerte();
+    }
+
+
+    /* =========================================================
+       EDITAR TEXTO
+    ========================================================== */
+
+    function makeEditable(
+        element,
+        callback,
+        numeric = false
+    ) {
+
+        if (!editMode) return;
+
+        element.contentEditable = "true";
+
+        element.classList.add(
+            'editable-field',
+            'edit-mode'
         );
 
+        element.focus();
 
-    if (gameState.activeMatches.length === 0) {
+        const finish = () => {
 
-        history.innerHTML = `
-            <div class="text-center text-emerald-500/70 text-xs py-4">
-                No hay enfrentamientos activos
-            </div>
-        `;
+            element.contentEditable = "false";
 
-        return;
+            element.classList.remove(
+                'editable-field',
+                'edit-mode'
+            );
 
+            callback(
+                element.innerText.trim()
+            );
+        };
+
+        element.addEventListener(
+            'blur',
+            finish,
+            { once: true }
+        );
+
+        element.addEventListener(
+            'keydown',
+            e => {
+
+                if (e.key === 'Enter') {
+
+                    e.preventDefault();
+
+                    element.blur();
+                }
+            }
+        );
     }
 
 
-    history.innerHTML =
-        gameState.activeMatches.map(m => {
+    /* =========================================================
+       EDITAR JUGADOR EN PARTIDA
+    ========================================================== */
 
-            let allGroups = [];
+    function editCurrentPlayer(
+        matchId,
+        playerIndex,
+        element
+    ) {
 
-            let picaGlobalCount = 0;
+        if (!editMode) return;
+
+        const match =
+            gameState.activeMatches.find(
+                m => m.id === matchId
+            );
+
+        if (!match) return;
+
+        const oldName =
+            playerIndex === 1
+                ? match.p1
+                : match.p2;
+
+        const newName =
+            prompt(
+                "Nuevo nombre del jugador:",
+                oldName
+            );
+
+        if (!newName) return;
+
+        const cleanName =
+            newName.trim();
+
+        if (!cleanName) return;
+
+        if (playerIndex === 1) {
+            match.p1 = cleanName;
+        } else {
+            match.p2 = cleanName;
+        }
+
+        if (!gameState.knownPlayers.includes(cleanName)) {
+            gameState.knownPlayers.push(cleanName);
+        }
+
+        saveToLocalStorage();
+
+        renderMatches();
+        renderStats();
+        renderHistoricalStats();
+    }
 
 
-            if (
-                Array.isArray(m.chicos) &&
-                m.chicos.length > 0
-            ) {
+    /* =========================================================
+       EDITAR RESULTADO DE PARTIDA
+    ========================================================== */
 
-                m.chicos.forEach(chico => {
+    function editMatchScore(
+        matchId,
+        playerIndex
+    ) {
 
-                    const html =
-                        chico.map(pica => {
+        if (!editMode) return;
 
-                            picaGlobalCount++;
+        const match =
+            gameState.activeMatches.find(
+                m => m.id === matchId
+            );
 
-                            return `
+        if (!match) return;
 
+        const oldValue =
+            playerIndex === 1
+                ? match.score1
+                : match.score2;
+
+        const value =
+            prompt(
+                "Nuevo resultado:",
+                oldValue
+            );
+
+        if (value === null) return;
+
+        const number =
+            parseInt(value, 10);
+
+        if (
+            Number.isNaN(number) ||
+            number < 0
+        ) {
+
+            showModal(
+                "Introduce un número válido.",
+                "alert"
+            );
+
+            return;
+        }
+
+        if (playerIndex === 1) {
+            match.score1 = number;
+        } else {
+            match.score2 = number;
+        }
+
+        saveToLocalStorage();
+
+        renderMatches();
+        renderStats();
+    }
+
+
+    /* =========================================================
+       EDITAR ESTADÍSTICAS DE ESTA NOCHE
+    ========================================================== */
+
+    function editNightStat(
+        playerName,
+        field
+    ) {
+
+        if (!editMode) return;
+
+        const totals =
+            getTotals();
+
+        if (!totals[playerName]) return;
+
+        const oldValue =
+            totals[playerName][field];
+
+        const value =
+            prompt(
+                `Modificar ${field === 'won' ? 'G' : 'P'} de ${playerName}:`,
+                oldValue
+            );
+
+        if (value === null) return;
+
+        const number =
+            parseInt(value, 10);
+
+        if (
+            Number.isNaN(number) ||
+            number < 0
+        ) {
+
+            showModal(
+                "Introduce un número válido.",
+                "alert"
+            );
+
+            return;
+        }
+
+        /*
+         * Las estadísticas de la noche se calculan
+         * automáticamente a partir de las partidas.
+         *
+         * Por tanto, si quieres modificar G/P desde
+         * esta pantalla, ajustamos las partidas para
+         * conseguir el nuevo valor.
+         */
+
+        adjustPlayerTotal(
+            playerName,
+            field,
+            number
+        );
+    }
+
+
+    function adjustPlayerTotal(
+        playerName,
+        field,
+        target
+    ) {
+
+        const matches =
+            gameState.activeMatches.filter(
+                m =>
+                    m.p1 === playerName ||
+                    m.p2 === playerName
+            );
+
+        if (matches.length === 0) {
+            return;
+        }
+
+        let current = 0;
+
+        matches.forEach(m => {
+
+            if (m.p1 === playerName) {
+
+                current +=
+                    field === 'won'
+                        ? m.score1
+                        : m.score2;
+
+            } else {
+
+                current +=
+                    field === 'won'
+                        ? m.score2
+                        : m.score1;
+            }
+        });
+
+        const difference =
+            target - current;
+
+        if (difference === 0) return;
+
+        /*
+         * Modificamos la última partida del jugador.
+         */
+
+        const match =
+            matches[matches.length - 1];
+
+        if (match.p1 === playerName) {
+
+            if (field === 'won') {
+
+                match.score1 =
+                    Math.max(
+                        0,
+                        match.score1 + difference
+                    );
+
+            } else {
+
+                match.score2 =
+                    Math.max(
+                        0,
+                        match.score2 + difference
+                    );
+            }
+
+        } else {
+
+            if (field === 'won') {
+
+                match.score2 =
+                    Math.max(
+                        0,
+                        match.score2 + difference
+                    );
+
+            } else {
+
+                match.score1 =
+                    Math.max(
+                        0,
+                        match.score1 + difference
+                    );
+            }
+        }
+
+        saveToLocalStorage();
+
+        renderMatches();
+        renderStats();
+    }
+
+
+    /* =========================================================
+       RENDER ESTADÍSTICAS
+    ========================================================== */
+
+    function renderStats() {
+
+        const totals =
+            getTotals();
+
+        const listCombined =
+            document.getElementById(
+                'stats-list-combined'
+            );
+
+        const sortedPlayers =
+            Object.keys(totals).sort((a, b) => {
+
+                const diffA =
+                    totals[a].won -
+                    totals[a].lost;
+
+                const diffB =
+                    totals[b].won -
+                    totals[b].lost;
+
+                return (
+                    diffB - diffA ||
+                    totals[b].won -
+                    totals[a].won ||
+                    a.localeCompare(b)
+                );
+            });
+
+
+        if (sortedPlayers.length === 0) {
+
+            listCombined.innerHTML =
+                `<div class="text-center text-emerald-500/70 text-xs py-4">
+                    No hay datos esta noche
+                </div>`;
+
+        } else {
+
+            listCombined.innerHTML =
+                sortedPlayers.map(
+                    (name, index) => {
+
+                        const won =
+                            totals[name].won;
+
+                        const lost =
+                            totals[name].lost;
+
+                        const diff =
+                            won - lost;
+
+                        const diffColor =
+                            diff > 0
+                                ? 'text-emerald-400'
+                                : diff < 0
+                                    ? 'text-red-400'
+                                    : 'text-gray-400';
+
+                        const diffSign =
+                            diff > 0
+                                ? '+'
+                                : '';
+
+                        return `
+                        <div
+                            class="flex justify-between items-center bg-emerald-950 border border-emerald-700/50 rounded-md px-2 py-1 mb-1"
+                        >
+
+                            <div class="flex items-center flex-1 min-w-0">
+
+                                <span class="text-amber-500 font-bold text-xs w-5 shrink-0 py-1">
+                                    ${index + 1}.
+                                </span>
+
+                                <span
+                                    class="text-white font-bold text-xs break-words pr-1 py-1"
+                                    ${editMode ? `onclick="editPlayerNameFromStats('${escapeHtml(name)}')"` : ''}
+                                >
+                                    ${escapeHtml(name)}
+                                </span>
+
+                            </div>
+
+
+                            <div class="flex w-24 justify-between items-center text-center shrink-0">
+
+                                <span
+                                    class="text-amber-500 font-bold text-xs w-6 py-1 ${editMode ? 'editable-field' : ''}"
+                                    ${editMode ? `onclick="editNightStat('${escapeJs(name)}','won')"` : ''}
+                                >
+                                    ${won}
+                                </span>
+
+                                <span
+                                    class="text-red-400 font-bold text-xs w-6 py-1 ${editMode ? 'editable-field' : ''}"
+                                    ${editMode ? `onclick="editNightStat('${escapeJs(name)}','lost')"` : ''}
+                                >
+                                    ${lost}
+                                </span>
+
+                                <span class="${diffColor} font-bold text-xs w-8 py-1">
+                                    ${diffSign}${diff}
+                                </span>
+
+                            </div>
+
+                        </div>
+                        `;
+
+                    }
+                ).join('');
+        }
+
+
+        /* =====================================================
+           HISTORIAL DE ENFRENTAMIENTOS
+        ===================================================== */
+
+        const history =
+            document.getElementById(
+                'history-list'
+            );
+
+        if (gameState.activeMatches.length === 0) {
+
+            history.innerHTML =
+                `<div class="text-center text-emerald-500/70 text-xs py-4">
+                    No hay enfrentamientos activos
+                </div>`;
+
+        } else {
+
+            history.innerHTML =
+                gameState.activeMatches.map(m => {
+
+                    let allGroups = [];
+
+                    let picaGlobalCount = 0;
+
+
+                    if (
+                        m.chicos &&
+                        m.chicos.length > 0
+                    ) {
+
+                        m.chicos.forEach(chico => {
+
+                            const picasHtml =
+                                chico.map(pica => {
+
+                                    picaGlobalCount++;
+
+                                    return `
+                                    <div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center leading-normal">
+
+                                        <div class="text-amber-500 font-bold">
+                                            P${picaGlobalCount}
+                                        </div>
+
+                                        <div>
+                                            ${pica.s1}-${pica.s2}
+                                        </div>
+
+                                    </div>
+                                    `;
+
+                                }).join('');
+
+                            allGroups.push(picasHtml);
+                        });
+                    }
+
+
+                    if (
+                        m.picas &&
+                        m.picas.length > 0
+                    ) {
+
+                        const currentPicasHtml =
+                            m.picas.map(pica => {
+
+                                picaGlobalCount++;
+
+                                return `
                                 <div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center leading-normal">
 
                                     <div class="text-amber-500 font-bold">
@@ -2047,997 +2109,751 @@ function renderMatchHistory() {
                                     </div>
 
                                 </div>
+                                `;
 
-                            `;
+                            }).join('');
 
-                        }).join('');
-
-
-                    if (html) {
-                        allGroups.push(html);
+                        allGroups.push(
+                            currentPicasHtml
+                        );
                     }
 
-                });
 
-            }
+                    const finalPicasHtml =
+                        allGroups.join(`
+                            <div class="flex items-center justify-center px-1">
+                                <div class="w-[3.5px] h-6 bg-[#451a03] rounded-full shadow-sm"></div>
+                            </div>
+                        `);
 
+
+                    return `
+                    <div
+                        class="truco-table p-2.5 rounded-xl shadow-lg text-white mb-2"
+                        style="border-width:3px;"
+                    >
+
+                        <div class="flex justify-between items-center">
+
+                            <div class="w-[42%] text-center">
+
+                                <div class="font-bold text-xs text-amber-300 break-words py-1">
+                                    ${escapeHtml(m.p1)}
+                                </div>
+
+                                <div
+                                    class="score-font text-lg font-bold text-amber-500 py-0.5 ${editMode ? 'editable-field' : ''}"
+                                    ${editMode ? `onclick="editMatchScore(${m.id},1)"` : ''}
+                                >
+                                    ${m.score1}
+                                </div>
+
+                            </div>
+
+
+                            <div class="text-emerald-500 font-bold text-[9px]">
+                                VS
+                            </div>
+
+
+                            <div class="w-[42%] text-center">
+
+                                <div class="font-bold text-xs text-amber-300 break-words py-1">
+                                    ${escapeHtml(m.p2)}
+                                </div>
+
+                                <div
+                                    class="score-font text-lg font-bold text-amber-500 py-0.5 ${editMode ? 'editable-field' : ''}"
+                                    ${editMode ? `onclick="editMatchScore(${m.id},2)"` : ''}
+                                >
+                                    ${m.score2}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        ${
+                            allGroups.length > 0
+                            ?
+                            `
+                            <div class="flex flex-wrap justify-center items-center gap-1 mt-1 border-t border-emerald-800/60 pt-2">
+                                ${finalPicasHtml}
+                            </div>
+                            `
+                            :
+                            ''
+                        }
+
+                    </div>
+                    `;
+
+                }).join('');
+        }
+    }
+
+
+    /* =========================================================
+       EDITAR NOMBRE DESDE RANKING
+    ========================================================== */
+
+    function editPlayerNameFromStats(oldName) {
+
+        if (!editMode) return;
+
+        const newName =
+            prompt(
+                "Nuevo nombre del jugador:",
+                oldName
+            );
+
+        if (newName === null) return;
+
+        const clean =
+            newName.trim();
+
+        if (!clean || clean === oldName) {
+            return;
+        }
+
+        executeWithUndo(() => {
+
+            gameState.activeMatches.forEach(m => {
+
+                if (m.p1 === oldName) {
+                    m.p1 = clean;
+                }
+
+                if (m.p2 === oldName) {
+                    m.p2 = clean;
+                }
+            });
 
             if (
-                Array.isArray(m.picas) &&
-                m.picas.length > 0
+                gameState.knownPlayers.includes(oldName)
             ) {
 
-                const html =
-                    m.picas.map(pica => {
-
-                        picaGlobalCount++;
-
-                        return `
-
-                            <div class="pica-badge px-1.5 py-1 rounded text-[9px] text-emerald-200 font-mono text-center flex flex-col justify-center leading-normal">
-
-                                <div class="text-amber-500 font-bold">
-                                    P${picaGlobalCount}
-                                </div>
-
-                                <div>
-                                    ${pica.s1}-${pica.s2}
-                                </div>
-
-                            </div>
-
-                        `;
-
-                    }).join('');
-
-
-                allGroups.push(html);
-
+                gameState.knownPlayers =
+                    gameState.knownPlayers.map(
+                        p =>
+                            p === oldName
+                                ? clean
+                                : p
+                    );
             }
 
-
-            const finalPicasHtml =
-                allGroups.join(`
-                    <div class="flex items-center justify-center px-1">
-                        <div class="w-[3.5px] h-6 bg-[#451a03] rounded-full shadow-sm"></div>
-                    </div>
-                `);
-
-
-            return `
-
-                <div
-                    class="truco-table p-2.5 rounded-xl shadow-lg text-white mb-2"
-                    style="border-width:3px;">
-
-                    <div class="flex justify-between items-center">
-
-                        <div class="w-[42%] text-center">
-
-                            <div class="font-bold text-xs text-amber-300 break-words py-1">
-                                ${escapeHtml(m.p1)}
-                            </div>
-
-                            <div class="score-font text-lg font-bold text-amber-500 py-0.5">
-                                ${m.score1}
-                            </div>
-
-                        </div>
-
-
-                        <div class="text-emerald-500 font-bold text-[9px]">
-                            VS
-                        </div>
-
-
-                        <div class="w-[42%] text-center">
-
-                            <div class="font-bold text-xs text-amber-300 break-words py-1">
-                                ${escapeHtml(m.p2)}
-                            </div>
-
-                            <div class="score-font text-lg font-bold text-amber-500 py-0.5">
-                                ${m.score2}
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    ${
-                        allGroups.length > 0
-
-                        ? `
-
-                            <div class="flex flex-wrap justify-center items-center gap-1 mt-1 border-t border-emerald-800/60 pt-2">
-
-                                ${finalPicasHtml}
-
-                            </div>
-
-                          `
-
-                        : ''
-                    }
-
-                </div>
-
-            `;
-
-        }).join('');
-
-}
-
-
-/* ================================================================
-   PULSACIÓN LARGA PARA JUGADORES
-================================================================ */
-
-function startPress(event, playerName) {
-
-    cancelPress();
-
-
-    pressTimer =
-        setTimeout(() => {
-
-            pressTimer = null;
-
-            vibrar();
-
-            showPlayerOptionsModal(playerName);
-
-        }, 1000);
-
-}
-
-
-function cancelPress() {
-
-    if (pressTimer !== null) {
-
-        clearTimeout(pressTimer);
-
-        pressTimer = null;
-
-    }
-
-}
-
-
-/* ================================================================
-   OPCIONES JUGADOR
-================================================================ */
-
-function showPlayerOptionsModal(playerName) {
-
-    const modal =
-        document.getElementById(
-            'custom-modal'
-        );
-
-    const modalContent =
-        document.getElementById(
-            'modal-content'
-        );
-
-    const msgEl =
-        document.getElementById(
-            'modal-message'
-        );
-
-    const btnsEl =
-        document.getElementById(
-            'modal-buttons'
-        );
-
-
-    if (!historicalStats[playerName]) {
-
-        historicalStats[playerName] = {
-            won: 0,
-            lost: 0,
-            isBA: false
-        };
-
+        });
     }
 
 
-    const isBA =
-        historicalStats[playerName].isBA === true;
+    function escapeJs(value) {
+
+        return String(value)
+            .replace(/\\/g, '\\\\')
+            .replace(/'/g, "\\'");
+    }
 
 
-    msgEl.innerHTML =
-        `Opciones para <span class="text-amber-400 font-bold break-words">${escapeHtml(playerName)}</span>`;
+    /* =========================================================
+       HISTÓRICO
+    ========================================================== */
 
+    function confirmarRegistroNoche() {
 
-    btnsEl.className =
-        "flex flex-col gap-3";
+        const currentTotals =
+            getTotals();
 
-    btnsEl.innerHTML = '';
+        if (
+            Object.keys(currentTotals).length === 0
+        ) {
 
+            showModal(
+                "No hay datos en la noche actual para registrar.",
+                "alert"
+            );
 
-    /* BA */
-
-    const btnBA =
-        document.createElement('button');
-
-
-    btnBA.className =
-        "w-full bg-gray-700 text-white px-4 py-3 rounded-xl font-bold hover:bg-gray-600 transition-colors shadow-lg border border-gray-500";
-
-
-    btnBA.textContent =
-        isBA
-            ? "Quitar Baja Asistencia (BA)"
-            : "Marcar como Baja Asistencia (BA)";
-
-
-    btnBA.onclick = () => {
-
-        historicalStats[playerName].isBA =
-            !isBA;
-
-
-        saveToLocalStorage();
-
-        renderHistoricalStats();
-
-        closePlayerOptionsModal();
-
-        vibrar();
-
-    };
-
-
-    /* ELIMINAR */
-
-    const btnDelete =
-        document.createElement('button');
-
-
-    btnDelete.className =
-        "w-full bg-red-900/80 text-red-100 px-4 py-3 rounded-xl font-bold hover:bg-red-800 transition-colors shadow-lg border border-red-700";
-
-
-    btnDelete.textContent =
-        "Eliminar Jugador";
-
-
-    btnDelete.onclick = () => {
+            return;
+        }
 
         showModal(
-            `¿Eliminar a <strong>${escapeHtml(playerName)}</strong> del histórico?`,
+            "¿Seguro que quieres sumar los puntos actuales a la Tabla Histórica Anual?<br><br>Asegúrate de hacerlo solo al finalizar la noche.",
             "confirm",
-
             () => {
 
-                delete historicalStats[playerName];
+                for (
+                    const player in currentTotals
+                ) {
+
+                    if (!historicalStats[player]) {
+
+                        historicalStats[player] = {
+                            won: 0,
+                            lost: 0,
+                            isBA: false
+                        };
+                    }
+
+                    historicalStats[player].won +=
+                        currentTotals[player].won;
+
+                    historicalStats[player].lost +=
+                        currentTotals[player].lost;
+                }
 
                 saveToLocalStorage();
 
                 renderHistoricalStats();
 
-                closePlayerOptionsModal();
+                showModal(
+                    "¡Noche registrada exitosamente en el histórico!",
+                    "alert"
+                );
 
             },
-
-            "Eliminar",
+            "Sí, Registrar Noche",
             "Cancelar"
         );
-
-    };
-
-
-    /* CANCELAR */
-
-    const btnCancel =
-        document.createElement('button');
+    }
 
 
-    btnCancel.className =
-        "w-full bg-emerald-900 text-emerald-200 px-4 py-3 rounded-xl font-bold hover:bg-emerald-800 transition-colors border border-emerald-700";
+    /* =========================================================
+       EDITAR HISTÓRICO
+    ========================================================== */
+
+    function editHistoricalPlayerName(oldName) {
+
+        if (!editMode) return;
+
+        const newName =
+            prompt(
+                "Nuevo nombre del jugador:",
+                oldName
+            );
+
+        if (newName === null) return;
+
+        const clean =
+            newName.trim();
+
+        if (!clean || clean === oldName) {
+            return;
+        }
+
+        executeHistoricalEdit(() => {
+
+            historicalStats[clean] =
+                historicalStats[oldName];
+
+            delete historicalStats[oldName];
+        });
+    }
 
 
-    btnCancel.textContent =
-        "Cancelar";
-
-
-    btnCancel.onclick =
-        closePlayerOptionsModal;
-
-
-    btnsEl.appendChild(btnBA);
-    btnsEl.appendChild(btnDelete);
-    btnsEl.appendChild(btnCancel);
-
-
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-
-
-    setTimeout(() => {
-
-        modal.classList.remove('opacity-0');
-        modal.classList.add('opacity-100');
-
-        modalContent.classList.remove('scale-95');
-        modalContent.classList.add('scale-100');
-
-    }, 10);
-
-}
-
-
-function closePlayerOptionsModal() {
-
-    closeModal();
-
-
-    setTimeout(() => {
-
-        document.getElementById(
-            'modal-buttons'
-        ).className =
-            "flex justify-center gap-3";
-
-    }, 300);
-
-}
-
-
-/* ================================================================
-   REGISTRAR NOCHE
-================================================================ */
-
-function confirmarRegistroNoche() {
-
-    const currentTotals =
-        getTotals();
-
-
-    if (
-        Object.keys(currentTotals).length === 0
+    function editHistoricalStat(
+        playerName,
+        field
     ) {
 
-        showModal(
-            "No hay datos en la noche actual para registrar.",
-            "alert"
-        );
+        if (!editMode) return;
 
-        return;
+        const player =
+            historicalStats[playerName];
 
-    }
+        if (!player) return;
 
+        const oldValue =
+            player[field];
 
-    showModal(
-
-        "¿Seguro que quieres sumar los puntos actuales a la Tabla Histórica Anual?<br><br><strong>Asegúrate de hacerlo solo una vez al finalizar la noche.</strong>",
-
-        "confirm",
-
-        () => {
-
-            Object.keys(currentTotals).forEach(player => {
-
-                if (!historicalStats[player]) {
-
-                    historicalStats[player] = {
-
-                        won: 0,
-
-                        lost: 0,
-
-                        isBA: false
-
-                    };
-
-                }
-
-
-                historicalStats[player].won +=
-                    currentTotals[player].won;
-
-                historicalStats[player].lost +=
-                    currentTotals[player].lost;
-
-            });
-
-
-            saveToLocalStorage();
-
-            renderHistoricalStats();
-
-
-            showModal(
-                "¡Noche registrada correctamente en el histórico!",
-                "alert"
+        const value =
+            prompt(
+                `Modificar ${field === 'won' ? 'G' : 'P'} de ${playerName}:`,
+                oldValue
             );
 
-        },
-
-        "Sí, Registrar Noche",
-
-        "Cancelar"
-
-    );
-
-}
-
-
-/* ================================================================
-   HISTÓRICO
-================================================================ */
-
-function renderHistoricalStats() {
-
-    const listCombined =
-        document.getElementById(
-            'historical-stats-list'
-        );
-
-
-    const sortedPlayers =
-        Object.keys(historicalStats).sort((a, b) => {
-
-            const isBaA =
-                historicalStats[a].isBA ? 1 : 0;
-
-            const isBaB =
-                historicalStats[b].isBA ? 1 : 0;
-
-
-            /* BA SIEMPRE ABAJO */
-
-            if (isBaA !== isBaB) {
-                return isBaA - isBaB;
-            }
-
-
-            const diffA =
-                historicalStats[a].won -
-                historicalStats[a].lost;
-
-            const diffB =
-                historicalStats[b].won -
-                historicalStats[b].lost;
-
-
-            return (
-
-                diffB - diffA
-
-                ||
-
-                historicalStats[b].won -
-                historicalStats[a].won
-
-                ||
-
-                a.localeCompare(b)
-
-            );
-
-        });
-
-
-    if (sortedPlayers.length === 0) {
-
-        listCombined.innerHTML = `
-            <div class="text-center text-emerald-500/50 text-xs py-4">
-                Aún no hay noches registradas
-            </div>
-        `;
-
-        return;
-
-    }
-
-
-    listCombined.innerHTML =
-        sortedPlayers.map((name, index) => {
-
-            const player =
-                historicalStats[name];
-
-
-            const won =
-                Number(player.won) || 0;
-
-            const lost =
-                Number(player.lost) || 0;
-
-
-            const isBA =
-                player.isBA === true;
-
-
-            const diff =
-                won - lost;
-
-
-            const diffSign =
-                diff > 0
-                    ? '+'
-                    : '';
-
-
-            const bgClass =
-                isBA
-                    ? 'bg-gray-800/80 border-gray-700/50 opacity-80'
-                    : 'bg-[#022c22] border-emerald-800/70';
-
-
-            const rankColor =
-                isBA
-                    ? 'text-gray-500'
-                    : 'text-amber-600';
-
-
-            const nameColor =
-                isBA
-                    ? 'text-gray-400'
-                    : 'text-emerald-50';
-
-
-            const numColorWon =
-                isBA
-                    ? 'text-gray-500'
-                    : 'text-amber-500/90';
-
-
-            const numColorLost =
-                isBA
-                    ? 'text-gray-500'
-                    : 'text-red-500/90';
-
-
-            const diffColor =
-                isBA
-                    ? 'text-gray-400'
-                    : diff > 0
-                        ? 'text-emerald-400'
-                        : diff < 0
-                            ? 'text-red-400'
-                            : 'text-gray-500';
-
-
-            const nameDisplay =
-                isBA
-                    ? `${escapeHtml(name)} <span class="ba-label">(BA)</span>`
-                    : escapeHtml(name);
-
-
-            return `
-
-                <div
-
-                    onmousedown="startPress(event, ${JSON.stringify(name)})"
-                    onmouseup="cancelPress()"
-                    onmouseleave="cancelPress()"
-
-                    ontouchstart="startPress(event, ${JSON.stringify(name)})"
-                    ontouchend="cancelPress()"
-                    ontouchcancel="cancelPress()"
-                    ontouchmove="cancelPress()"
-
-                    oncontextmenu="event.preventDefault();"
-
-                    style="-webkit-touch-callout:none;"
-
-                    class="historical-row no-select flex justify-between items-center ${bgClass} border rounded-md px-2 py-1.5 mb-1 shadow-sm cursor-pointer transition-all duration-300">
-
-
-                    <div class="flex items-center flex-1 min-w-0">
-
-                        <span class="${rankColor} font-black text-xs w-5 shrink-0">
-                            ${index + 1}.
-                        </span>
-
-
-                        <span class="${nameColor} font-bold text-xs break-words pr-1">
-                            ${nameDisplay}
-                        </span>
-
-                    </div>
-
-
-                    <div class="flex w-24 justify-between items-center text-center shrink-0">
-
-                        <span class="${numColorWon} font-bold text-xs w-6">
-                            ${won}
-                        </span>
-
-                        <span class="${numColorLost} font-bold text-xs w-6">
-                            ${lost}
-                        </span>
-
-                        <span class="${diffColor} font-black text-xs w-8 bg-black/20 rounded py-0.5">
-                            ${diffSign}${diff}
-                        </span>
-
-                    </div>
-
-                </div>
-
-            `;
-
-        }).join('');
-
-}
-
-
-/* ================================================================
-   COMPARTIR
-================================================================ */
-
-async function shareCanvas(canvas, filename, title) {
-
-    canvas.toBlob(async blob => {
-
-        if (!blob) {
+        if (value === null) return;
+
+        const number =
+            parseInt(value, 10);
+
+        if (
+            Number.isNaN(number) ||
+            number < 0
+        ) {
 
             showModal(
-                "No se pudo generar la imagen.",
+                "Introduce un número válido.",
                 "alert"
             );
 
             return;
-
         }
 
+        executeHistoricalEdit(() => {
 
-        const file =
-            new File(
-                [blob],
-                filename,
-                {
-                    type: "image/png"
-                }
-            );
-
-
-        const shareData = {
-
-            title: title,
-
-            files: [file]
-
-        };
-
-
-        try {
-
-            if (
-                navigator.share &&
-                navigator.canShare &&
-                navigator.canShare({
-                    files: [file]
-                })
-            ) {
-
-                await navigator.share(
-                    shareData
-                );
-
-            } else {
-
-                const link =
-                    document.createElement('a');
-
-                link.download =
-                    filename;
-
-                link.href =
-                    URL.createObjectURL(blob);
-
-                document.body.appendChild(link);
-
-                link.click();
-
-                document.body.removeChild(link);
-
-            }
-
-        } catch (error) {
-
-            if (
-                error &&
-                error.name !== 'AbortError'
-            ) {
-
-                console.error(
-                    "Error compartiendo:",
-                    error
-                );
-
-            }
-
-        }
-
-    }, 'image/png');
-
-}
-
-
-/* ================================================================
-   COMPARTIR NOCHE
-================================================================ */
-
-function shareStats() {
-
-    renderStats();
-
-
-    setTimeout(() => {
-
-        html2canvas(
-            document.getElementById(
-                "capture-area"
-            ),
-            {
-
-                backgroundColor: "#064e3b",
-
-                scale: 2,
-
-                useCORS: true
-
-            }
-
-        ).then(canvas => {
-
-            shareCanvas(
-                canvas,
-                "resultados_pica_pica.png",
-                "Resultados Pica Pica"
-            );
-
-        }).catch(error => {
-
-            console.error(error);
-
-            showModal(
-                "No se pudo generar la imagen.",
-                "alert"
-            );
-
+            player[field] = number;
         });
-
-    }, 100);
-
-}
+    }
 
 
-/* ================================================================
-   COMPARTIR HISTÓRICO
-================================================================ */
+    function editHistoricalBA(playerName) {
 
-function shareHistoricalStats() {
+        if (!editMode) return;
 
-    renderHistoricalStats();
+        const player =
+            historicalStats[playerName];
+
+        if (!player) return;
+
+        executeHistoricalEdit(() => {
+
+            player.isBA =
+                !player.isBA;
+        });
+    }
 
 
-    setTimeout(() => {
+    function executeHistoricalEdit(
+        callback
+    ) {
 
-        html2canvas(
+        const before =
+            JSON.stringify(historicalStats);
 
+        callback();
+
+        const after =
+            JSON.stringify(historicalStats);
+
+        if (before !== after) {
+
+            saveToLocalStorage();
+
+            renderHistoricalStats();
+        }
+    }
+
+
+    /* =========================================================
+       RENDER HISTÓRICO
+    ========================================================== */
+
+    function renderHistoricalStats() {
+
+        const listCombined =
             document.getElementById(
-                "capture-area-history"
-            ),
+                'historical-stats-list'
+            );
 
-            {
+        const sortedPlayers =
+            Object.keys(historicalStats)
+                .sort((a, b) => {
 
-                backgroundColor: "#064e3b",
+                    const isBaA =
+                        historicalStats[a].isBA
+                            ? 1
+                            : 0;
 
-                scale: 2,
+                    const isBaB =
+                        historicalStats[b].isBA
+                            ? 1
+                            : 0;
 
-                useCORS: true,
+                    if (isBaA !== isBaB) {
+                        return isBaA - isBaB;
+                    }
+
+                    const diffA =
+                        historicalStats[a].won -
+                        historicalStats[a].lost;
+
+                    const diffB =
+                        historicalStats[b].won -
+                        historicalStats[b].lost;
+
+                    return (
+                        diffB - diffA ||
+                        historicalStats[b].won -
+                        historicalStats[a].won ||
+                        a.localeCompare(b)
+                    );
+                });
 
 
-                onclone: clonedDoc => {
+        if (sortedPlayers.length === 0) {
 
-                    const rows =
-                        clonedDoc.querySelectorAll(
-                            '#historical-stats-list .historical-row'
+            listCombined.innerHTML =
+                `<div class="text-center text-emerald-500/50 text-xs py-4">
+                    Aún no hay noches registradas
+                </div>`;
+
+            return;
+        }
+
+
+        listCombined.innerHTML =
+            sortedPlayers.map(
+                (name, index) => {
+
+                    const player =
+                        historicalStats[name];
+
+                    const won =
+                        player.won;
+
+                    const lost =
+                        player.lost;
+
+                    const isBA =
+                        player.isBA;
+
+                    const diff =
+                        won - lost;
+
+                    const diffSign =
+                        diff > 0
+                            ? '+'
+                            : '';
+
+
+                    const bgClass =
+                        isBA
+                            ? 'bg-gray-800/80 border-gray-700/50 opacity-80'
+                            : 'bg-[#022c22] border-emerald-800/70';
+
+                    const rankColor =
+                        isBA
+                            ? 'text-gray-500'
+                            : 'text-amber-600';
+
+                    const nameColor =
+                        isBA
+                            ? 'text-gray-400'
+                            : 'text-emerald-50';
+
+                    const numColorWon =
+                        isBA
+                            ? 'text-gray-500'
+                            : 'text-amber-500/90';
+
+                    const numColorLost =
+                        isBA
+                            ? 'text-gray-500'
+                            : 'text-red-500/90';
+
+                    const diffColor =
+                        isBA
+                            ? 'text-gray-400'
+                            : diff > 0
+                                ? 'text-emerald-400'
+                                : diff < 0
+                                    ? 'text-red-400'
+                                    : 'text-gray-500';
+
+
+                    const nameDisplay =
+                        isBA
+                            ? `${escapeHtml(name)} <span class="ba-label">(BA)</span>`
+                            : escapeHtml(name);
+
+
+                    return `
+                    <div
+                        class="historical-row flex justify-between items-center ${bgClass} border rounded-md px-2 py-1.5 mb-1 shadow-sm select-none cursor-pointer"
+                    >
+
+                        <div class="flex items-center flex-1 min-w-0">
+
+                            <span class="${rankColor} font-black text-xs w-5 shrink-0">
+                                ${index + 1}.
+                            </span>
+
+                            <span
+                                class="${nameColor} font-bold text-xs break-words pr-1 ${editMode ? 'editable-field' : ''}"
+                                ${editMode ? `onclick="editHistoricalPlayerName('${escapeJs(name)}')"` : ''}
+                            >
+                                ${nameDisplay}
+                            </span>
+
+                        </div>
+
+
+                        <div class="flex w-24 justify-between items-center text-center shrink-0">
+
+                            <span
+                                class="${numColorWon} font-bold text-xs w-6 ${editMode ? 'editable-field' : ''}"
+                                ${editMode ? `onclick="editHistoricalStat('${escapeJs(name)}','won')"` : ''}
+                            >
+                                ${won}
+                            </span>
+
+                            <span
+                                class="${numColorLost} font-bold text-xs w-6 ${editMode ? 'editable-field' : ''}"
+                                ${editMode ? `onclick="editHistoricalStat('${escapeJs(name)}','lost')"` : ''}
+                            >
+                                ${lost}
+                            </span>
+
+                            <span
+                                class="${diffColor} font-black text-xs w-8 bg-black/20 rounded py-0.5"
+                            >
+                                ${diffSign}${diff}
+                            </span>
+
+                        </div>
+
+                    </div>
+                    `;
+
+                }
+            ).join('');
+    }
+
+
+    /* =========================================================
+       COMPARTIR NOCHE
+    ========================================================== */
+
+    function shareStats() {
+
+        renderStats();
+
+        setTimeout(() => {
+
+            html2canvas(
+                document.getElementById(
+                    "capture-area"
+                ),
+                {
+                    backgroundColor: "#064e3b",
+                    scale: 2,
+                    useCORS: true
+                }
+            ).then(canvas => {
+
+                canvas.toBlob(blob => {
+
+                    const file =
+                        new File(
+                            [blob],
+                            'resultados_pica_pica.png',
+                            {
+                                type: 'image/png'
+                            }
                         );
 
+                    const shareData = {
+                        title: 'Resultados Pica Pica',
+                        files: [file]
+                    };
 
-                    rows.forEach(row => {
+                    if (
+                        navigator.canShare &&
+                        navigator.canShare({
+                            files: [file]
+                        })
+                    ) {
 
-                        row.style.height = '40px';
+                        navigator.share(
+                            shareData
+                        ).catch(
+                            console.error
+                        );
 
-                        row.style.minHeight = '40px';
+                    } else {
 
-                        row.style.boxSizing =
-                            'border-box';
+                        const link =
+                            document.createElement('a');
 
-                        row.style.paddingTop = '0';
+                        link.download =
+                            'resultados_pica_pica.png';
 
-                        row.style.paddingBottom = '0';
+                        link.href =
+                            canvas.toDataURL(
+                                "image/png"
+                            );
 
-                        row.style.display = 'flex';
+                        link.click();
+                    }
 
-                        row.style.alignItems =
-                            'center';
+                }, 'image/png');
 
+            });
 
-                        const left =
-                            row.children[0];
-
-                        const stats =
-                            row.children[1];
-
-
-                        if (left) {
-
-                            left.style.height =
-                                '40px';
-
-                            left.style.display =
-                                'flex';
-
-                            left.style.alignItems =
-                                'center';
-
-                        }
-
-
-                        if (stats) {
-
-                            stats.style.height =
-                                '40px';
-
-                            stats.style.display =
-                                'flex';
-
-                            stats.style.alignItems =
-                                'center';
-
-                        }
+        }, 50);
+    }
 
 
-                        row
-                            .querySelectorAll(
+    /* =========================================================
+       COMPARTIR HISTÓRICO
+    ========================================================== */
+
+    function shareHistoricalStats() {
+
+        renderHistoricalStats();
+
+        setTimeout(() => {
+
+            html2canvas(
+                document.getElementById(
+                    "capture-area-history"
+                ),
+                {
+                    backgroundColor: "#064e3b",
+                    scale: 2,
+                    useCORS: true,
+
+                    onclone: clonedDoc => {
+
+                        const rows =
+                            clonedDoc.querySelectorAll(
+                                '#historical-stats-list .historical-row'
+                            );
+
+                        rows.forEach(row => {
+
+                            row.style.height = '40px';
+                            row.style.minHeight = '40px';
+                            row.style.boxSizing = 'border-box';
+                            row.style.paddingTop = '0';
+                            row.style.paddingBottom = '0';
+                            row.style.display = 'flex';
+                            row.style.alignItems = 'center';
+
+                            const left =
+                                row.children[0];
+
+                            const stats =
+                                row.children[1];
+
+                            if (left) {
+
+                                left.style.height = '40px';
+                                left.style.display = 'flex';
+                                left.style.alignItems = 'center';
+                            }
+
+                            if (stats) {
+
+                                stats.style.height = '40px';
+                                stats.style.display = 'flex';
+                                stats.style.alignItems = 'center';
+                            }
+
+                            row.querySelectorAll(
                                 ':scope > div:first-child > span'
-                            )
-                            .forEach(el => {
+                            ).forEach(el => {
 
-                                el.style.display =
-                                    'flex';
-
-                                el.style.alignItems =
-                                    'center';
-
-                                el.style.height =
-                                    '40px';
-
-                                el.style.lineHeight =
-                                    '1';
-
+                                el.style.display = 'flex';
+                                el.style.alignItems = 'center';
+                                el.style.height = '40px';
+                                el.style.lineHeight = '1';
                             });
 
-
-                        row
-                            .querySelectorAll(
+                            row.querySelectorAll(
                                 ':scope > div:last-child > span'
-                            )
-                            .forEach(el => {
+                            ).forEach(el => {
 
-                                el.style.display =
-                                    'flex';
-
-                                el.style.alignItems =
-                                    'center';
-
-                                el.style.justifyContent =
-                                    'center';
-
-                                el.style.height =
-                                    '40px';
-
-                                el.style.lineHeight =
-                                    '1';
-
+                                el.style.display = 'flex';
+                                el.style.alignItems = 'center';
+                                el.style.justifyContent = 'center';
+                                el.style.height = '40px';
+                                el.style.lineHeight = '1';
                             });
 
+                            const diff =
+                                row.querySelector(
+                                    ':scope > div:last-child > span:last-child'
+                                );
 
-                        const diff =
-                            row.querySelector(
-                                ':scope > div:last-child > span:last-child'
-                            );
+                            if (diff) {
 
+                                diff.style.height = '32px';
+                                diff.style.alignSelf = 'center';
+                            }
 
-                        if (diff) {
+                            const ba =
+                                row.querySelector(
+                                    '.ba-label'
+                                );
 
-                            diff.style.height =
-                                '32px';
+                            if (ba) {
 
-                            diff.style.alignSelf =
-                                'center';
-
-                        }
-
-
-                        const ba =
-                            row.querySelector(
-                                '.ba-label'
-                            );
-
-
-                        if (ba) {
-
-                            ba.style.display =
-                                'inline';
-
-                            ba.style.position =
-                                'static';
-
-                            ba.style.transform =
-                                'none';
-
-                            ba.style.top =
-                                'auto';
-
-                            ba.style.bottom =
-                                'auto';
-
-                            ba.style.marginTop =
-                                '0';
-
-                            ba.style.marginBottom =
-                                '0';
-
-                            ba.style.padding =
-                                '0';
-
-                            ba.style.border =
-                                '0';
-
-                            ba.style.lineHeight =
-                                '1';
-
-                            ba.style.verticalAlign =
-                                'baseline';
-
-                        }
-
-                    });
-
+                                ba.style.display = 'inline';
+                                ba.style.position = 'static';
+                                ba.style.transform = 'none';
+                                ba.style.top = 'auto';
+                                ba.style.bottom = 'auto';
+                                ba.style.marginTop = '0';
+                                ba.style.marginBottom = '0';
+                                ba.style.padding = '0';
+                                ba.style.border = '0';
+                                ba.style.lineHeight = '1';
+                                ba.style.verticalAlign = 'baseline';
+                            }
+                        });
+                    }
                 }
+            ).then(canvas => {
 
-            }
+                canvas.toBlob(blob => {
 
-        ).then(canvas => {
+                    const file =
+                        new File(
+                            [blob],
+                            'historico_pica_pica.png',
+                            {
+                                type: 'image/png'
+                            }
+                        );
 
-            shareCanvas(
-                canvas,
-                "historico_pica_pica.png",
-                "Histórico Pica Pica"
-            );
+                    const shareData = {
+                        title: 'Histórico Pica Pica',
+                        files: [file]
+                    };
 
-        }).catch(error => {
+                    if (
+                        navigator.canShare &&
+                        navigator.canShare({
+                            files: [file]
+                        })
+                    ) {
 
-            console.error(error);
+                        navigator.share(
+                            shareData
+                        ).catch(
+                            console.error
+                        );
 
-            showModal(
-                "No se pudo generar la imagen del histórico.",
-                "alert"
-            );
+                    } else {
 
-        });
+                        const link =
+                            document.createElement('a');
 
-    }, 100);
+                        link.download =
+                            'historico_pica_pica.png';
 
-}
+                        link.href =
+                            canvas.toDataURL(
+                                "image/png"
+                            );
+
+                        link.click();
+                    }
+
+                }, 'image/png');
+
+            });
+
+        }, 50);
+    }
 
 
-/* ================================================================
-   INICIO
-================================================================ */
+    /* =========================================================
+       INICIO
+    ========================================================== */
 
-loadFromLocalStorage();
+    loadFromLocalStorage();
 
 </script>
 
