@@ -257,18 +257,16 @@
     <div id="section-truco" class="hidden space-y-6">
         <div class="bg-emerald-800 p-5 rounded-2xl shadow-xl border border-emerald-700">
             <h2 class="text-xl font-bold text-amber-400 score-font text-center mb-2">Marcador de la noche</h2>
-            <p class="text-emerald-100/80 text-xs text-center mb-4">Elige dos parejas entre los jugadores registrados en Pica Pica. Cada equipo necesita ganar 2 chicos para sumar 1 grande. Gana la noche el primero que llega a 2 grandes.</p>
+            <p class="text-emerald-100/80 text-xs text-center mb-4">Forma dos equipos de 2 a 5 jugadores usando únicamente los nombres que ya aparecen en los enfrentamientos de Partidas. Un jugador no puede estar en ambos equipos.</p>
             <div id="truco-setup" class="space-y-4">
                 <div class="grid grid-cols-2 gap-3">
                     <div class="space-y-2 bg-emerald-950/70 rounded-xl p-3">
-                        <label class="block text-xs font-bold text-blue-300">EQUIPO AZUL</label>
-                        <select id="truco-a1" class="w-full p-2 bg-emerald-900 text-white rounded-lg text-sm"></select>
-                        <select id="truco-a2" class="w-full p-2 bg-emerald-900 text-white rounded-lg text-sm"></select>
+                        <label class="block text-xs font-bold text-blue-300">EQUIPO A</label>
+                        <div id="truco-selects-a" class="space-y-2"></div>
                     </div>
                     <div class="space-y-2 bg-emerald-950/70 rounded-xl p-3">
-                        <label class="block text-xs font-bold text-amber-300">EQUIPO AMARILLO</label>
-                        <select id="truco-b1" class="w-full p-2 bg-emerald-900 text-white rounded-lg text-sm"></select>
-                        <select id="truco-b2" class="w-full p-2 bg-emerald-900 text-white rounded-lg text-sm"></select>
+                        <label class="block text-xs font-bold text-amber-300">EQUIPO B</label>
+                        <div id="truco-selects-b" class="space-y-2"></div>
                     </div>
                 </div>
                 <button onclick="iniciarMarcadorTruco(); vibrar();" class="w-full bg-amber-600 text-white py-3 rounded-xl font-bold">Confirmar equipos</button>
@@ -2034,31 +2032,52 @@ function resetEverything() {
 /* =========================================================
    MARCADOR DE CHICOS Y GRANDES
    ========================================================= */
+function jugadoresDisponiblesTruco() {
+    return [...new Set(gameState.activeMatches.flatMap(m => [m.p1, m.p2]).filter(Boolean))]
+        .sort((a,b) => a.localeCompare(b, 'es'));
+}
+
 function rellenarSelectoresTruco() {
-    const ids = ['truco-a1','truco-a2','truco-b1','truco-b2'];
-    const players = [...new Set([
-        ...gameState.knownPlayers,
-        ...gameState.activeMatches.flatMap(m => [m.p1, m.p2])
-    ])].sort((a,b) => a.localeCompare(b, 'es'));
-    ids.forEach(id => {
-        const select = document.getElementById(id);
-        if (!select) return;
-        const old = select.value;
-        select.innerHTML = '<option value="">Elegir jugador</option>' + players.map(p => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join('');
-        if (players.includes(old)) select.value = old;
+    const players = jugadoresDisponiblesTruco();
+    ['a','b'].forEach(team => {
+        const container = document.getElementById(`truco-selects-${team}`);
+        if (!container) return;
+        const oldValues = Array.from(container.querySelectorAll('select')).map(el => el.value);
+        container.innerHTML = Array.from({length:5}, (_,idx) => {
+            const value = oldValues[idx] || '';
+            return `<select id="truco-${team}${idx+1}" onchange="actualizarSelectoresTruco()" class="w-full p-2 bg-emerald-900 text-white rounded-lg text-sm"><option value="">${idx < 2 ? 'Elegir jugador (obligatorio)' : 'Añadir jugador (opcional)'}</option>${players.map(p => `<option value="${escapeHtml(p)}" ${p===value?'selected':''}>${escapeHtml(p)}</option>`).join('')}</select>`;
+        }).join('');
+    });
+    actualizarSelectoresTruco(false);
+}
+
+function actualizarSelectoresTruco(rebuild = false) {
+    const players = jugadoresDisponiblesTruco();
+    const selects = ['a','b'].flatMap(team => Array.from({length:5}, (_,i) => document.getElementById(`truco-${team}${i+1}`))).filter(Boolean);
+    selects.forEach(sel => {
+        const current = sel.value;
+        const selectedByOthers = new Set(selects.filter(other => other !== sel).map(other => other.value).filter(Boolean));
+        const opts = ['<option value="">' + (Number(sel.id.slice(-1)) <= 2 ? 'Elegir jugador (obligatorio)' : 'Añadir jugador (opcional)') + '</option>'];
+        players.forEach(p => {
+            const taken = selectedByOthers.has(p);
+            opts.push(`<option value="${escapeHtml(p)}" ${p===current?'selected':''} ${taken?'disabled':''}>${escapeHtml(p)}</option>`);
+        });
+        sel.innerHTML = opts.join('');
     });
 }
 
 function iniciarMarcadorTruco() {
-    const a1 = document.getElementById('truco-a1').value;
-    const a2 = document.getElementById('truco-a2').value;
-    const b1 = document.getElementById('truco-b1').value;
-    const b2 = document.getElementById('truco-b2').value;
-    if (![a1,a2,b1,b2].every(Boolean)) return showModal('Selecciona los cuatro jugadores para formar los dos equipos.', 'alert');
-    if (new Set([a1,a2,b1,b2]).size !== 4) return showModal('Cada jugador debe aparecer una sola vez y los equipos deben ser distintos.', 'alert');
+    const teamA = Array.from({length:5}, (_,i) => document.getElementById(`truco-a${i+1}`).value).filter(Boolean);
+    const teamB = Array.from({length:5}, (_,i) => document.getElementById(`truco-b${i+1}`).value).filter(Boolean);
+    if (teamA.length < 2 || teamA.length > 5 || teamB.length < 2 || teamB.length > 5) {
+        return showModal('Cada equipo debe tener entre 2 y 5 jugadores.', 'alert');
+    }
+    if (new Set([...teamA, ...teamB]).size !== teamA.length + teamB.length) {
+        return showModal('Un jugador no puede estar en ambos equipos ni repetirse dentro de un equipo.', 'alert');
+    }
     executeWithUndo(() => {
         gameState.truco = {
-            teams: [{ name: 'Equipo azul', players: [a1,a2] }, { name: 'Equipo amarillo', players: [b1,b2] }],
+            teams: [{ name: 'Equipo A', players: teamA }, { name: 'Equipo B', players: teamB }],
             events: [], finished: false
         };
     });
@@ -2083,9 +2102,14 @@ function registrarChicoTruco(teamIndex) {
 }
 
 function puntosPicaEquipo(team) {
-    if (!team) return 0;
+    if (!team) return { won: 0, lost: 0 };
     const totals = getTotals();
-    return team.players.reduce((sum, player) => sum + (totals[player] ? totals[player].won : 0), 0);
+    return team.players.reduce((sum, player) => {
+        const t = totals[player] || { won: 0, lost: 0 };
+        sum.won += t.won;
+        sum.lost += t.lost;
+        return sum;
+    }, { won: 0, lost: 0 });
 }
 
 function renderTrucoBoard() {
@@ -2104,27 +2128,28 @@ function renderTrucoBoard() {
     const teams = truco.teams;
     const chicoCounts = teams.map((_,i) => truco.events.filter(e => e.type === 'chico' && e.team === i).length);
     const grandeCounts = teams.map((_,i) => truco.events.filter(e => e.type === 'grande' && e.team === i).length);
-    const markers = truco.events.map((event, index) => {
+    const markers = truco.events.map(event => {
         const isChico = event.type === 'chico';
-        const teamColor = event.team === 0 ? 'bg-blue-500' : 'bg-amber-400';
         const dotColor = isChico ? 'bg-blue-500' : 'bg-yellow-300';
         const label = isChico ? 'Chico' : 'Grande';
         const divider = !isChico ? '<div class="w-full border-b-2 border-amber-700/80 my-2"></div>' : '';
-        return `<div class="flex flex-col items-center min-w-[34px]"><span class="w-5 h-5 rounded-full ${dotColor} border-2 border-white/70 shadow"></span><span class="text-[9px] mt-1 ${event.team === 0 ? 'text-blue-200' : 'text-amber-200'}">${label}</span></div>${divider}`;
+        return `<div class="flex flex-col items-center min-w-[34px]"><span class="w-5 h-5 rounded-full ${dotColor} border-2 border-white/70 shadow"></span><span class="text-[9px] mt-1 ${event.team === 0 ? 'text-blue-200' : 'text-amber-200'}">${label} · ${event.team===0?'A':'B'}</span></div>${divider}`;
     }).join('');
     board.innerHTML = `
       <div class="grid grid-cols-2 gap-3">
-        ${teams.map((team,i) => `<div class="rounded-xl p-3 border ${i===0?'border-blue-500/50 bg-blue-950/50':'border-amber-500/50 bg-amber-950/30'} text-center">
-          <div class="font-bold ${i===0?'text-blue-300':'text-amber-300'} text-sm">${escapeHtml(team.players.join(' + '))}</div>
-          <div class="text-xs text-emerald-100/70 mt-1">Pica Pica: <b class="text-white">${puntosPicaEquipo(team)}</b> puntos</div>
+        ${teams.map((team,i) => { const pica = puntosPicaEquipo(team); return `<div class="rounded-xl p-3 border ${i===0?'border-blue-500/50 bg-blue-950/50':'border-amber-500/50 bg-amber-950/30'} text-center">
+          <div class="font-bold ${i===0?'text-blue-300':'text-amber-300'} text-sm">EQUIPO ${i===0?'A':'B'}</div>
+          <div class="font-semibold text-white text-xs mt-1 break-words">${escapeHtml(team.players.join(' + '))}</div>
           <div class="flex justify-center gap-4 mt-3"><div><div class="text-[10px] text-emerald-200">CHICOS</div><div class="text-2xl font-black ${i===0?'text-blue-300':'text-amber-300'}">${chicoCounts[i]}</div></div><div><div class="text-[10px] text-emerald-200">GRANDES</div><div class="text-2xl font-black text-yellow-300">${grandeCounts[i]}</div></div></div>
           <button onclick="registrarChicoTruco(${i})" ${truco.finished?'disabled':''} class="w-full mt-3 py-2.5 rounded-lg font-bold text-sm ${i===0?'bg-blue-600 hover:bg-blue-500':'bg-amber-600 hover:bg-amber-500'} text-white disabled:opacity-40">+ Chico ganado</button>
-        </div>`).join('')}
+        </div>`; }).join('')}
       </div>
       <div class="bg-emerald-950/70 rounded-xl p-3">
-        <h3 class="text-xs font-bold uppercase tracking-widest text-emerald-300 text-center mb-3">Registro de chicos y grandes</h3>
-        <div class="flex flex-wrap items-start justify-center gap-x-3 gap-y-1">${markers || '<span class="text-xs text-emerald-500">Todavía no se ha registrado ningún chico.</span>'}</div>
-        <div class="text-center mt-4 font-bold ${truco.finished?'text-amber-300':'text-emerald-200'}">${truco.finished ? `🏆 ¡Noche ganada por ${escapeHtml(teams[grandeCounts[0]>=2?0:1].players.join(' + '))}!` : 'La noche termina cuando un equipo consigue 2 grandes.'}</div>
+        <h3 class="text-xs font-bold uppercase tracking-widest text-emerald-300 text-center mb-3">Pica Pica · ganados y perdidos</h3>
+        <div class="grid grid-cols-2 gap-3">
+          ${teams.map((team,i) => { const pica = puntosPicaEquipo(team); return `<div class="rounded-lg p-3 text-center ${i===0?'bg-blue-950/70 border border-blue-700/50':'bg-amber-950/40 border border-amber-700/50'}"><div class="text-xs font-bold ${i===0?'text-blue-300':'text-amber-300'}">EQUIPO ${i===0?'A':'B'}</div><div class="text-[10px] text-emerald-100/70 mt-1">${escapeHtml(team.players.join(' + '))}</div><div class="flex justify-center gap-4 mt-2"><div><div class="text-[9px] text-emerald-300">GANADOS</div><div class="text-xl font-black text-emerald-300">${pica.won}</div></div><div><div class="text-[9px] text-red-300">PERDIDOS</div><div class="text-xl font-black text-red-300">${pica.lost}</div></div></div></div>`; }).join('')}
+        </div>
+        <div class="text-center mt-4 font-bold ${truco.finished?'text-amber-300':'text-emerald-200'}">${truco.finished ? `🏆 ¡Noche ganada por ${escapeHtml(teams[grandeCounts[0]>=2?0:1].name)}!` : 'La noche termina cuando un equipo consigue 2 grandes.'}</div>
       </div>
       <div class="grid grid-cols-2 gap-3"><button onclick="cambiarEquiposTruco()" class="py-2 rounded-lg border border-emerald-600 text-emerald-200 text-xs font-bold">Cambiar equipos</button><button onclick="reiniciarMarcadorTruco()" class="py-2 rounded-lg border border-red-800 text-red-300 text-xs font-bold">Reiniciar marcador</button></div>`;
 }
