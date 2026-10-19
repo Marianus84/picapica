@@ -628,7 +628,7 @@
 let gameState = {
     activeMatches: [],
     knownPlayers: [],
-    truco: { teams: null, events: [], finished: false }
+    truco: { teams: null, events: [], finished: false, currentRound: 1 }
 };
 
 let historyStack = [];
@@ -848,7 +848,7 @@ function loadFromLocalStorage() {
                 gameState.activeMatches = [];
             }
             if (!gameState.truco) {
-                gameState.truco = { teams: null, events: [], finished: false };
+                gameState.truco = { teams: null, events: [], finished: false, currentRound: 1 };
             }
 
         } catch (e) {
@@ -856,7 +856,7 @@ function loadFromLocalStorage() {
             gameState = {
                 activeMatches: [],
                 knownPlayers: [],
-                truco: { teams: null, events: [], finished: false }
+                truco: { teams: null, events: [], finished: false, currentRound: 1 }
             };
 
         }
@@ -2017,7 +2017,7 @@ function resetEverything() {
             executeWithUndo(() => {
 
                 gameState.activeMatches = [];
-                gameState.truco = { teams: null, events: [], finished: false };
+                gameState.truco = { teams: null, events: [], finished: false, currentRound: 1 };
 
             });
 
@@ -2078,7 +2078,7 @@ function iniciarMarcadorTruco() {
     executeWithUndo(() => {
         gameState.truco = {
             teams: [{ name: 'Equipo A', players: teamA }, { name: 'Equipo B', players: teamB }],
-            events: [], finished: false
+            events: [], finished: false, currentRound: 1
         };
     });
     renderTrucoBoard();
@@ -2088,15 +2088,23 @@ function registrarChicoTruco(teamIndex) {
     const truco = gameState.truco;
     if (!truco || !truco.teams || truco.finished) return;
     executeWithUndo(() => {
-        const team = gameState.truco.teams[teamIndex];
-        const chicosPrevios = gameState.truco.events.filter(e => e.type === 'chico' && e.team === teamIndex).length;
-        gameState.truco.events.push({ type: 'chico', team: teamIndex, number: gameState.truco.events.length + 1 });
-        // Dos chicos ganados por el mismo equipo equivalen a un grande.
-        if ((chicosPrevios + 1) % 2 === 0) {
-            gameState.truco.events.push({ type: 'grande', team: teamIndex, number: gameState.truco.events.length + 1 });
+        const state = gameState.truco;
+        if (!state.currentRound || !Number.isFinite(state.currentRound)) {
+            state.currentRound = Math.max(1, ...state.events.map(e => e.round || 1));
         }
-        const grandes = gameState.truco.events.filter(e => e.type === 'grande' && e.team === teamIndex).length;
-        if (grandes >= 2) gameState.truco.finished = true;
+        const round = state.currentRound;
+        const chicosPrevios = state.events.filter(e => e.type === 'chico' && e.team === teamIndex && (e.round || 1) === round).length;
+        state.events.push({ type: 'chico', team: teamIndex, number: state.events.length + 1, round });
+
+        // Dos chicos del mismo equipo dentro de la ronda actual otorgan un grande.
+        if (chicosPrevios + 1 >= 2) {
+            state.events.push({ type: 'grande', team: teamIndex, number: state.events.length + 1, round });
+            // La próxima anotación pertenece a una ronda nueva. Los chicos anteriores
+            // permanecen visibles en el historial, pero ya no cuentan para la ronda nueva.
+            state.currentRound = round + 1;
+        }
+        const grandes = state.events.filter(e => e.type === 'grande' && e.team === teamIndex).length;
+        if (grandes >= 2) state.finished = true;
     });
     vibrarFuerte();
 }
@@ -2117,7 +2125,7 @@ function renderTrucoBoard() {
     const board = document.getElementById('truco-scoreboard');
     if (!setup || !board) return;
     rellenarSelectoresTruco();
-    const truco = gameState.truco || { teams: null, events: [], finished: false };
+    const truco = gameState.truco || { teams: null, events: [], finished: false, currentRound: 1 };
     if (!truco.teams) {
         setup.classList.remove('hidden');
         board.classList.add('hidden');
@@ -2126,28 +2134,34 @@ function renderTrucoBoard() {
     setup.classList.add('hidden');
     board.classList.remove('hidden');
     const teams = truco.teams;
-    const chicoCounts = teams.map((_,i) => truco.events.filter(e => e.type === 'chico' && e.team === i).length);
+    const currentRound = truco.currentRound || (Math.max(1, ...truco.events.map(e => e.round || 1)));
+    const chicoCounts = teams.map((_,i) => truco.events.filter(e => e.type === 'chico' && e.team === i && (e.round || 1) === currentRound).length);
     const grandeCounts = teams.map((_,i) => truco.events.filter(e => e.type === 'grande' && e.team === i).length);
     const markers = truco.events.map(event => {
         const isChico = event.type === 'chico';
         const dotColor = isChico ? 'bg-blue-500' : 'bg-yellow-300';
         const label = isChico ? 'Chico' : 'Grande';
-        const divider = !isChico ? '<div class="w-full border-b-2 border-amber-700/80 my-2"></div>' : '';
-        return `<div class="flex flex-col items-center min-w-[34px]"><span class="w-5 h-5 rounded-full ${dotColor} border-2 border-white/70 shadow"></span><span class="text-[9px] mt-1 ${event.team === 0 ? 'text-blue-200' : 'text-amber-200'}">${label} · ${event.team===0?'A':'B'}</span></div>${divider}`;
+        const divider = !isChico ? '<div class="w-full border-b-2 border-amber-500 my-3"></div>' : '';
+        return `<div class="flex flex-col items-center min-w-[38px]"><span class="w-5 h-5 rounded-full ${dotColor} border-2 border-white/70 shadow"></span><span class="text-[9px] mt-1 ${event.team === 0 ? 'text-blue-200' : 'text-amber-200'}">${label} · ${event.team===0?'A':'B'}</span></div>${divider}`;
     }).join('');
     board.innerHTML = `
       <div class="grid grid-cols-2 gap-3">
-        ${teams.map((team,i) => { const pica = puntosPicaEquipo(team); return `<div class="rounded-xl p-3 border ${i===0?'border-blue-500/50 bg-blue-950/50':'border-amber-500/50 bg-amber-950/30'} text-center">
+        ${teams.map((team,i) => { const pica = puntosPicaEquipo(team); const diff = pica.won - pica.lost; return `<div class="rounded-xl p-3 border ${i===0?'border-blue-500/50 bg-blue-950/50':'border-amber-500/50 bg-amber-950/30'} text-center">
           <div class="font-bold ${i===0?'text-blue-300':'text-amber-300'} text-sm">EQUIPO ${i===0?'A':'B'}</div>
           <div class="font-semibold text-white text-xs mt-1 break-words">${escapeHtml(team.players.join(' + '))}</div>
-          <div class="flex justify-center gap-4 mt-3"><div><div class="text-[10px] text-emerald-200">CHICOS</div><div class="text-2xl font-black ${i===0?'text-blue-300':'text-amber-300'}">${chicoCounts[i]}</div></div><div><div class="text-[10px] text-emerald-200">GRANDES</div><div class="text-2xl font-black text-yellow-300">${grandeCounts[i]}</div></div></div>
+          <div class="flex justify-center gap-4 mt-3"><div><div class="text-[10px] text-emerald-200">CHICOS · RONDA</div><div class="text-2xl font-black ${i===0?'text-blue-300':'text-amber-300'}">${chicoCounts[i]}</div></div><div><div class="text-[10px] text-emerald-200">GRANDES</div><div class="text-2xl font-black text-yellow-300">${grandeCounts[i]}</div></div></div>
           <button onclick="registrarChicoTruco(${i})" ${truco.finished?'disabled':''} class="w-full mt-3 py-2.5 rounded-lg font-bold text-sm ${i===0?'bg-blue-600 hover:bg-blue-500':'bg-amber-600 hover:bg-amber-500'} text-white disabled:opacity-40">+ Chico ganado</button>
         </div>`; }).join('')}
       </div>
       <div class="bg-emerald-950/70 rounded-xl p-3">
-        <h3 class="text-xs font-bold uppercase tracking-widest text-emerald-300 text-center mb-3">Pica Pica · ganados y perdidos</h3>
+        <h3 class="text-xs font-bold uppercase tracking-widest text-emerald-300 text-center mb-3">Historial de chicos y grandes</h3>
+        <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-2">${markers || '<span class="text-xs text-emerald-200/60">Todavía no hay resultados.</span>'}</div>
+        <p class="text-center text-[10px] text-emerald-300/80 mt-3">Cada línea separa una ronda nueva. Los chicos de rondas anteriores no cuentan en la ronda actual.</p>
+      </div>
+      <div class="bg-emerald-950/70 rounded-xl p-3">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-emerald-300 text-center mb-3">Pica Pica · ganados, perdidos y diferencia</h3>
         <div class="grid grid-cols-2 gap-3">
-          ${teams.map((team,i) => { const pica = puntosPicaEquipo(team); return `<div class="rounded-lg p-3 text-center ${i===0?'bg-blue-950/70 border border-blue-700/50':'bg-amber-950/40 border border-amber-700/50'}"><div class="text-xs font-bold ${i===0?'text-blue-300':'text-amber-300'}">EQUIPO ${i===0?'A':'B'}</div><div class="text-[10px] text-emerald-100/70 mt-1">${escapeHtml(team.players.join(' + '))}</div><div class="flex justify-center gap-4 mt-2"><div><div class="text-[9px] text-emerald-300">GANADOS</div><div class="text-xl font-black text-emerald-300">${pica.won}</div></div><div><div class="text-[9px] text-red-300">PERDIDOS</div><div class="text-xl font-black text-red-300">${pica.lost}</div></div></div></div>`; }).join('')}
+          ${teams.map((team,i) => { const pica = puntosPicaEquipo(team); const diff = pica.won - pica.lost; const diffColor = diff > 0 ? 'text-emerald-300' : diff < 0 ? 'text-red-300' : 'text-white'; const diffSign = diff > 0 ? '+' : ''; return `<div class="rounded-lg p-3 text-center ${i===0?'bg-blue-950/70 border border-blue-700/50':'bg-amber-950/40 border border-amber-700/50'}"><div class="text-xs font-bold ${i===0?'text-blue-300':'text-amber-300'}">EQUIPO ${i===0?'A':'B'}</div><div class="text-[10px] text-emerald-100/70 mt-1">${escapeHtml(team.players.join(' + '))}</div><div class="flex justify-center gap-3 mt-2"><div><div class="text-[9px] text-emerald-300">GANADOS</div><div class="text-xl font-black text-emerald-300">${pica.won}</div></div><div><div class="text-[9px] text-red-300">PERDIDOS</div><div class="text-xl font-black text-red-300">${pica.lost}</div></div></div><div class="border-t border-white/10 mt-2 pt-2"><div class="text-[9px] text-emerald-200/70">DIFERENCIA</div><div class="text-xl font-black ${diffColor}">${diffSign}${diff}</div></div></div>`; }).join('')}
         </div>
         <div class="text-center mt-4 font-bold ${truco.finished?'text-amber-300':'text-emerald-200'}">${truco.finished ? `🏆 ¡Noche ganada por ${escapeHtml(teams[grandeCounts[0]>=2?0:1].name)}!` : 'La noche termina cuando un equipo consigue 2 grandes.'}</div>
       </div>
@@ -2156,13 +2170,13 @@ function renderTrucoBoard() {
 
 function cambiarEquiposTruco() {
     showModal('¿Cambiar los equipos? Se reiniciará el marcador de chicos y grandes.', 'confirm', () => {
-        executeWithUndo(() => { gameState.truco = { teams: null, events: [], finished: false }; });
+        executeWithUndo(() => { gameState.truco = { teams: null, events: [], finished: false, currentRound: 1 }; });
         renderTrucoBoard();
     }, 'Cambiar equipos', 'Cancelar');
 }
 function reiniciarMarcadorTruco() {
     showModal('¿Reiniciar los chicos y grandes de esta noche?', 'confirm', () => {
-        executeWithUndo(() => { gameState.truco.events = []; gameState.truco.finished = false; });
+        executeWithUndo(() => { gameState.truco.events = []; gameState.truco.finished = false; gameState.truco.currentRound = 1; });
         renderTrucoBoard();
     }, 'Reiniciar', 'Cancelar');
 }
